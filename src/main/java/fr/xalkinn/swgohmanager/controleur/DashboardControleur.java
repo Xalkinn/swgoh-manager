@@ -8,22 +8,29 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import fr.xalkinn.swgohmanager.repository.JoueurRepository;
 import fr.xalkinn.swgohmanager.repository.OmicronRepository;
+import fr.xalkinn.swgohmanager.service.HealthService;
 
 
 @Controller
 public class DashboardControleur {
+	private final HealthService healthService;
     private final JoueurRepository joueurRepository;
     private final OmicronRepository omicronRepository;
     public DashboardControleur(
             JoueurRepository joueurRepository,
-            OmicronRepository omicronRepository) {
+            OmicronRepository omicronRepository,
+            HealthService healthService) {
 
-        this.joueurRepository = joueurRepository;
+		this.joueurRepository = joueurRepository;
         this.omicronRepository = omicronRepository;
+        this.healthService = healthService;
     }
 
     @GetMapping("/")
     public String dashboard(Model model) {
+    	System.out.println(
+    		    healthService.getEtat()
+    		);
         long nombreJoueurs = joueurRepository.count();
         long nombreOmicrons = omicronRepository.count();
         LocalDateTime derniereMaj = joueurRepository.derniereMiseAJour();
@@ -38,6 +45,10 @@ public class DashboardControleur {
         model.addAttribute(
                 "derniereMaj",
                 derniereMaj
+        );
+        model.addAttribute(
+                "etatSysteme",
+                healthService.getEtat()
         );
         return "dashboard";
     }
