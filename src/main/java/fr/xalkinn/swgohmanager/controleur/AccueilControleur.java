@@ -8,11 +8,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class AccueilControleur {
 
 
-    @GetMapping("/")
-    public String accueil() {
-
-        return "accueil";
-
-    }
+//    @GetMapping("/")
+//    public String accueil() {
+//
+//        return "dashboard";
+//
+//    }
 
 }
