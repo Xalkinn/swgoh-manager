@@ -23,7 +23,6 @@ public class ActionControleur {
     @GetMapping("/batch-omicron")
     public String lancerBatchOmicron() {
         System.out.println("🚀 Lancement du batch Omicron");
-        batchOmicronService.lancerBatch();
         if(BatchStatusService.estEnCours()) {
             System.out.println(
                 "⚠ Batch déjà en cours"
