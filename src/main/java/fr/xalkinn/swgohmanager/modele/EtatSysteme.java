@@ -1,5 +1,6 @@
 package fr.xalkinn.swgohmanager.modele;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 public class EtatSysteme {
@@ -9,6 +10,8 @@ public class EtatSysteme {
     private boolean comlinkOk;
     private LocalDateTime derniereSynchro;
     private String derniereSynchroFormatee;
+    private String fraicheurDonnees;
+    private String couleurFraicheur;
 
     public boolean isBddOk() {
         return bddOk;
@@ -52,4 +55,21 @@ public class EtatSysteme {
     public void setDerniereSynchroFormatee(String derniereSynchroFormatee) {
         this.derniereSynchroFormatee = derniereSynchroFormatee;
     }
+
+	public String getFraicheurDonnees() {
+		return fraicheurDonnees;
+	}
+
+	public void setFraicheurDonnees(String fraicheurDonnees) {
+		this.fraicheurDonnees = fraicheurDonnees;
+	}
+
+	public String getCouleurFraicheur() {
+		return couleurFraicheur;
+	}
+
+	public void setCouleurFraicheur(String couleurFraicheur) {
+		this.couleurFraicheur = couleurFraicheur;
+	}
+	
 }

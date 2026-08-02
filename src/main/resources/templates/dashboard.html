@@ -108,11 +108,19 @@
 			                    KO
 			                </span>
 			            </p>
-			            <p class="mt-3 mb-0">
-			                🕒 Synchro
-			                <br>
-			                <small class="text-muted" th:text="${etatSysteme.derniereSynchroFormatee}"></small>
-			            </p>
+						<p>
+				            <p class="mt-3 mb-0">
+				                🕒 Synchro
+				                <br>
+				                <small class="text-muted" th:text="${etatSysteme.derniereSynchroFormatee}"></small>
+				            </p>
+						</p>
+						<p>
+						📡 Dernière actualisation :
+						<br>
+						<strong th:text="${etatSysteme.fraicheurDonnees}">
+						</strong>
+						</p>
 			        </div>
 			    </div>
 			</div>
