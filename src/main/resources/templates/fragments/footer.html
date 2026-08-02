@@ -1,0 +1,43 @@
+<footer th:fragment="footer">
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+    </script>
+    <!-- Suivi Batch Omicron -->
+    <script>
+        function chargerStatutBatch() {
+            fetch('/api/batch/status')
+            .then(response => response.json())
+            .then(data => {
+                let etat = document.getElementById("batchEtat");
+                let etape = document.getElementById("batchEtape");
+                let progress = document.getElementById("batchProgress");
+                // Si la page n'a pas les éléments
+                // on ne fait rien
+                if(!etat) {
+                    return;
+                }
+                if(data.enCours){
+                    etat.innerHTML="En cours";
+                    etat.className="badge bg-warning";
+                }
+                else if(data.fin != null){
+                    etat.innerHTML="Terminé";
+                    etat.className="badge bg-success";
+                }
+                else {
+                    etat.innerHTML="Repos";
+                    etat.className="badge bg-secondary";
+                }
+                etape.innerHTML =
+                    data.etapeActuelle ?? "-";
+                progress.style.width =
+                    data.pourcentage + "%";
+                progress.innerHTML =
+                    data.pourcentage + "%";
+            });
+        }
+        // Actualisation toutes les 2 secondes
+        setInterval(chargerStatutBatch,2000);
+        chargerStatutBatch();
+    </script>
+</footer>

@@ -1,17 +1,20 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head>
-	<title>Joueurs</title>
-</head>
+	<head th:replace="~{fragments/head :: head}">
+	</head>
 <body>
-	<h1>
-	Liste des joueurs
-	</h1>
-	<p>
-	Page en construction...
-	</p>
-	<a href="/">
-	Retour accueil
-	</a>
+	<!-- MENU -->
+		<div th:replace="~{fragments/menu :: menu}"></div>
+		<h1>
+		Liste des joueurs
+		</h1>
+		<p>
+		Page en construction...
+		</p>
+		<a href="/">
+		Retour accueil
+		</a>
+		<!-- Footer -->
+		<div th:replace="~{fragments/footer :: footer}"></div>
 </body>
 </html>
