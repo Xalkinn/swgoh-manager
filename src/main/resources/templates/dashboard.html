@@ -54,6 +54,10 @@
 			<div>
 				<a href="/actions/batch-omicron"class="btn btn-primary me-2">
 					🚀 Lancer Batch Omicron</a>
+				<a href="/actions/batch-roster" class="btn btn-warning me-2">
+					🧬 Mise à jour Rosters
+
+				</a>
 				<a href="/actions/export" class="btn btn-secondary me-2">
 				    📄 Export CSV
 				</a>
@@ -80,6 +84,14 @@
 			            <div id="batchProgress" class="progress-bar" role="progressbar" style="width:0%">0%</div>
 			        </div>
 			    </div>
+			</div>
+			<!-- Batch roster -->
+			<div class="progress-bar"
+			     role="progressbar"
+			     th:style="'width:' + ${extraction.progression} + '%'">
+			     
+			     <span th:text="${extraction.progression} + '%'"></span>
+
 			</div>
 			<div class="col-md-3">
 				<!-- Sante systeme -->

@@ -12,10 +12,11 @@ public class DatabaseManager {
     private static final String DATABASE = "swgoh";      // Nom de ta base
     private static final String USER = "root";               // Identifiant MySQL
     private static final String PASSWORD = "root";   // Mot de passe MySQL
+    private static final String TIMEZONE = "Europe/Paris";
 
     // URL JDBC complète
     private static final String URL = String.format(
-        "jdbc:mysql://%s:%d/%s?serverTimezone=UTC&useSSL=false&allowPublicKeyRetrieval=true",
+    	"jdbc:mysql://%s:%d/%s?serverTimezone=" + TIMEZONE + "&useSSL=false&allowPublicKeyRetrieval=true",
         HOST, PORT, DATABASE
     );
 
