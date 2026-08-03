@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import fr.xalkinn.swgohmanager.service.BatchOmicronService;
+import fr.xalkinn.swgohmanager.service.BatchRosterService;
 import fr.xalkinn.swgohmanager.service.BatchStatusService;
 
 @Controller
@@ -12,11 +13,12 @@ import fr.xalkinn.swgohmanager.service.BatchStatusService;
 public class ActionControleur {
 	
 	private final BatchOmicronService batchOmicronService;
+	private final BatchRosterService batchRosterService;
 
-
-    public ActionControleur(BatchOmicronService batchOmicronService) {
+    public ActionControleur(BatchOmicronService batchOmicronService, BatchRosterService batchRosterService) {
 
         this.batchOmicronService = batchOmicronService;
+		this.batchRosterService = batchRosterService;
 
     }
 
@@ -31,6 +33,13 @@ public class ActionControleur {
 
         }
         batchOmicronService.lancerBatch();
+        return "redirect:/";
+    }
+    @GetMapping("/batch-roster")
+    public String lancerBatchRoster() {
+
+    	System.out.println("🚀 Lancement mise à jour roster");
+        batchRosterService.lancerBatch();
         return "redirect:/";
     }
     @GetMapping("/export")

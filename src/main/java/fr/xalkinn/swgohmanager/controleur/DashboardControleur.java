@@ -2,16 +2,21 @@ package fr.xalkinn.swgohmanager.controleur;
 
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import fr.xalkinn.swgohmanager.modele.DashboardStats;
 import fr.xalkinn.swgohmanager.modele.EtatSysteme;
+import fr.xalkinn.swgohmanager.modele.ExtractionStatut;
 import fr.xalkinn.swgohmanager.repository.JoueurRepository;
 import fr.xalkinn.swgohmanager.repository.OmicronRepository;
 import fr.xalkinn.swgohmanager.service.DashboardService;
+import fr.xalkinn.swgohmanager.service.ExtractionService;
 import fr.xalkinn.swgohmanager.service.HealthService;
 
 
@@ -19,23 +24,41 @@ import fr.xalkinn.swgohmanager.service.HealthService;
 public class DashboardControleur {
     private final DashboardService dashboardService;
     private final HealthService healthService;
+	private final ExtractionService extractionService;
 
     public DashboardControleur(
             DashboardService dashboardService,
-            HealthService healthService) {
+            HealthService healthService, ExtractionService extractionService) {
 
         this.dashboardService = dashboardService;
         this.healthService = healthService;
+		this.extractionService = extractionService;
     }
 
     @GetMapping("/")
-    public String dashboard(Model model) {
+    public String dashboard(Model model) throws Exception {
         DashboardStats stats = dashboardService.getDashboardStats();
         EtatSysteme etatSysteme = healthService.getEtat();
+        Map<String,Object> extraction =
+                extractionService.getExtractionEnCours();
+
+        if(extraction == null) {
+            extraction = new HashMap<>();
+            extraction.put("progression", 0);
+        }
+
+        model.addAttribute("extraction", extraction);
         model.addAttribute("stats", stats);
         model.addAttribute("etatSysteme", etatSysteme);
+        model.addAttribute("extraction", extraction);
 
         return "dashboard";
+    }
+    
+    @GetMapping("/api/extraction")
+    @ResponseBody
+    public Map<String, Object> extractionEnCours() throws Exception {
+        return extractionService.getExtractionEnCours();
     }
 //  Version 1.0
 //	private final HealthService healthService;

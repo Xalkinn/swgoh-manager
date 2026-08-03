@@ -6,6 +6,8 @@ public class DashboardStats {
     private int nombreOmicrons;
     private int joueursListe1;
     private int joueursListe2;
+    private int nombrePersonnages;
+    private int nombreRosters;
 
 	public int getNombreJoueurs() {
 		return nombreJoueurs;
@@ -37,5 +39,21 @@ public class DashboardStats {
 
 	public void setJoueursListe2(int joueursListe2) {
 		this.joueursListe2 = joueursListe2;
+	}
+
+	public int getNombrePersonnages() {
+		return nombrePersonnages;
+	}
+
+	public void setNombrePersonnages(int nombrePersonnages) {
+		this.nombrePersonnages = nombrePersonnages;
+	}
+
+	public int getNombreRosters() {
+		return nombreRosters;
+	}
+
+	public void setNombreRosters(int nombreRosters) {
+		this.nombreRosters = nombreRosters;
 	}
 }
