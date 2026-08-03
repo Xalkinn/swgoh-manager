@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import dao.DatabaseManager;
-import fr.xalkinn.swgohmanager.modele.ExtractionStatut;
 
 
 @Service

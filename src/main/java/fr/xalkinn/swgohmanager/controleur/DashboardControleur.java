@@ -8,6 +8,7 @@ import java.util.Map;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import fr.xalkinn.swgohmanager.modele.DashboardStats;
 import fr.xalkinn.swgohmanager.modele.EtatSysteme;
@@ -52,6 +53,12 @@ public class DashboardControleur {
         model.addAttribute("extraction", extraction);
 
         return "dashboard";
+    }
+    
+    @GetMapping("/api/extraction")
+    @ResponseBody
+    public Map<String, Object> extractionEnCours() throws Exception {
+        return extractionService.getExtractionEnCours();
     }
 //  Version 1.0
 //	private final HealthService healthService;

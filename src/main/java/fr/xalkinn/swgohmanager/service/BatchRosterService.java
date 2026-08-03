@@ -16,15 +16,18 @@ import dao.DatabaseManager;
 
 @Service
 public class BatchRosterService {
-	private ExtractionService extractionService;
-	
+	//private ExtractionService extractionServiceold;
+	private final ExtractionService extractionService;
+	private final BatchRosterStatusService rosterStatusService;
+
+
 	public BatchRosterService(
-	        ExtractionService extractionService) {
+	        ExtractionService extractionService,
+	        BatchRosterStatusService rosterStatusService) {
 
 	    this.extractionService = extractionService;
-
+	    this.rosterStatusService = rosterStatusService;
 	}
-	
     public void lancerBatch() {
         Thread thread = new Thread(() -> {
             System.out.println("🚀 Début mise à jour des rosters");
@@ -53,6 +56,15 @@ public class BatchRosterService {
                 playersId.add(rs.getString("player_id"));
             }
             int totalJoueurs = joueursId.size();
+            rosterStatusService.demarrer(
+                    "Batch Roster",
+                    totalJoueurs
+            );
+            System.out.println(
+            	    "📊 Batch Roster : "
+            	    + totalJoueurs
+            	    + " joueurs à traiter"
+            	);
             int traites = 0;
             for(int i = 0; i < totalJoueurs; i++) {
                 int joueurId = joueursId.get(i);
@@ -91,8 +103,22 @@ public class BatchRosterService {
                     extractionId,
                     progression
                 );
+                rosterStatusService.miseAJour(
+                        "Roster joueur "
+                        + traites
+                        + "/"
+                        + totalJoueurs,
+                        traites
+                );
             }
         }
         extractionService.finExtraction(extractionId);
+        rosterStatusService.terminer();
     }
+	public BatchRosterStatusService getRosterStatusService() {
+		return rosterStatusService;
+	}
+	public ExtractionService getExtractionService() {
+		return extractionService;
+	}
 }

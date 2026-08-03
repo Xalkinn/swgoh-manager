@@ -39,5 +39,43 @@
         // Actualisation toutes les 2 secondes
         setInterval(chargerStatutBatch,2000);
         chargerStatutBatch();
+		
+		
+		function chargerStatutRoster() {
+		    fetch('/api/roster/status')
+		    .then(response => response.json())
+		    .then(data => {
+		        let etat =
+		            document.getElementById("rosterEtat");
+		        let etape =
+		            document.getElementById("rosterEtape");
+		        let progress =
+		            document.getElementById("rosterProgress");
+		        if(!etat){
+		            return;
+		        }
+		        if(data.enCours){
+		            etat.innerHTML="En cours";
+		            etat.className="badge bg-warning";
+		        }
+		        else if(data.fin != null){
+		            etat.innerHTML="Terminé";
+		            etat.className="badge bg-success";
+		        }
+		        else {
+		            etat.innerHTML="Repos";
+		            etat.className="badge bg-secondary";
+		        }
+		        etape.innerHTML =
+		            data.etapeActuelle ?? "-";
+		        progress.style.width =
+		            data.pourcentage + "%";
+		        progress.innerHTML =
+		            data.pourcentage + "%";
+		    });
+		}
+
+		setInterval(chargerStatutRoster,2000);
+		chargerStatutRoster();
     </script>
 </footer>
