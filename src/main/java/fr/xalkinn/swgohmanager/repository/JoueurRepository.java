@@ -13,4 +13,7 @@ public interface JoueurRepository extends ListCrudRepository<Joueur, Integer> {
             FROM omicron
             """)
     LocalDateTime derniereMiseAJour();
+	
+	@Query("SELECT MAX(date_capture) FROM personnage")
+	LocalDateTime findDerniereMaj();
 }

@@ -2,6 +2,7 @@ package fr.xalkinn.swgohmanager.service;
 
 import org.springframework.stereotype.Service;
 
+import dao.OmicronDAO;
 import fr.xalkinn.swgohmanager.modele.DashboardStats;
 import fr.xalkinn.swgohmanager.repository.JoueurRepository;
 import fr.xalkinn.swgohmanager.repository.OmicronRepository;
@@ -27,6 +28,8 @@ public class DashboardService {
         stats.setNombreJoueurs((int) joueurRepository.count());
         stats.setNombreOmicrons((int) omicronRepository.count());
         stats.setNombrePersonnages((int) personnageRepository.count());
+        stats.setDerniereMajOmicrons(omicronRepository.findDerniereMaj());
+        stats.setDerniereMajRoster(joueurRepository.findDerniereMaj());
         return stats;
     }
 
