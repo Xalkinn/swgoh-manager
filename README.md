@@ -153,7 +153,7 @@ Exemples :
 - monter un personnage spécifique,
 - comparer la progression des membres.
 
-![Objectifs Guilde](src/main/resources/image/ObjectifGuilde.png)
+![Objectifs Guilde](src/main/resources/image/ObjectifsGuilde.png)
 
 ---
 
