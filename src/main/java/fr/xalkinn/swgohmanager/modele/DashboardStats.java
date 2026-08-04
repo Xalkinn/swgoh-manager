@@ -1,5 +1,7 @@
 package fr.xalkinn.swgohmanager.modele;
 
+import java.time.LocalDateTime;
+
 public class DashboardStats {
 
     private int nombreJoueurs;
@@ -8,6 +10,8 @@ public class DashboardStats {
     private int joueursListe2;
     private int nombrePersonnages;
     private int nombreRosters;
+    private LocalDateTime derniereMajOmicrons;
+    private LocalDateTime derniereMajRoster;
 
 	public int getNombreJoueurs() {
 		return nombreJoueurs;
@@ -55,5 +59,21 @@ public class DashboardStats {
 
 	public void setNombreRosters(int nombreRosters) {
 		this.nombreRosters = nombreRosters;
+	}
+
+	public LocalDateTime getDerniereMajOmicrons() {
+		return derniereMajOmicrons;
+	}
+
+	public void setDerniereMajOmicrons(LocalDateTime derniereMajOmicrons) {
+		this.derniereMajOmicrons = derniereMajOmicrons;
+	}
+
+	public LocalDateTime getDerniereMajRoster() {
+		return derniereMajRoster;
+	}
+
+	public void setDerniereMajRoster(LocalDateTime derniereMajRoster) {
+		this.derniereMajRoster = derniereMajRoster;
 	}
 }

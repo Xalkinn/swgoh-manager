@@ -14,18 +14,41 @@
 	        Tableau de bord
 	    </h1>
 	    <div class="row">
-	        <!-- Joueurs -->
-	        <div class="col-lg-3 col-md-6">
-	            <div class="card shadow">
-	                <div class="card-body">
-	                    <h5>
-	                        <i class="bi bi-people"></i>
-	                        Joueurs
-	                    </h5>
-						<h2 th:text="${stats.nombreJoueurs}"></h2>
-	                </div>
-	            </div>
-	        </div>
+			<div class="col-lg-3 col-md-6">
+			    <!-- Joueurs -->
+			    <div class="card shadow mb-3">
+			        <div class="card-body">
+			            <h5>
+			                <i class="bi bi-people"></i>
+			                Joueurs
+			            </h5>
+
+			            <h2 th:text="${stats.nombreJoueurs}"></h2>
+			        </div>
+			    </div>
+			    <!-- Santé -->
+			    <div class="card shadow">
+			        <div class="card-body">
+			            <h5 class="card-title">
+			                <i class="bi bi-heart-pulse"></i>
+			                Santé système
+			            </h5>
+			            <hr>
+			            <p class="mb-2">
+			                🗄️ BDD
+			                <span th:if="${etatSysteme.bddOk}" class="badge bg-success float-end">OK</span>
+			                <span th:unless="${etatSysteme.bddOk}" class="badge bg-danger float-end">KO</span>
+			            </p>
+
+			            <p class="mb-2">
+			                🌌 Comlink
+			                <span th:if="${etatSysteme.comlinkOk}" class="badge bg-success float-end">OK</span>
+			                <span th:unless="${etatSysteme.comlinkOk}" class="badge bg-danger float-end">KO</span>
+			            </p>
+			        </div>
+			    </div>
+
+			</div>
 	        <!-- Omicrons -->
 	        <div class="col-lg-3 col-md-6">
 	            <div class="card shadow">
@@ -55,30 +78,52 @@
 	        <!-- Dernière MAJ -->
 	        <div class="col-lg-3 col-md-6">
 	            <div class="card shadow">
-	                <div class="card-body">
-	                    <h5>
-	                        <i class="bi bi-clock"></i>
-	                        Dernière MAJ
-	                    </h5>
-						<h4 th:text="${etatSysteme.derniereSynchroFormatee}"></h4>
-	                </div>
+					<div class="card">
+						<h5>
+						📅 Actualisation des données
+						</h5>
+						<div class="alert alert-[[${actualisation.couleurOmicrons}]]">
+						Omicrons
+							<br>
+								<strong>
+									[[${actualisation.dateOmicrons}]]
+								</strong>
+							<br>
+								[[${actualisation.fraicheurOmicrons}]]
+						</div>
+						
+						<div class="alert alert-[[${actualisation.couleurRosters}]]">
+							Rosters
+							<br>
+								<strong>
+									[[${actualisation.dateRosters}]]
+								</strong>
+							<br>
+							[[${actualisation.fraicheurRosters}]]
+						</div>
+					</div>
 	            </div>
 	        </div>
 			<!-- Bouton -->
-			<div>
-				<a href="/actions/batch-omicron"class="btn btn-primary me-2">
-					🚀 Lancer Batch Omicron</a>
-				<a href="/actions/batch-roster" class="btn btn-warning me-2">
-					🧬 Mise à jour Rosters
-
-				</a>
-				<a href="/actions/export" class="btn btn-secondary me-2">
-				    📄 Export CSV
-				</a>
-				<a href="/actions/refresh" class="btn btn-success">
-				    🔄 Rafraîchir les données
-				</a>
+			<div class="card shadow mt-4">
+				<div class="card-body">
+					<div class="d-flex justify-content-center flex-wrap gap-3">
+						<a href="/actions/batch-omicron"class="btn btn-primary">
+							🚀 Lancer Batch Omicron</a>
+						<a href="/actions/batch-roster" class="btn btn-warning">
+							🧬 Mise à jour Rosters
+		
+						</a>
+						<a href="/actions/export" class="btn btn-secondary">
+						    📄 Export CSV
+						</a>
+						<a href="/actions/refresh" class="btn btn-success">
+						    🔄 Rafraîchir les données
+						</a>
+					</div>
+				</div>
 			</div>
+
 			<!-- Suivi batch -->
 			<div class="card shadow mt-4">
 			    <div class="card-body">
@@ -125,49 +170,6 @@
 			                 style="width:0%">
 			                0%
 			            </div>
-			        </div>
-			    </div>
-			</div>
-			<!-- Sante systeme -->
-			<div class="col-md-3">
-			    <div class="card shadow h-100">
-			        <div class="card-body">
-			            <h5 class="card-title">
-			                <i class="bi bi-heart-pulse"></i>
-			                Santé système
-			            </h5>
-			            <hr>
-			            <p class="mb-2">
-							🗄️ BDD
-							<span th:if="${etatSysteme.bddOk}" class="badge bg-success float-end">
-			                    OK
-			                </span>
-			                <span th:unless="${etatSysteme.bddOk}" class="badge bg-danger float-end">
-								KO
-			                </span>
-			            </p>
-			            <p class="mb-2">
-			                🌌 Comlink
-			                <span th:if="${etatSysteme.comlinkOk}" class="badge bg-success float-end">
-			                    OK
-			                </span>
-			                <span th:unless="${etatSysteme.comlinkOk}" class="badge bg-danger float-end">
-			                    KO
-			                </span>
-			            </p>
-						<p>
-				            <p class="mt-3 mb-0">
-				                🕒 Synchro
-				                <br>
-				                <small class="text-muted" th:text="${etatSysteme.derniereSynchroFormatee}"></small>
-				            </p>
-						</p>
-						<p>
-						📡 Dernière actualisation des omicrons :
-						<br>
-						<strong th:text="${etatSysteme.fraicheurDonnees}">
-						</strong>
-						</p>
 			        </div>
 			    </div>
 			</div>
