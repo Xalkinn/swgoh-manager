@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import fr.xalkinn.swgohmanager.modele.DashboardStats;
 import fr.xalkinn.swgohmanager.modele.EtatSysteme;
 import fr.xalkinn.swgohmanager.modele.ExtractionStatut;
+import fr.xalkinn.swgohmanager.repository.ExtractionRepository;
 import fr.xalkinn.swgohmanager.repository.JoueurRepository;
 import fr.xalkinn.swgohmanager.repository.OmicronRepository;
+import fr.xalkinn.swgohmanager.repository.PersonnageRepository;
 import fr.xalkinn.swgohmanager.service.ActualisationService;
 import fr.xalkinn.swgohmanager.service.DashboardService;
 import fr.xalkinn.swgohmanager.service.ExtractionService;
@@ -26,15 +28,21 @@ public class DashboardControleur {
     private final HealthService healthService;
 	private final ExtractionService extractionService;
 	private final ActualisationService actualisationService;
+	private final PersonnageRepository personnageRepository;
+	private final ExtractionRepository extractionRepository;
 
     public DashboardControleur(
             DashboardService dashboardService,
-            HealthService healthService, ExtractionService extractionService, ActualisationService actualisationService) {
+            HealthService healthService, ExtractionService extractionService,
+            ActualisationService actualisationService, PersonnageRepository personnageRepository,
+            ExtractionRepository extractionRepository) {
 
         this.dashboardService = dashboardService;
         this.healthService = healthService;
 		this.extractionService = extractionService;
 		this.actualisationService = actualisationService;
+		this.personnageRepository = personnageRepository;
+		this.extractionRepository = extractionRepository;
     }
 
     @GetMapping("/")
@@ -54,6 +62,9 @@ public class DashboardControleur {
         model.addAttribute("etatSysteme", etatSysteme);
         model.addAttribute("extraction", extraction);
         model.addAttribute("actualisation", actualisationService.getActualisation());
+        model.addAttribute("derniersUps", personnageRepository.trouverDerniersUpsGuilde());
+        model.addAttribute("dernieresExtractions",extractionRepository.trouverDernieresExtractions());
+        //model.addAttribute("derniersUps", null);
 
         return "dashboard";
     }

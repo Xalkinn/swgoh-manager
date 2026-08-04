@@ -1,9 +1,12 @@
 package fr.xalkinn.swgohmanager.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import dao.OmicronDAO;
 import fr.xalkinn.swgohmanager.modele.DashboardStats;
+import fr.xalkinn.swgohmanager.modele.EvolutionGuilde;
 import fr.xalkinn.swgohmanager.repository.JoueurRepository;
 import fr.xalkinn.swgohmanager.repository.OmicronRepository;
 import fr.xalkinn.swgohmanager.repository.PersonnageRepository;
@@ -31,6 +34,12 @@ public class DashboardService {
         stats.setDerniereMajOmicrons(omicronRepository.findDerniereMaj());
         stats.setDerniereMajRoster(joueurRepository.findDerniereMaj());
         return stats;
+    }
+    
+    public List<EvolutionGuilde> getDerniersUps() {
+
+        return personnageRepository.trouverDerniersUpsGuilde();
+
     }
 
 }

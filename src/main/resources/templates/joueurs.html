@@ -1,82 +1,376 @@
 <!DOCTYPE html>
 <html lang="fr"
-xmlns:th="http://www.thymeleaf.org">
-
+      xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{fragments/head :: head}">
 </head>
 
 
 <body>
-	<!-- MENU -->
-	<div th:replace="~{fragments/menu :: menu}"></div>
-	<div class="container mt-5">
-	<h1>
-	    Suivi joueur
-	</h1>
-	<form method="get" action="/joueurs">
-	    <select class="form-select" name="joueurId">
-	        <option 
-	            th:each="joueur : ${joueurs}"
-	            th:value="${joueur.id}"
-	            th:text="${joueur.nom}">
-	        </option>
-	    </select>
-	    <button class="btn btn-primary mt-3">
-	        Afficher
-	    </button>
-	</form>
-	<h2 class="mt-5">
-	    Dernières évolutions
-	</h2>
-	<table class="table table-striped mt-3">
-		<table class="table table-striped mt-4" th:if="${evolutions != null}">
-		    <tr>
-		        <th>Personnage</th>
-		        <th>Gear</th>
-		        <th>Relique</th>
-		        <th>Étoiles</th>
-		    </tr>
-		    <tr th:each="evo : ${evolutions}">
-		        <td th:text="${evo.nom}"></td>
-		        <td>
-		            <span th:if="${evo.ancienGear != evo.nouveauGear}">
-		                <span th:text="${evo.ancienGear}"></span>
-		                →
-		                <strong th:text="${evo.nouveauGear}"></strong>
-		            </span>
-		            <span th:if="${evo.ancienGear == evo.nouveauGear}">
-		                -
-		            </span>
-		        </td>
-		        <td>
-		            <span th:if="${evo.ancienneRelique != evo.nouvelleRelique}">
-		                <span th:text="${evo.ancienneRelique}"></span>
-		                →
-		                <strong th:text="${evo.nouvelleRelique}"></strong>
-		            </span>
-		            <span th:if="${evo.ancienneRelique == evo.nouvelleRelique}">
-		                -
-		            </span>
-		        </td>
-		        <td>
-		            <span th:if="${evo.anciennesEtoiles != evo.nouvellesEtoiles}">
-		                <span th:text="${evo.anciennesEtoiles}"></span>
-		                →
-		                <strong th:text="${evo.nouvellesEtoiles}"></strong>
-		            </span>
-		            <span th:if="${evo.anciennesEtoiles == evo.nouvellesEtoiles}">
-		                -
-		            </span>
-		        </td>
-		    </tr>
-		</table>
-	</div>
+
+<!-- MENU -->
+<div th:replace="~{fragments/menu :: menu}"></div>
+
+
+<div class="container mt-5">
+
+    <h1>
+        Suivi joueur
+    </h1>
+
+
+    <!-- ONGLET -->
+    <div class="card text-center mt-4">
+
+        <div class="card-header">
+
+            <ul class="nav nav-pills card-header-pills">
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       th:classappend="${onglet == 'avance' ? '' : 'active'}"
+                       href="/joueurs">
+                        Recherche joueur
+                    </a>
+                </li>
+
+
+                <li class="nav-item">
+                    <a class="nav-link"
+                       th:classappend="${onglet == 'avance' ? 'active' : ''}"
+                       href="/joueurs?onglet=avance">
+                        Recherche avancée
+                    </a>
+                </li>
+
+            </ul>
+
+        </div>
+
+
+        <div class="card-body">
+
+
+            <!-- ========================= -->
+            <!-- RECHERCHE CLASSIQUE -->
+            <!-- ========================= -->
+
+            <div th:if="${onglet != 'avance'}">
+
+
+                <h5 class="card-title">
+                    Recherche d'un joueur
+                </h5>
+
+
+                <form method="get" action="/joueurs">
+
+
+                    <input type="hidden"
+                           name="onglet"
+                           value="base">
+
+
+                    <select class="form-select"
+                            name="joueurId">
+
+
+                        <option value="">
+                            -- Choisir un joueur --
+                        </option>
+
+
+                        <option
+                            th:each="joueur : ${joueurs}"
+                            th:value="${joueur.id}"
+                            th:text="${joueur.nom}"
+                            th:selected="${joueur.id == joueurId}">
+                        </option>
+
+
+                    </select>
+
+
+                    <button class="btn btn-primary mt-3">
+                        Afficher
+                    </button>
+
+
+                </form>
+
+
+            </div>
 
 
 
-	<!-- FOOTER -->
-	<div th:replace="~{fragments/footer :: footer}"></div>
+
+            <!-- ========================= -->
+            <!-- RECHERCHE AVANCEE -->
+            <!-- ========================= -->
+
+            <div th:if="${onglet == 'avance'}">
+
+
+                <h5 class="card-title">
+                    Comparaison de roster
+                </h5>
+
+
+                <form method="get"
+                      action="/joueurs">
+
+
+                    <input type="hidden"
+                           name="onglet"
+                           value="avance">
+
+
+
+                    <!-- Joueur -->
+
+                    <label class="form-label mt-3">
+                        Joueur
+                    </label>
+
+
+                    <select class="form-select"
+                            name="joueurId">
+
+
+                        <option value="">
+                            -- Choisir un joueur --
+                        </option>
+
+
+                        <option
+                            th:each="joueur : ${joueurs}"
+                            th:value="${joueur.id}"
+                            th:text="${joueur.nom}"
+                            th:selected="${joueur.id == joueurId}">
+                        </option>
+
+
+                    </select>
+
+
+
+
+                    <!-- Ancienne extraction -->
+
+                    <label class="form-label mt-3">
+                        Ancienne extraction
+                    </label>
+
+
+                    <select class="form-select"
+                            name="ancienneExtraction">
+
+
+                        <option value="">
+                            -- Choisir --
+                        </option>
+
+
+                        <option
+                            th:each="e : ${extractions}"
+                            th:value="${e.id}"
+                            th:selected="${e.id == ancienneExtraction}"
+                            th:text="'Extraction #' + ${e.id} 
+                            + ' du ' 
+                            + ${#temporals.format(e.dateFin,'d MMMM yyyy à HH''h''mm')}">
+                        </option>
+
+
+                    </select>
+
+
+
+
+
+                    <!-- Nouvelle extraction -->
+
+                    <label class="form-label mt-3">
+                        Nouvelle extraction
+                    </label>
+
+
+                    <select class="form-select"
+                            name="nouvelleExtraction">
+
+
+                        <option value="">
+                            -- Choisir --
+                        </option>
+
+
+                        <option
+                            th:each="e : ${extractions}"
+                            th:value="${e.id}"
+                            th:selected="${e.id == nouvelleExtraction}"
+                            th:text="'Extraction #' + ${e.id} 
+                            + ' du ' 
+                            + ${#temporals.format(e.dateFin,'d MMMM yyyy à HH''h''mm')}">
+                        </option>
+
+
+                    </select>
+
+
+
+
+                    <button class="btn btn-success mt-4">
+                        Comparer
+                    </button>
+
+
+                </form>
+
+
+            </div>
+
+
+        </div>
+
+    </div>
+
+
+
+
+
+    <!-- RESULTATS -->
+
+    <div class="mt-5"
+         th:if="${evolutions != null}">
+
+
+        <h2>
+            Évolutions du roster
+        </h2>
+
+
+
+        <table class="table table-striped mt-3">
+
+
+            <tr>
+
+                <th>
+                    Personnage
+                </th>
+
+                <th>
+                    Gear
+                </th>
+
+                <th>
+                    Relique
+                </th>
+
+                <th>
+                    Étoiles
+                </th>
+
+            </tr>
+
+
+
+            <tr th:each="evo : ${evolutions}">
+
+
+                <td th:text="${evo.nom}">
+                </td>
+
+
+
+                <td>
+
+                    <span th:if="${evo.ancienGear != evo.nouveauGear}">
+
+                        <span th:text="${evo.ancienGear}">
+                        </span>
+
+                        →
+
+                        <strong th:text="${evo.nouveauGear}">
+                        </strong>
+
+                    </span>
+
+
+                    <span th:if="${evo.ancienGear == evo.nouveauGear}">
+                        -
+                    </span>
+
+                </td>
+
+
+
+
+                <td>
+
+                    <span th:if="${evo.ancienneRelique != evo.nouvelleRelique}">
+
+                        <span th:text="${evo.ancienneRelique}">
+                        </span>
+
+                        →
+
+                        <strong th:text="${evo.nouvelleRelique}">
+                        </strong>
+
+                    </span>
+
+
+                    <span th:if="${evo.ancienneRelique == evo.nouvelleRelique}">
+                        -
+                    </span>
+
+
+                </td>
+
+
+
+
+                <td>
+
+                    <span th:if="${evo.anciennesEtoiles != evo.nouvellesEtoiles}">
+
+                        <span th:text="${evo.anciennesEtoiles}">
+                        </span>
+
+                        →
+
+                        <strong th:text="${evo.nouvellesEtoiles}">
+                        </strong>
+
+                    </span>
+
+
+                    <span th:if="${evo.anciennesEtoiles == evo.nouvellesEtoiles}">
+                        -
+                    </span>
+
+                </td>
+
+
+            </tr>
+
+
+        </table>
+
+
+    </div>
+
+
+</div>
+
+
+
+
+<!-- FOOTER -->
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+
 </body>
 
 </html>
