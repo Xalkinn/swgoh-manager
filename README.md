@@ -3,7 +3,7 @@
 **SWGOH Manager** est une application web de suivi et de pilotage de guilde pour *Star Wars: Galaxy of Heroes*.  
 Elle centralise les données des joueurs d'une guilde (roster, omicrons, progression) extraites via l'API [swgoh-comlink](https://github.com/swgoh-utils/swgoh-comlink), les stocke en base de données et les met en forme dans un tableau de bord web.
 
-Le projet s'appuie sur [`swgoh-comlink-java`](../swgoh-comlink-java), un client Java maison pour l'API swgoh-comlink, utilisé ici comme dépendance pour l'extraction des données.
+Le projet s'appuie sur [`comlink`](https://github.com/Xalkinn/comlink), un client Java maison pour l'API swgoh-comlink, utilisé ici comme dépendance pour l'extraction des données.
 
 ---
 
@@ -166,7 +166,7 @@ Exemples :
 | Templates | Thymeleaf |
 | Base de données | MySQL |
 | Build | Maven |
-| Données SWGOH | [swgoh-comlink-java](../comlink) |
+| Données SWGOH | [comlink](https://github.com/Xalkinn/comlink) |
 
 ---
 
@@ -197,7 +197,7 @@ spring.datasource.username=root
 spring.datasource.password=root
 ```
 
-> Adaptez l'URL, le port et les identifiants à votre environnement.
+> Adaptez l'URL, le port et les identifiants à votre environnement.  Le projet étant non public, le user et mdp sont... simple
 
 ---
 
@@ -269,4 +269,4 @@ src/main/resources/
 
 # 🔗 Projet lié
 
-- [swgoh-comlink-java](../swgoh-comlink-java) — client Java pour l'API swgoh-comlink (guildes, joueurs, reliques, omicrons), utilisé comme dépendance de ce projet.
+- [comlink](https://github.com/Xalkinn/comlink) — client Java pour l'API swgoh-comlink (guildes, joueurs, reliques, omicrons), utilisé comme dépendance de ce projet.
