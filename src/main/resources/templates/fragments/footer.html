@@ -77,5 +77,47 @@
 
 		setInterval(chargerStatutRoster,2000);
 		chargerStatutRoster();
+		
+		document.getElementById("personnageSelect")
+		.addEventListener("change", function() {
+
+		    let option = this.options[this.selectedIndex];
+
+		    document.getElementById("baseId").value = this.value;
+		    document.getElementById("nom").value = option.dataset.nom;
+
+		});
+		
+		function mettreNomPersonnage(select) {
+		    let nom = select.options[select.selectedIndex].text;
+		    document.getElementById("nom").value = nom;
+		}
+		
+		function ouvrirComparatif(button){
+		    const id = button.dataset.id;
+		    fetch("/objectifs/" + id + "/comparatif")
+		        .then(response => response.text())
+		        .then(html => {
+		            document.getElementById("contenuComparatif").innerHTML = html;
+		            const modal = new bootstrap.Modal(
+		                document.getElementById("comparatifModal")
+		            );
+		            modal.show();
+		        });
+		}
+		
+		function chargerComparatif(nom) {
+
+		    fetch('/objectifs/' + encodeURIComponent(nom) + '/comparatif')
+		        .then(response => response.text())
+		        .then(html => {
+		            document.getElementById("comparatifContent").innerHTML = html;
+
+		            new bootstrap.Modal(
+		                document.getElementById("comparatifModal")
+		            ).show();
+		        });
+		}
+
     </script>
 </footer>

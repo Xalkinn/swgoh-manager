@@ -1,0 +1,22 @@
+<table class="table table-striped">
+
+    <thead class="table-dark">
+        <tr>
+            <th>Joueur</th>
+            <th>Relique actuelle</th>
+            <th>Objectif</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr th:each="ligne : ${comparatif}">
+            <td th:text="${ligne.joueur}">
+            </td>
+            <td>
+                R<span th:text="${ligne.relicActuelle}"></span>
+            </td>
+            <td>
+                R<span th:text="${ligne.relicCible}"></span>
+            </td>
+        </tr>
+    </tbody>
+</table>
