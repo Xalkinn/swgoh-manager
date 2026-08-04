@@ -1,13 +1,38 @@
+<head>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<div class="comparatif-actions">
+    <input 
+        type="text" 
+        id="rechercheJoueur" 
+        placeholder="🔎 Rechercher un joueur..."
+    >
+	<button 
+	class="btn-action btn-reset"
+	onclick="resetComparatif()">
+	🔄
+	</button>
+</div>
+<div id="compteurJoueur" class="compteur-joueur"></div>
 <table class="table table-striped">
 
     <thead class="table-dark">
         <tr>
-            <th>Joueur</th>
-            <th>Relique actuelle</th>
-            <th>Objectif</th>
+			<th onclick="trierTableau(0)">
+			    Joueur ↕
+			</th>
+			<th onclick="trierTableau(1)">
+			    Relique actuelle ↕
+			</th>
+			<th onclick="trierTableau(2)">
+			    Relique cible ↕
+			</th>
+			<th onclick="trierTableau(3)">
+			    Progression ↕
+			</th>
         </tr>
     </thead>
-    <tbody>
+    <tbody id="tableComparatif">
         <tr th:each="ligne : ${comparatif}">
             <td th:text="${ligne.joueur}">
             </td>
@@ -17,6 +42,36 @@
             <td>
                 R<span th:text="${ligne.relicCible}"></span>
             </td>
+			<td>
+
+			    <div class="progress" style="height: 25px;">
+
+			        <div class="progress-bar"
+			             role="progressbar"
+			             th:style="'width:' + ${ligne.progression} + '%'"
+			             th:classappend="
+			                ${ligne.relicActuelle >= ligne.relicCible} ? 
+			                'bg-success' :
+			                (${ligne.relicActuelle >= ligne.relicCible - 1} ?
+			                'bg-warning' :
+			                'bg-danger')
+			             "
+			             th:text="${ligne.progression} + '%'">
+			        </div>
+			    </div>
+			</td>
+			<!-- Verificaction -->
+<!--			<td>-->
+<!--			    Actuelle :-->
+<!--			    <span th:text="${ligne.relicActuelle}"></span>-->
+
+<!--			    Cible :-->
+<!--			    <span th:text="${ligne.relicCible}"></span>-->
+
+<!--			    Progression :-->
+<!--			    <span th:text="${ligne.progression}"></span>-->
+<!--			</td>-->
         </tr>
     </tbody>
 </table>
+<div th:replace="~{fragments/footer :: footer}"></div>

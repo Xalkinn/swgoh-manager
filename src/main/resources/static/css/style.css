@@ -1,6 +1,6 @@
 body {
     font-family: Arial, sans-serif;
-    margin: 40px;
+    /*margin: 40px;*/
 }
 
 h1 {
@@ -19,4 +19,46 @@ button {
 
 .card h5 {
     font-weight: 600;
+}
+
+/*Tableau comparatif*/
+body.modal-open {
+    padding-right: 0 !important;
+}
+.comparatif-actions {
+    display:flex;
+    gap:10px;
+    margin-bottom:15px;
+
+}
+#rechercheJoueur {
+    padding:8px;
+    width:250px;
+
+}
+.comparatif-actions button {
+    cursor:pointer;
+    padding:8px 15px;
+}
+.compteur-joueur {
+    margin-bottom:10px;
+    font-size:14px;
+    color:#666;
+}
+th {
+    cursor:pointer;
+}
+.btn-reset {
+    background:#6c757d;
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:8px 12px;
+    cursor:pointer;
+}
+.btn-reset:hover {
+    opacity:0.8;
+}
+body.modal-open {
+    padding-right: 0 !important;
 }
