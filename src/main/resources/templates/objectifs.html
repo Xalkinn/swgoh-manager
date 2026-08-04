@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head th:replace="~{fragments/head :: head}">
+</head>
+
+<body>
+
+<!-- MENU -->
+<div th:replace="~{fragments/menu :: menu}"></div>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0">
+                        Ajouter un objectif
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/objectifs/ajouter}"
+                          th:object="${nouvelObjectif}"
+                          method="post">
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Personnage
+                            </label>
+							<select class="form-select"
+							        th:field="*{nom}">
+							    <option value="">
+							        -- Choisir un personnage --
+							    </option>
+
+							    <option 
+							        th:each="perso : ${personnages}"
+							        th:value="${perso.nom}"
+							        th:text="${perso.nom}">
+							    </option>
+							</select>
+							<input type="hidden" id="baseId" name="baseId">
+							<input type="hidden" id="nom" name="nom">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Relique cible
+                            </label>
+                            <select class="form-select"
+                                    th:field="*{relicCible}">
+                                <option th:each="i : ${#numbers.sequence(1,9)}"
+                                        th:value="${i}"
+                                        th:text="'R' + ${i}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+
+                            <label class="form-label">
+                                Commentaire
+                            </label>
+
+                            <input class="form-control"
+                                   th:field="*{commentaire}">
+
+                        </div>
+                        <button class="btn btn-success w-100">
+                            💾 Ajouter
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- TABLEAU OBJECTIFS -->
+    <div class="mt-5">
+        <h3>
+            Objectifs actuels
+        </h3>
+        <table class="table table-striped table-hover shadow">
+            <thead class="table-dark">
+                <tr>
+                    <th>
+                        Personnage
+                    </th>
+                    <th>
+                        Relique cible
+                    </th>
+                    <th>
+                        Commentaire
+                    </th>
+                    <th>
+                        Action
+                    </th>
+                </tr>
+            </thead>
+			<tbody>
+				<tr th:each="objectif : ${objectifs}">
+				    <td th:text="${objectif.nom}">
+				    </td>
+
+				    <td>
+				        R<span th:text="${objectif.relicCible}"></span>
+				    </td>
+
+				    <td th:text="${objectif.commentaire}">
+				    </td>
+
+				    <td>
+						<button class="btn btn-primary btn-sm"
+						        th:attr="data-nom=${objectif.nom}"
+						        onclick="chargerComparatif(this.dataset.nom)">
+						    👁️
+						</button>
+				        <form th:action="@{/objectifs/supprimer/{id}(id=${objectif.id})}" method="post" style="display:inline;">
+				            <button class="btn btn-danger btn-sm">
+				                🗑️
+				            </button>
+				        </form>
+				    </td>
+					
+				</tr>
+			</tbody>
+        </table>
+    </div>
+</div>
+<!-- Footer -->
+<div th:replace="~{fragments/footer :: footer}">
+</div>
+<!-- Pop in Bootstrap -->
+<div class="modal fade"
+     id="comparatifModal"
+     tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    Comparatif objectif
+                </h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                </button>
+            </div>
+            <div class="modal-body"
+                 id="comparatifContent">
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
