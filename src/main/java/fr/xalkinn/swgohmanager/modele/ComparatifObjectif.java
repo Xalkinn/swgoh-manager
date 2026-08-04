@@ -31,4 +31,12 @@ public class ComparatifObjectif {
     public Integer getRelicCible() {
         return relic_cible;
     }
+    public int getProgression() {
+
+        if (relic_cible == null || relic_cible == 0) {
+            return 0;
+        }
+
+        return (relic_actuelle * 100) / relic_cible;
+    }
 }
