@@ -13,7 +13,6 @@ public class Joueur {
     private String allyCode;
     private String nom;
     private String guilde;
-    private LocalDateTime dateMaj;
 
     public Integer getId() {
         return id;
@@ -35,7 +34,4 @@ public class Joueur {
         return guilde;
     }
 
-    public LocalDateTime getDateMaj() {
-        return dateMaj;
-    }
 }

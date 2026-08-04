@@ -8,6 +8,7 @@ import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import fr.xalkinn.swgohmanager.modele.ComparatifObjectif;
+import fr.xalkinn.swgohmanager.modele.EvolutionPersonnage;
 import fr.xalkinn.swgohmanager.modele.Personnage;
 
 public interface PersonnageRepository extends CrudRepository<Personnage, Integer> {
@@ -66,5 +67,59 @@ public interface PersonnageRepository extends CrudRepository<Personnage, Integer
     	List<ComparatifObjectif> getComparatifObjectif(
     	        @Param("nom") String nom
     	);
+	    @Query("""
+	    	    SELECT MAX(extraction_id)
+	    	    FROM personnage
+	    	    WHERE joueur_id = :joueurId
+	    	""")
+	    Integer trouverDerniereExtraction(Integer joueurId);
+	    
+	    @Query("""
+	    	    SELECT MAX(extraction_id)
+	    	    FROM personnage
+	    	    WHERE joueur_id = :joueurId
+	    	    AND extraction_id < :derniereExtraction
+	    	""")
+    	Integer trouverAncienneExtraction(
+	        Integer joueurId,
+	        Integer derniereExtraction
+    	);
+	    
+	    @Query("""
+	    		SELECT
+
+	    		    ancien.nom AS nom,
+
+	    		    ancien.gear AS ancien_gear,
+	    		    nouveau.gear AS nouveau_gear,
+
+	    		    ancien.relic AS ancienne_relique,
+	    		    nouveau.relic AS nouvelle_relique,
+
+	    		    ancien.etoiles AS anciennes_etoiles,
+	    		    nouveau.etoiles AS nouvelles_etoiles
+
+	    		FROM personnage ancien
+	    		JOIN personnage nouveau
+
+	    		ON ancien.joueur_id = nouveau.joueur_id
+	    		AND ancien.base_id = nouveau.base_id
+
+	    		WHERE ancien.joueur_id = :joueurId
+	    		AND ancien.extraction_id = :ancienneExtraction
+	    		AND nouveau.extraction_id = :nouvelleExtraction
+	    		AND (
+	    		    ancien.gear <> nouveau.gear
+	    		    OR ancien.relic <> nouveau.relic
+	    		    OR ancien.etoiles <> nouveau.etoiles
+	    		)
+
+	    		ORDER BY nouveau.nom
+	    		""")
+	    		List<EvolutionPersonnage> trouverEvolution(
+	    		        Integer joueurId,
+	    		        Integer ancienneExtraction,
+	    		        Integer nouvelleExtraction
+	    		);
 
 }

@@ -1,0 +1,38 @@
+.table-evolution {
+    border-collapse: collapse;
+    width: 80%;
+    margin-top:20px;
+}
+
+
+.table-evolution th,
+.table-evolution td {
+
+    border:1px solid #ccc;
+    padding:10px;
+    text-align:center;
+
+}
+
+
+.table-evolution th {
+
+    background:#222;
+    color:white;
+
+}
+
+
+.table-evolution td:first-child {
+
+    text-align:left;
+    font-weight:bold;
+
+}
+
+
+.table-evolution b {
+
+    color:green;
+
+}

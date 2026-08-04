@@ -1,20 +1,82 @@
 <!DOCTYPE html>
-<html lang="fr">
-	<head th:replace="~{fragments/head :: head}">
-	</head>
+<html lang="fr"
+xmlns:th="http://www.thymeleaf.org">
+
+
+<head th:replace="~{fragments/head :: head}">
+</head>
+
+
 <body>
 	<!-- MENU -->
-		<div th:replace="~{fragments/menu :: menu}"></div>
-		<h1>
-		Liste des joueurs
-		</h1>
-		<p>
-		Page en construction...
-		</p>
-		<a href="/">
-		Retour accueil
-		</a>
-		<!-- Footer -->
-		<div th:replace="~{fragments/footer :: footer}"></div>
+	<div th:replace="~{fragments/menu :: menu}"></div>
+	<div class="container mt-5">
+	<h1>
+	    Suivi joueur
+	</h1>
+	<form method="get" action="/joueurs">
+	    <select class="form-select" name="joueurId">
+	        <option 
+	            th:each="joueur : ${joueurs}"
+	            th:value="${joueur.id}"
+	            th:text="${joueur.nom}">
+	        </option>
+	    </select>
+	    <button class="btn btn-primary mt-3">
+	        Afficher
+	    </button>
+	</form>
+	<h2 class="mt-5">
+	    Dernières évolutions
+	</h2>
+	<table class="table table-striped mt-3">
+		<table class="table table-striped mt-4" th:if="${evolutions != null}">
+		    <tr>
+		        <th>Personnage</th>
+		        <th>Gear</th>
+		        <th>Relique</th>
+		        <th>Étoiles</th>
+		    </tr>
+		    <tr th:each="evo : ${evolutions}">
+		        <td th:text="${evo.nom}"></td>
+		        <td>
+		            <span th:if="${evo.ancienGear != evo.nouveauGear}">
+		                <span th:text="${evo.ancienGear}"></span>
+		                →
+		                <strong th:text="${evo.nouveauGear}"></strong>
+		            </span>
+		            <span th:if="${evo.ancienGear == evo.nouveauGear}">
+		                -
+		            </span>
+		        </td>
+		        <td>
+		            <span th:if="${evo.ancienneRelique != evo.nouvelleRelique}">
+		                <span th:text="${evo.ancienneRelique}"></span>
+		                →
+		                <strong th:text="${evo.nouvelleRelique}"></strong>
+		            </span>
+		            <span th:if="${evo.ancienneRelique == evo.nouvelleRelique}">
+		                -
+		            </span>
+		        </td>
+		        <td>
+		            <span th:if="${evo.anciennesEtoiles != evo.nouvellesEtoiles}">
+		                <span th:text="${evo.anciennesEtoiles}"></span>
+		                →
+		                <strong th:text="${evo.nouvellesEtoiles}"></strong>
+		            </span>
+		            <span th:if="${evo.anciennesEtoiles == evo.nouvellesEtoiles}">
+		                -
+		            </span>
+		        </td>
+		    </tr>
+		</table>
+	</div>
+
+
+
+	<!-- FOOTER -->
+	<div th:replace="~{fragments/footer :: footer}"></div>
 </body>
+
 </html>
