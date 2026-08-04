@@ -166,7 +166,7 @@ Exemples :
 | Templates | Thymeleaf |
 | Base de données | MySQL |
 | Build | Maven |
-| Données SWGOH | [swgoh-comlink-java](../swgoh-comlink-java) |
+| Données SWGOH | [swgoh-comlink-java](../comlink) |
 
 ---
 
