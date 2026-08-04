@@ -1,7 +1,6 @@
 package fr.xalkinn.swgohmanager.controleur;
 
 
-import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,6 +14,7 @@ import fr.xalkinn.swgohmanager.modele.EtatSysteme;
 import fr.xalkinn.swgohmanager.modele.ExtractionStatut;
 import fr.xalkinn.swgohmanager.repository.JoueurRepository;
 import fr.xalkinn.swgohmanager.repository.OmicronRepository;
+import fr.xalkinn.swgohmanager.service.ActualisationService;
 import fr.xalkinn.swgohmanager.service.DashboardService;
 import fr.xalkinn.swgohmanager.service.ExtractionService;
 import fr.xalkinn.swgohmanager.service.HealthService;
@@ -25,14 +25,16 @@ public class DashboardControleur {
     private final DashboardService dashboardService;
     private final HealthService healthService;
 	private final ExtractionService extractionService;
+	private final ActualisationService actualisationService;
 
     public DashboardControleur(
             DashboardService dashboardService,
-            HealthService healthService, ExtractionService extractionService) {
+            HealthService healthService, ExtractionService extractionService, ActualisationService actualisationService) {
 
         this.dashboardService = dashboardService;
         this.healthService = healthService;
 		this.extractionService = extractionService;
+		this.actualisationService = actualisationService;
     }
 
     @GetMapping("/")
@@ -51,6 +53,7 @@ public class DashboardControleur {
         model.addAttribute("stats", stats);
         model.addAttribute("etatSysteme", etatSysteme);
         model.addAttribute("extraction", extraction);
+        model.addAttribute("actualisation", actualisationService.getActualisation());
 
         return "dashboard";
     }
