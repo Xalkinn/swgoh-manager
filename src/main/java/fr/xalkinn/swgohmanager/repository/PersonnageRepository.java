@@ -104,7 +104,7 @@ public interface PersonnageRepository extends CrudRepository<Personnage, Integer
 	    		JOIN personnage nouveau
 
 	    		ON ancien.joueur_id = nouveau.joueur_id
-	    		AND ancien.base_id = nouveau.base_id
+	    		AND ancien.nom = nouveau.nom
 
 	    		WHERE ancien.joueur_id = :joueurId
 	    		AND ancien.extraction_id = :ancienneExtraction
@@ -150,14 +150,13 @@ public interface PersonnageRepository extends CrudRepository<Personnage, Integer
 	    		    )
 	    		) nouveau
 	    		ON ancien.joueur_id = nouveau.joueur_id
-	    		AND ancien.base_id = nouveau.base_id
+	    		AND ancien.nom = nouveau.nom
 	    		JOIN joueur j
 	    		ON j.id = nouveau.joueur_id
 	    		WHERE 
 	    		ancien.gear <> nouveau.gear
 	    		OR ancien.relic <> nouveau.relic
 	    		ORDER BY j.nom, nouveau.nom
-	    		LIMIT 20
 	    		""")
 	    		List<EvolutionGuilde> trouverDerniersUpsGuilde();
 	    
@@ -180,7 +179,7 @@ public interface PersonnageRepository extends CrudRepository<Personnage, Integer
 	    		JOIN personnage nouveau
 
 	    		ON ancien.joueur_id = nouveau.joueur_id
-	    		AND ancien.base_id = nouveau.base_id
+	    		AND ancien.nom = nouveau.nom
 
 	    		WHERE ancien.joueur_id = :joueurId
 

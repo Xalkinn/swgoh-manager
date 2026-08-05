@@ -51,7 +51,7 @@ public class DashboardControleur {
         EtatSysteme etatSysteme = healthService.getEtat();
         Map<String,Object> extraction =
                 extractionService.getExtractionEnCours();
-
+        
         if(extraction == null) {
             extraction = new HashMap<>();
             extraction.put("progression", 0);

@@ -3,7 +3,7 @@
 **SWGOH Manager** est une application web de suivi et de pilotage de guilde pour *Star Wars: Galaxy of Heroes*.  
 Elle centralise les données des joueurs d'une guilde (roster, omicrons, progression) extraites via l'API [swgoh-comlink](https://github.com/swgoh-utils/swgoh-comlink), les stocke en base de données et les met en forme dans un tableau de bord web.
 
-Le projet s'appuie sur [`comlink`](https://github.com/Xalkinn/comlink), un client Java maison pour l'API swgoh-comlink, utilisé ici comme dépendance pour l'extraction des données.
+Le projet s'appuie sur [`comlink`](https://github.com/Xalkinn/comlink/blob/main/target/comlink-0.0.1-SNAPSHOT.jar), un client Java maison pour l'API swgoh-comlink, utilisé ici comme dépendance pour l'extraction des données.
 
 ---
 
@@ -13,7 +13,7 @@ Le projet s'appuie sur [`comlink`](https://github.com/Xalkinn/comlink), un clien
 - **👤 Suivi des joueurs** — historique de chaque joueur, recherche simple et comparaison avancée de roster entre deux extractions.
 - **🎯 Objectifs personnages** — définition d'objectifs par personnage avec suivi de progression des membres.
 - **🔮 Omicrons** — suivi des compétences omicron débloquées par les joueurs de la guilde.
-- **⚙️ Batchs asynchrones** — lancement de traitements en arrière-plan pour analyser les omicrons ou mettre à jour les rosters.
+- **⚙️ Batchs asynchrones** — lancement de traitements en arrière-plan pour analyser les omicrons prédéfinis dans comlink ou mettre à jour les rosters.
 - **📄 Export CSV** — export des données *(en cours d'implémentation)*.
 
 ---
@@ -166,7 +166,7 @@ Exemples :
 | Templates | Thymeleaf |
 | Base de données | MySQL |
 | Build | Maven |
-| Données SWGOH | [comlink](https://github.com/Xalkinn/comlink) |
+| Données SWGOH | [comlink](https://github.com/Xalkinn/comlink/blob/main/target/comlink-0.0.1-SNAPSHOT.jar) |
 
 ---
 
