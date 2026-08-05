@@ -15,7 +15,7 @@ Cette Spécification Fonctionnelle Détaillée (SFD) décrit les fonctionnalité
 
 ### 1.2 Périmètre
 
-SWGOH Manager centralise les données d'une guilde (roster des joueurs, omicrons, objectifs de progression) extraites via l'API swgoh-comlink (au travers du client [swgoh-comlink-java](../swgoh-comlink-java)), les stocke en base MySQL, et les restitue via une interface web (dashboard, suivi joueurs, objectifs, omicrons).
+SWGOH Manager centralise les données d'une guilde (roster des joueurs, omicrons, objectifs de progression) extraites via l'API swgoh-comlink (au travers du client [swgoh-comlink-java](https://github.com/Xalkinn/comlink)), les stocke en base MySQL, et les restitue via une interface web (dashboard, suivi joueurs, objectifs, omicrons).
 
 ### 1.3 Table des modules
 
@@ -41,7 +41,7 @@ SWGOH Manager centralise les données d'une guilde (roster des joueurs, omicrons
 | Vues             | Thymeleaf                             |
 | Base de données  | MySQL                                 |
 | Build            | Maven                                 |
-| Source de données| API swgoh-comlink, via le client [swgoh-comlink-java](../swgoh-comlink-java) |
+| Source de données| API swgoh-comlink, via le client [swgoh-comlink-java](https://github.com/Xalkinn/comlink) |
 
 ---
 
@@ -55,7 +55,7 @@ Page d'accueil de l'application (`/`). Elle donne une vue synthétique de l'éta
 
 | ID | Exigence |
 |----|----------|
-| EX_DASH_01 | Le système doit afficher, sur la page d'accueil, les statistiques globales de la guilde (nombre de joueurs suivis, nombre d'omicrons, etc.). |
+| EX_DASH_01 | Asur la page d'accueil, les statistiques globales de la guilde (nombre de joueurs suivis, nombre d'omicrons, etc.). |
 | EX_DASH_02 | Le système doit afficher l'état du système (santé de l'application). |
 | EX_DASH_03 | Le système doit afficher la progression de l'extraction de données en cours, lorsqu'une extraction est active. |
 | EX_DASH_04 | Le système doit afficher les informations relatives à la dernière actualisation des données. |
