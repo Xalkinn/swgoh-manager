@@ -4,7 +4,8 @@ public class EvolutionPersonnage {
 
 
     private String nom;
-
+    private String joueur;
+    
     private Integer ancienGear;
     private Integer nouveauGear;
 
@@ -80,5 +81,15 @@ public class EvolutionPersonnage {
     public void setNouvellesEtoiles(Integer nouvellesEtoiles) {
         this.nouvellesEtoiles = nouvellesEtoiles;
     }
+
+
+	public String getJoueur() {
+		return joueur;
+	}
+
+
+	public void setJoueur(String joueur) {
+		this.joueur = joueur;
+	}
 
 }

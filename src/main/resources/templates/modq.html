@@ -79,9 +79,7 @@
 
 				</div>
                 <table id="tableauModQ" class="styled-table">
-
                     <thead>
-
                     <tr>
                         <th onclick="trierTableauModQ(0)">Rang ↕</th>
                         <th onclick="trierTableauModQ(1)">Joueur ↕</th>
@@ -90,31 +88,20 @@
                         <th onclick="trierTableauModQ(4)">Mods 25+ ↕</th>
                         <th onclick="trierTableauModQ(5)">ModQ ↕</th>
                     </tr>
-
                     </thead>
-
                     <tbody>
-
                     <tr th:each="m, stat : ${modq}">
-
                         <td th:text="${stat.index + 1}"></td>
-
                         <td th:text="${m.joueur}"></td>
-
                         <td th:text="${m.nb15_19}"></td>
-
                         <td th:text="${m.nb20_24}"></td>
-
                         <td th:text="${m.nb25}"></td>
-
-                        <td th:text="${#numbers.formatDecimal(m.modQ,1,2)}"></td>
-
+						<td>
+						    <strong th:text="${#numbers.formatDecimal(m.modQ,1,2)}"></strong>
+						</td>
                     </tr>
-
                     </tbody>
-
                 </table>
-
             </div>
 
 	            <!-- ========================= -->
@@ -138,48 +125,6 @@
 	    </div>
 	
 	</div>
-
-<div class="container">
-
-    <h1 class="page-title">Classement ModQ</h1>
-
-    <table id="tableauModQ" class="styled-table">
-
-        <thead>
-        <tr>
-			<th onclick="trierTableauModQ(0)">Rang ↕</th>
-		    <th onclick="trierTableauModQ(1)">Joueur ↕</th>
-		    <th onclick="trierTableauModQ(2)">Mods 15-19 ↕</th>
-		    <th onclick="trierTableauModQ(3)">Mods 20-24 ↕</th>
-		    <th onclick="trierTableauModQ(4)">Mods 25+ ↕</th>
-		    <th onclick="trierTableauModQ(5)">ModQ ↕</th>
-        </tr>
-        </thead>
-
-
-        <tbody>
-
-        <tr th:each="m, stat : ${modq}">
-
-            <td th:text="${stat.index + 1}"></td>
-
-            <td th:text="${m.joueur}"></td>
-
-            <td class="number" th:text="${m.nb15_19}"></td>
-
-            <td class="number" th:text="${m.nb20_24}"></td>
-
-            <td class="number" th:text="${m.nb25}"></td>
-
-            <td class="modq" th:text="${#numbers.formatDecimal(m.modQ,1,2)}"></td>
-
-        </tr>
-
-        </tbody>
-
-    </table>
-
-</div>
 
 
 <!-- Footer -->

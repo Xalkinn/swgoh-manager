@@ -16,11 +16,11 @@ public class ModsControleur {
 
     private final ModsDAOImpl modsDAO = new ModsDAOImpl();
 
-    @GetMapping("/mods")
-    public String afficherMods(Model model) {
-        List<Mods> mods = modsDAO.findAll();
-        model.addAttribute("mods",mods);
-        System.out.println("Nombre de mods : " + mods.size());
-        return "mods";
-    }
+//    @GetMapping("/mods")
+//    public String afficherMods(Model model) {
+//        List<Mods> mods = modsDAO.findAll();
+//        model.addAttribute("mods",mods);
+//        System.out.println("Nombre de mods : " + mods.size());
+//        return "mods";
+//    }
 }

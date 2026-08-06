@@ -124,46 +124,29 @@
                     <label class="form-label mt-3">
                         Joueur
                     </label>
-
-
                     <select class="form-select"
                             name="joueurId">
-
-
                         <option value="">
                             -- Choisir un joueur --
                         </option>
-
-
                         <option
                             th:each="joueur : ${joueurs}"
                             th:value="${joueur.id}"
                             th:text="${joueur.nom}"
                             th:selected="${joueur.id == joueurId}">
                         </option>
-
-
                     </select>
-
-
-
 
                     <!-- Ancienne extraction -->
 
                     <label class="form-label mt-3">
                         Ancienne extraction
                     </label>
-
-
                     <select class="form-select"
                             name="ancienneExtraction">
-
-
                         <option value="">
                             -- Choisir --
                         </option>
-
-
                         <option
                             th:each="e : ${extractions}"
                             th:value="${e.id}"
@@ -172,30 +155,16 @@
                             + ' du ' 
                             + ${#temporals.format(e.dateFin,'d MMMM yyyy à HH''h''mm')}">
                         </option>
-
-
                     </select>
-
-
-
-
-
                     <!-- Nouvelle extraction -->
-
                     <label class="form-label mt-3">
                         Nouvelle extraction
                     </label>
-
-
                     <select class="form-select"
                             name="nouvelleExtraction">
-
-
                         <option value="">
                             -- Choisir --
                         </option>
-
-
                         <option
                             th:each="e : ${extractions}"
                             th:value="${e.id}"
@@ -204,26 +173,13 @@
                             + ' du ' 
                             + ${#temporals.format(e.dateFin,'d MMMM yyyy à HH''h''mm')}">
                         </option>
-
-
                     </select>
-
-
-
-
                     <button class="btn btn-success mt-4">
                         Comparer
                     </button>
-
-
                 </form>
-
-
             </div>
-
-
         </div>
-
     </div>
 
 
@@ -234,127 +190,78 @@
 
     <div class="mt-5"
          th:if="${evolutions != null}">
-
-
         <h2>
             Évolutions du roster
         </h2>
-
-
-
-        <table class="table table-striped mt-3">
-
-
-            <tr>
-
-                <th>
-                    Personnage
-                </th>
-
-                <th>
-                    Gear
-                </th>
-
-                <th>
-                    Relique
-                </th>
-
-                <th>
-                    Étoiles
-                </th>
-
-            </tr>
-
-
-
+        <table id=tableEvolutionJoueur class="table table-striped mt-3">
+			<thead class="table-dark">
+			    <tr>
+			        <th onclick="trierEvolutionJoueur(0)" style="cursor:pointer;">
+			            Joueur ↕
+			        </th>
+			        <th onclick="trierEvolutionJoueur(1)" style="cursor:pointer;">
+			            Personnage ↕
+			        </th>
+			        <th onclick="trierEvolutionJoueur(2)" style="cursor:pointer;">
+			            Gear ↕
+			        </th>
+			        <th onclick="trierEvolutionJoueur(3)" style="cursor:pointer;">
+			            Relique ↕
+			        </th>
+			        <th onclick="trierEvolutionJoueur(4)" style="cursor:pointer;">
+			            Étoiles ↕
+			        </th>
+			    </tr>
+			</thead>
+			<tbody>
             <tr th:each="evo : ${evolutions}">
-
-
+				<td th:text="${evo.joueur}">
+				</td>
+			
                 <td th:text="${evo.nom}">
                 </td>
-
-
-
                 <td>
-
                     <span th:if="${evo.ancienGear != evo.nouveauGear}">
 
                         <span th:text="${evo.ancienGear}">
                         </span>
-
                         →
-
-                        <strong th:text="${evo.nouveauGear}">
-                        </strong>
-
+						<strong class="text-success" th:text="${evo.nouveauGear}">
+						</strong>
                     </span>
-
-
                     <span th:if="${evo.ancienGear == evo.nouveauGear}">
                         -
                     </span>
-
                 </td>
-
-
-
-
                 <td>
-
                     <span th:if="${evo.ancienneRelique != evo.nouvelleRelique}">
-
                         <span th:text="${evo.ancienneRelique}">
                         </span>
-
                         →
-
-                        <strong th:text="${evo.nouvelleRelique}">
-                        </strong>
-
+						<strong class="text-warning" th:text="${evo.nouvelleRelique}">
+						</strong>
                     </span>
-
-
                     <span th:if="${evo.ancienneRelique == evo.nouvelleRelique}">
                         -
                     </span>
-
-
                 </td>
-
-
-
-
                 <td>
 
                     <span th:if="${evo.anciennesEtoiles != evo.nouvellesEtoiles}">
-
                         <span th:text="${evo.anciennesEtoiles}">
                         </span>
-
                         →
-
-                        <strong th:text="${evo.nouvellesEtoiles}">
-                        </strong>
-
+						<strong class="text-primary" th:text="${evo.nouvellesEtoiles}">
+						</strong>
                     </span>
-
-
                     <span th:if="${evo.anciennesEtoiles == evo.nouvellesEtoiles}">
                         -
                     </span>
-
                 </td>
-
-
             </tr>
-
-
+			</tbody>
         </table>
-
-
     </div>
-
-
 </div>
 
 

@@ -52,64 +52,36 @@ public class JoueurControleur {
         //        + " | "
         //        + e.getDateFinFormatee()));
         //System.out.println(extractionRepository.findAll());
-        if (joueurId != null) {
+        List<EvolutionPersonnage> evolutions = null;
 
-
-            List<EvolutionPersonnage> evolutions;
-
-
-            // ==========================
-            // RECHERCHE AVANCEE
-            // ==========================
-            if (ancienneExtraction != null 
-                    && nouvelleExtraction != null) {
-                evolutions =
-                        personnageRepository.comparerExtraction(
-                                joueurId,
-                                ancienneExtraction,
-                                nouvelleExtraction
-                        );
-            }
-
-            // ==========================
-            // RECHERCHE CLASSIQUE
-            // ==========================
-
-            else {
-
-
-                Integer derniereExtraction =
-                        personnageRepository.trouverDerniereExtraction(joueurId);
-
-
-                Integer ancienneExtractionAuto =
-                        personnageRepository.trouverAncienneExtraction(
-                                joueurId,
-                                derniereExtraction
-                        );
-
-
-                evolutions =
-                        personnageRepository.trouverEvolution(
-                                joueurId,
-                                ancienneExtractionAuto,
-                                derniereExtraction
-                        );
-
-            }
-
-
-            System.out.println(
-                    "Nombre résultats : " 
-                    + evolutions.size()
-            );
-
-
-            model.addAttribute(
-                    "evolutions",
-                    evolutions
-            );
-        }
-        return "joueurs";
-    }
+     // ==========================
+     // RECHERCHE AVANCEE
+     // ==========================
+	     if (ancienneExtraction != null 
+	             && nouvelleExtraction != null) {
+	         if (joueurId != null) {
+	             // Comparaison d'un joueur
+	             evolutions = personnageRepository.comparerExtraction(joueurId,ancienneExtraction,nouvelleExtraction);
+	         } else {
+	             // Comparaison de tous les joueurs
+	             evolutions = personnageRepository.comparerTousLesJoueurs(ancienneExtraction,nouvelleExtraction);
+	         }
+	     }
+	     // ==========================
+	     // RECHERCHE CLASSIQUE
+	     // ==========================
+	     else if (joueurId != null) {
+	         Integer derniereExtraction = personnageRepository.trouverDerniereExtraction(joueurId);
+	         Integer ancienneExtractionAuto = personnageRepository.trouverAncienneExtraction(joueurId,derniereExtraction);
+	         evolutions = personnageRepository.trouverEvolution(joueurId,ancienneExtractionAuto,derniereExtraction);
+	     }
+	     // ==========================
+	     // RESULTAT
+	     // ==========================
+	     if (evolutions != null) {
+	         System.out.println("Nombre résultats : " + evolutions.size());
+	         model.addAttribute("evolutions",evolutions);
+	     }
+     return "joueurs";
+     }
 }

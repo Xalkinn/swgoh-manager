@@ -11,6 +11,7 @@ public class JoueurDAOImpl implements JoueurDAO {
         String sql = """
                 SELECT COUNT(*)
                 FROM joueur
+                WHERE dans_guilde = 1
                 """;
         int total = 0;
         try(Connection con = DatabaseManager.getConnection();

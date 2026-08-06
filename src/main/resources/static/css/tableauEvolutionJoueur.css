@@ -1,0 +1,13 @@
+#tableEvolutionJoueur thead th {
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+#tableEvolutionJoueur tbody td {
+    vertical-align: middle;
+}
+
+#tableEvolutionJoueur thead th:hover {
+    opacity: 0.8;
+}

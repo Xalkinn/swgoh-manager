@@ -200,4 +200,47 @@ public interface PersonnageRepository extends CrudRepository<Personnage, Integer
 	    		        Integer ancienneExtraction,
 	    		        Integer nouvelleExtraction
 	    		);
+	    
+	    @Query("""
+	    		SELECT
+
+	    		    j.nom AS joueur,
+
+	    		    ancien.nom AS nom,
+
+	    		    ancien.gear AS ancien_gear,
+	    		    nouveau.gear AS nouveau_gear,
+
+	    		    ancien.relic AS ancienne_relique,
+	    		    nouveau.relic AS nouvelle_relique,
+
+	    		    ancien.etoiles AS anciennes_etoiles,
+	    		    nouveau.etoiles AS nouvelles_etoiles
+
+	    		FROM personnage ancien
+
+	    		JOIN personnage nouveau
+
+	    		ON ancien.joueur_id = nouveau.joueur_id
+	    		AND ancien.nom = nouveau.nom
+
+	    		JOIN joueur j
+	    		ON j.id = nouveau.joueur_id
+
+	    		WHERE ancien.extraction_id = :ancienneExtraction
+
+	    		AND nouveau.extraction_id = :nouvelleExtraction
+
+	    		AND (
+	    		    ancien.gear <> nouveau.gear
+	    		    OR ancien.relic <> nouveau.relic
+	    		    OR ancien.etoiles <> nouveau.etoiles
+	    		)
+
+	    		ORDER BY j.nom, nouveau.nom
+	    		""")
+	    List<EvolutionPersonnage> comparerTousLesJoueurs(
+	            Integer ancienneExtraction,
+	            Integer nouvelleExtraction
+	    );
 }

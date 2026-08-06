@@ -39,6 +39,7 @@ public class ModQDAOImpl {
 
                 JOIN mods m
                 ON m.joueur_id = j.id
+                WHERE j.dans_guilde = 1
 
                 GROUP BY j.id, j.nom, j.pg_perso
 

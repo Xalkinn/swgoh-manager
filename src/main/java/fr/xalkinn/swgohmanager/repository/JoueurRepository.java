@@ -21,6 +21,7 @@ public interface JoueurRepository extends ListCrudRepository<Joueur, Integer> {
 	@Query("""
 		    SELECT *
 		    FROM joueur
+		    WHERE dans_guilde = 1
 		    ORDER BY nom
 		""")
 		List<Joueur> trouverTousLesJoueursParNom();
