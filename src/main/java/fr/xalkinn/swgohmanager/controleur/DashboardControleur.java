@@ -20,6 +20,7 @@ import fr.xalkinn.swgohmanager.service.ActualisationService;
 import fr.xalkinn.swgohmanager.service.DashboardService;
 import fr.xalkinn.swgohmanager.service.ExtractionService;
 import fr.xalkinn.swgohmanager.service.HealthService;
+import fr.xalkinn.swgohmanager.service.MiseAJourService;
 
 
 @Controller
@@ -30,12 +31,13 @@ public class DashboardControleur {
 	private final ActualisationService actualisationService;
 	private final PersonnageRepository personnageRepository;
 	private final ExtractionRepository extractionRepository;
+	private final MiseAJourService miseAJourService;
 
     public DashboardControleur(
             DashboardService dashboardService,
             HealthService healthService, ExtractionService extractionService,
             ActualisationService actualisationService, PersonnageRepository personnageRepository,
-            ExtractionRepository extractionRepository) {
+            ExtractionRepository extractionRepository, MiseAJourService miseAJourService) {
 
         this.dashboardService = dashboardService;
         this.healthService = healthService;
@@ -43,6 +45,7 @@ public class DashboardControleur {
 		this.actualisationService = actualisationService;
 		this.personnageRepository = personnageRepository;
 		this.extractionRepository = extractionRepository;
+		this.miseAJourService = miseAJourService;
     }
 
     @GetMapping("/")
@@ -73,6 +76,18 @@ public class DashboardControleur {
     @ResponseBody
     public Map<String, Object> extractionEnCours() throws Exception {
         return extractionService.getExtractionEnCours();
+    }
+    
+    @GetMapping("/actions/maj-guilde")
+    public String majGuilde() throws Exception {
+        miseAJourService.miseAJourGuilde();
+        return "redirect:/";
+    }
+
+    @GetMapping("/actions/maj-mods")
+    public String majMods() throws Exception {
+        miseAJourService.miseAJourMods();
+        return "redirect:/";
     }
 //  Version 1.0
 //	private final HealthService healthService;
