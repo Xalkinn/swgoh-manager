@@ -47,7 +47,6 @@
 			            </p>
 			        </div>
 			    </div>
-
 			</div>
 	        <!-- Omicrons -->
 	        <div class="col-lg-3 col-md-6">
@@ -61,25 +60,25 @@
 	                </div>
 	            </div>
 				<!-- Suivi batch -->
-							<div class="card shadow mt-4">
-							    <div class="card-body">
-							        <h4>
-							            <i class="bi bi-activity"></i>
-							            Suivi du Batch Omicron
-							        </h4>
-							        <p>
-							            Etat :
-							            <span id="batchEtat" class="badge bg-secondary">Inconnu</span>
-							        </p>
-							        <p>
-							            Etape actuelle :
-							            <strong id="batchEtape">-</strong>
-							        </p>
-							        <div class="progress">
-							            <div id="batchProgress" class="progress-bar" role="progressbar" style="width:0%">0%</div>
-							        </div>
-							    </div>
-							</div>
+				<div class="card shadow mt-4">
+				    <div class="card-body">
+				        <h4>
+				            <i class="bi bi-activity"></i>
+				            Suivi du Batch Omicron
+				        </h4>
+				        <p>
+				            Etat :
+				            <span id="batchEtat" class="badge bg-secondary">Inconnu</span>
+				        </p>
+				        <p>
+				            Etape actuelle :
+				            <strong id="batchEtape">-</strong>
+				        </p>
+				        <div class="progress">
+				            <div id="batchProgress" class="progress-bar" role="progressbar" style="width:0%">0%</div>
+				        </div>
+				    </div>
+				</div>
 	        </div>
 			<!-- Rosters -->
 			<div class="col-lg-3 col-md-6">
@@ -94,35 +93,64 @@
 
 			        </div>
 			    </div>
+				<!-- Suivi Synchronisation Guilde -->
+				<div class="card shadow mt-4">
+				    <div class="card-body">
+				        <h4>
+				            <i class="bi bi-people"></i>
+				            Suivi Synchronisation Guilde
+				        </h4>
+				        <p>
+				            Etat :
+				            <span id="guildeEtat" class="badge bg-secondary">
+				                Inconnu
+				            </span>
+				        </p>
+				        <p>
+				            Etape actuelle :
+				            <strong id="guildeEtape">
+				                -
+				            </strong>
+				        </p>
+				        <div class="progress">
+				            <div id="guildeProgress"
+				                 class="progress-bar"
+				                 role="progressbar"
+				                 style="width:0%">
+				                0%
+				            </div>
+				        </div>
+				    </div>
+				</div>
 				<!-- Suivi Batch Roster -->
-							<div class="card shadow mt-4">
-							    <div class="card-body">
-							        <h4>
-							            <i class="bi bi-person-badge"></i>
-							            Suivi Mise à jour Roster
-							        </h4>
-							        <p>
-							            Etat :
-							            <span id="rosterEtat" class="badge bg-secondary">
-							                Inconnu
-							            </span>
-							        </p>
-							        <p>
-							            Etape actuelle :
-							            <strong id="rosterEtape">
-							                -
-							            </strong>
-							        </p>
-							        <div class="progress">
-							            <div id="rosterProgress"
-							                 class="progress-bar"
-							                 role="progressbar"
-							                 style="width:0%">
-							                0%
-							            </div>
-							        </div>
-							    </div>
-							</div>
+					<div class="card shadow mt-4">
+					    <div class="card-body">
+					        <h4>
+					            <i class="bi bi-person-badge"></i>
+					            Suivi Mise à jour Roster
+					        </h4>
+					        <p>
+					            Etat :
+					            <span id="rosterEtat" class="badge bg-secondary">
+					                Inconnu
+					            </span>
+					        </p>
+					        <p>
+					            Etape actuelle :
+					            <strong id="rosterEtape">
+					                -
+					            </strong>
+					        </p>
+					        <div class="progress">
+					            <div id="rosterProgress"
+					                 class="progress-bar"
+					                 role="progressbar"
+					                 style="width:0%">
+					                0%
+					            </div>
+					        </div>
+					    </div>
+					</div>
 			</div>
 	        <!-- Dernière MAJ -->
 	        <div class="col-lg-3 col-md-6">
@@ -140,7 +168,6 @@
 							<br>
 								[[${actualisation.fraicheurOmicrons}]]
 						</div>
-						
 						<div class="alert alert-[[${actualisation.couleurRosters}]]">
 							Rosters
 							<br>
@@ -149,6 +176,15 @@
 								</strong>
 							<br>
 							[[${actualisation.fraicheurRosters}]]
+						</div>
+						<div class="alert alert-[[${actualisation.couleurJoueurs}]]">
+						    👥 Joueurs
+						    <br>
+						    <strong>
+						        [[${actualisation.dateJoueurs}]]
+						    </strong>
+						    <br>
+						    [[${actualisation.fraicheurJoueurs}]]
 						</div>
 					</div>
 	            </div>
@@ -160,15 +196,15 @@
 						<a href="/actions/batch-omicron"class="btn btn-primary">
 							🚀 Lancer Batch Omicron</a>
 						<a href="/actions/batch-roster" class="btn btn-warning">
-							🧬 Mise à jour Rosters
+							🧬 Mise à jour rosters
 		
 						</a>
-						<a href="/actions/maj-guilde" class="btn btn-info">
-						    👥 Mise à jour Guilde
+						<a href="/actions/synchronisation-guilde" class="btn btn-info">
+						    👥 Mise à jour des joueurs
 						</a>
-						<a href="/actions/maj-mods" class="btn btn-dark">
+						<!--<a href="/actions/maj-mods" class="btn btn-dark">
 						    ⚙️ Mise à jour Mods
-						</a>
+						</a>-->
 						<a href="/actions/export" class="btn btn-secondary">
 						    📄 Export CSV
 						</a>

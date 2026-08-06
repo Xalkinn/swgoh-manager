@@ -4,13 +4,15 @@ public class ActualisationDonnees {
 
     private String dateOmicrons;
     private String dateRosters;
-
+    private String dateJoueurs;
+    
     private String fraicheurOmicrons;
     private String fraicheurRosters;
-
+    private String fraicheurJoueurs;
+    
     private String couleurOmicrons;
     private String couleurRosters;
-
+    private String couleurJoueurs;
 
     public String getDateOmicrons() {
         return dateOmicrons;
@@ -59,4 +61,28 @@ public class ActualisationDonnees {
     public void setCouleurRosters(String couleurRosters) {
         this.couleurRosters = couleurRosters;
     }
+
+	public String getDateJoueurs() {
+		return dateJoueurs;
+	}
+
+	public void setDateJoueurs(String dateJoueurs) {
+		this.dateJoueurs = dateJoueurs;
+	}
+
+	public String getFraicheurJoueurs() {
+		return fraicheurJoueurs;
+	}
+
+	public void setFraicheurJoueurs(String fraicheurJoueurs) {
+		this.fraicheurJoueurs = fraicheurJoueurs;
+	}
+
+	public String getCouleurJoueurs() {
+		return couleurJoueurs;
+	}
+
+	public void setCouleurJoueurs(String couleurJoueurs) {
+		this.couleurJoueurs = couleurJoueurs;
+	}
 }

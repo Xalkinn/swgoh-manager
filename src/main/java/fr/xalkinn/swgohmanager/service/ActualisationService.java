@@ -22,13 +22,17 @@ public class ActualisationService {
         ActualisationDonnees actualisation = new ActualisationDonnees();
         LocalDateTime dateOmicrons = getDerniereMajOmicrons();
         LocalDateTime dateRoster = getDerniereMajRoster();
+        LocalDateTime dateJoueurs = getDerniereMajJoueurs();
 
         actualisation.setDateOmicrons(formaterDate(dateOmicrons));
         actualisation.setDateRosters(formaterDate(dateRoster));
+        actualisation.setDateJoueurs(formaterDate(dateJoueurs));
         actualisation.setFraicheurOmicrons(calculerFraicheur(dateOmicrons));
         actualisation.setFraicheurRosters(calculerFraicheur(dateRoster));
+        actualisation.setFraicheurJoueurs(calculerFraicheur(dateJoueurs));
         actualisation.setCouleurOmicrons(calculerCouleur(dateOmicrons));
         actualisation.setCouleurRosters(calculerCouleur(dateRoster));
+        actualisation.setCouleurJoueurs(calculerCouleur(dateJoueurs));
 
         return actualisation;
     }
@@ -99,5 +103,16 @@ public class ActualisationService {
             return "warning";
         }
         return "danger";
+    }
+    
+    private LocalDateTime getDerniereMajJoueurs() {
+        try {
+            return jdbcTemplate.queryForObject(
+                    "SELECT MAX(date_maj) FROM joueur",
+                    LocalDateTime.class
+            );
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

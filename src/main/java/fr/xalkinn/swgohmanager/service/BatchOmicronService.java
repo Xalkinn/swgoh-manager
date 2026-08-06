@@ -25,39 +25,21 @@ public class BatchOmicronService {
         System.out.println("================================");
         System.out.println("        Batch Omicron");
         System.out.println("================================");
-
         DatabaseInitializer.initialiser();
-
         List<BatchStep> omicrons = chargerOmicrons();
-
         int total = omicrons.size();
-
         batchStatusService.demarrer("Batch Omicron", total);
-
         int compteur = 1;
-
         for (BatchStep step : omicrons) {
-
-            batchStatusService.miseAJour(
-                    step.getNom(),
-                    compteur
-            );
-
-            ConsoleUtils.executerBatchStep(
-                    step,
-                    compteur,
-                    total
-            );
-
+            batchStatusService.miseAJour(step.getNom(),compteur);
+            ConsoleUtils.executerBatchStep(step,compteur,total);
             compteur++;
         }
-
         batchStatusService.terminer();
-
         System.out.println("Batch terminé !");
 		return null;
     }
-
+    
     private List<BatchStep> chargerOmicrons() {
 
         return List.of(
@@ -164,5 +146,4 @@ public class BatchOmicronService {
                 )
         );
     }
-
 }

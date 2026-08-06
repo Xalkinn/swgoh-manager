@@ -15,12 +15,7 @@ public class OmicronControleur {
 
     @GetMapping("/omicrons")
     public String omicrons(Model model) {
-        model.addAttribute(
-            "omicrons",
-            service.getOmicrons()
-        );
+        model.addAttribute("omicrons",service.getOmicrons());
         return "omicrons";
-
     }
-
 }

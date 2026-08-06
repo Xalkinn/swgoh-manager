@@ -39,3 +39,39 @@ function trierTableauModQ(colonne) {
 
     table.dataset.ordre = asc ? "asc" : "desc";
 }
+
+function chargerStatutMods() {
+
+    fetch('/api/mods/status')
+        .then(r => r.json())
+        .then(data => {
+
+            let etat = document.getElementById("modsEtat");
+            let etape = document.getElementById("modsEtape");
+            let progress = document.getElementById("modsProgress");
+
+            if(!etat) return;
+
+            if(data.enCours){
+                etat.innerHTML="En cours";
+                etat.className="badge bg-warning";
+            }
+            else if(data.fin != null){
+                etat.innerHTML="Terminé";
+                etat.className="badge bg-success";
+            }
+            else{
+                etat.innerHTML="Repos";
+                etat.className="badge bg-secondary";
+            }
+
+            etape.innerHTML = data.etapeActuelle ?? "-";
+
+            progress.style.width = data.pourcentage + "%";
+            progress.innerHTML = data.pourcentage + "%";
+        });
+
+}
+
+setInterval(chargerStatutMods,2000);
+chargerStatutMods();

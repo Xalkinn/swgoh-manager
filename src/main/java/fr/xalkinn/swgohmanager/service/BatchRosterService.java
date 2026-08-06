@@ -47,8 +47,9 @@ public class BatchRosterService {
         try(Connection conn = DatabaseManager.getConnection();
             Statement stmt = conn.createStatement()) {
             ResultSet rs = stmt.executeQuery(
-                "SELECT id, player_id FROM joueur ORDER BY id"
+                "SELECT id, player_id FROM joueur WHERE dans_guilde = 1 ORDER BY id"
             );
+            System.out.println(rs);
             List<Integer> joueursId = new ArrayList<>();
             List<String> playersId = new ArrayList<>();
             while(rs.next()) {

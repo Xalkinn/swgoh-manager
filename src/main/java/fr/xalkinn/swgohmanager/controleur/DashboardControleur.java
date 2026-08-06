@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import fr.xalkinn.swgohmanager.modele.BatchStatus;
 import fr.xalkinn.swgohmanager.modele.DashboardStats;
 import fr.xalkinn.swgohmanager.modele.EtatSysteme;
 import fr.xalkinn.swgohmanager.modele.ExtractionStatut;
@@ -21,6 +22,7 @@ import fr.xalkinn.swgohmanager.service.DashboardService;
 import fr.xalkinn.swgohmanager.service.ExtractionService;
 import fr.xalkinn.swgohmanager.service.HealthService;
 import fr.xalkinn.swgohmanager.service.MiseAJourService;
+import fr.xalkinn.swgohmanager.service.SynchronisationGuildeStatusService;
 
 
 @Controller
@@ -32,6 +34,7 @@ public class DashboardControleur {
 	private final PersonnageRepository personnageRepository;
 	private final ExtractionRepository extractionRepository;
 	private final MiseAJourService miseAJourService;
+
 
     public DashboardControleur(
             DashboardService dashboardService,
@@ -46,15 +49,14 @@ public class DashboardControleur {
 		this.personnageRepository = personnageRepository;
 		this.extractionRepository = extractionRepository;
 		this.miseAJourService = miseAJourService;
+
     }
 
     @GetMapping("/")
     public String dashboard(Model model) throws Exception {
         DashboardStats stats = dashboardService.getDashboardStats();
         EtatSysteme etatSysteme = healthService.getEtat();
-        Map<String,Object> extraction =
-                extractionService.getExtractionEnCours();
-        
+        Map<String,Object> extraction = extractionService.getExtractionEnCours();
         if(extraction == null) {
             extraction = new HashMap<>();
             extraction.put("progression", 0);
@@ -68,7 +70,6 @@ public class DashboardControleur {
         model.addAttribute("derniersUps", personnageRepository.trouverDerniersUpsGuilde());
         model.addAttribute("dernieresExtractions",extractionRepository.trouverDernieresExtractions());
         //model.addAttribute("derniersUps", null);
-
         return "dashboard";
     }
     
@@ -77,18 +78,12 @@ public class DashboardControleur {
     public Map<String, Object> extractionEnCours() throws Exception {
         return extractionService.getExtractionEnCours();
     }
-    
-    @GetMapping("/actions/maj-guilde")
-    public String majGuilde() throws Exception {
-        miseAJourService.miseAJourGuilde();
-        return "redirect:/";
-    }
-
-    @GetMapping("/actions/maj-mods")
-    public String majMods() throws Exception {
-        miseAJourService.miseAJourMods();
-        return "redirect:/";
-    }
+        
+//    @GetMapping("/actions/maj-mods")
+//    public String majMods() throws Exception {
+//        miseAJourService.miseAJourMods();
+//        return "redirect:/";
+//    }
 //  Version 1.0
 //	private final HealthService healthService;
 //    private final JoueurRepository joueurRepository;
