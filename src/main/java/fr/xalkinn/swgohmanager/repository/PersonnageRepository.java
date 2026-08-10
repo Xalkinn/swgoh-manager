@@ -61,6 +61,8 @@ public interface PersonnageRepository extends CrudRepository<Personnage, Integer
 		
 		WHERE o.nom = :nom
 		
+		AND j.dans_guilde = 1
+		
 		AND p.relic < o.relic_cible
 		
 		ORDER BY p.relic ASC;
@@ -156,6 +158,7 @@ public interface PersonnageRepository extends CrudRepository<Personnage, Integer
 	    		WHERE 
 	    		ancien.gear <> nouveau.gear
 	    		OR ancien.relic <> nouveau.relic
+	    		AND j.dans_guilde = 1
 	    		ORDER BY j.nom, nouveau.nom
 	    		""")
 	    		List<EvolutionGuilde> trouverDerniersUpsGuilde();
@@ -228,6 +231,8 @@ public interface PersonnageRepository extends CrudRepository<Personnage, Integer
 	    		ON j.id = nouveau.joueur_id
 
 	    		WHERE ancien.extraction_id = :ancienneExtraction
+	    		
+	    		AND j.dans_guilde = 1
 
 	    		AND nouveau.extraction_id = :nouvelleExtraction
 

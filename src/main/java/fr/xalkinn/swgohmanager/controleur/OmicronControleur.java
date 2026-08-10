@@ -15,6 +15,7 @@ public class OmicronControleur {
 
     @GetMapping("/omicrons")
     public String omicrons(Model model) {
+    	System.out.println("Affichage omicron");
         model.addAttribute("omicrons",service.getOmicrons());
         return "omicrons";
     }

@@ -27,52 +27,33 @@ public class ObjectifControleur {
 
     @GetMapping("/objectifs")
     public String afficherObjectifs(Model model) {
-
+    	System.out.println("Affichage d'objectif");
         // Liste déroulante des personnages
-        model.addAttribute(
-            "personnages",
-            objectifService.getPersonnagesDisponibles()
-        );
-
+        model.addAttribute("personnages",objectifService.getPersonnagesDisponibles());
         // Objet utilisé par le formulaire
-        model.addAttribute(
-            "nouvelObjectif",
-            new ObjectifPersonnage()
-        );
-        model.addAttribute(
-        	    "objectifs",
-        	    objectifService.getObjectifs()
-        	);
-
-
+        model.addAttribute("nouvelObjectif",new ObjectifPersonnage());
+        model.addAttribute("objectifs",objectifService.getObjectifs());
         return "objectifs";
     }
     
     @PostMapping("/objectifs/supprimer/{id}")
     public String supprimerObjectif(@PathVariable Integer id) {
-
+    	System.out.println("Suppression d'objectif");
         objectifService.supprimerObjectif(id);
-
         return "redirect:/objectifs";
     }
     
     @PostMapping("/objectifs/ajouter")
-    public String ajouterObjectif(
-            @ModelAttribute ObjectifPersonnage objectif) {
-
+    public String ajouterObjectif(@ModelAttribute ObjectifPersonnage objectif) {
+    	System.out.println("Ajout d'objectif");
         objectifService.ajouterObjectif(objectif);
-
         return "redirect:/objectifs";
     }
     
     @GetMapping("/objectifs/{nom}/comparatif")
     public String comparatif(@PathVariable String nom, Model model) {
-
-        model.addAttribute(
-            "comparatif",
-            objectifService.getComparatif(nom)
-        );
-
+    	System.out.println("Compare d'objectif");
+        model.addAttribute("comparatif",objectifService.getComparatif(nom));
         return "comparatif";
     }
     

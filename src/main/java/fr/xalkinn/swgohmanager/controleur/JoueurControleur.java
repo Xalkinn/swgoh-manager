@@ -40,10 +40,11 @@ public class JoueurControleur {
         model.addAttribute("joueurId", joueurId);
         model.addAttribute("ancienneExtraction", ancienneExtraction);
         model.addAttribute("nouvelleExtraction", nouvelleExtraction);
-        System.out.println("Comparaison demandée");
-        System.out.println("joueurId = " + joueurId);
-        System.out.println("ancienne = " + ancienneExtraction);
-        System.out.println("nouvelle = " + nouvelleExtraction);
+        System.out.println("Affichage joueur");
+        //System.out.println("Comparaison demandée");
+        //System.out.println("joueurId = " + joueurId);
+        //System.out.println("ancienne = " + ancienneExtraction);
+        //System.out.println("nouvelle = " + nouvelleExtraction);
         //extractionRepository.findAllOrderByDate().forEach(e -> 
         //    System.out.println(
         //        e.getId() 

@@ -25,6 +25,7 @@ public class ModQControleur {
             @RequestParam(required = false, defaultValue = "modq") String onglet,
             Model model) {
         model.addAttribute("onglet", onglet);
+        System.out.println("Acces page modQ / mods");
         // Onglet ModQ
         if (!"stats".equals(onglet)) {
             List<ModQ> modQ = modQDAO.findAll();

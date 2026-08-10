@@ -54,7 +54,8 @@ public class DashboardControleur {
 
     @GetMapping("/")
     public String dashboard(Model model) throws Exception {
-        DashboardStats stats = dashboardService.getDashboardStats();
+    	System.out.println("Affichage dashboard");
+    	DashboardStats stats = dashboardService.getDashboardStats();
         EtatSysteme etatSysteme = healthService.getEtat();
         Map<String,Object> extraction = extractionService.getExtractionEnCours();
         if(extraction == null) {
