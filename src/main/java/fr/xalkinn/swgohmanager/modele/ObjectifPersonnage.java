@@ -1,6 +1,7 @@
 package fr.xalkinn.swgohmanager.modele;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Table("objectif_personnage")
@@ -12,6 +13,9 @@ public class ObjectifPersonnage {
     private String baseId;
 
     private String nom;
+
+    @Transient
+    private String nomFrancais;
 
     private Integer relicCible;
 
@@ -44,6 +48,14 @@ public class ObjectifPersonnage {
 
     public void setNom(String nom) {
         this.nom = nom;
+    }
+
+    public String getNomFrancais() {
+        return nomFrancais;
+    }
+
+    public void setNomFrancais(String nomFrancais) {
+        this.nomFrancais = nomFrancais;
     }
 
 

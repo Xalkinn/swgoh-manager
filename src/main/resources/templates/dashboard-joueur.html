@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+
+<body class="dashboard-page player-dashboard">
+
+<div th:replace="~{fragments/menu :: menu}"></div>
+
+<main class="container-fluid dashboard-container">
+
+    <!-- HEADER -->
+    <section class="dashboard-header player-page-header">
+        <div>
+            <span class="dashboard-kicker">SWGOH • GESTION DE GUILDE</span>
+            <h1><i class="bi bi-person-badge-fill"></i> Suivi joueur</h1>
+            <p>Analyse individuelle du roster, des Omicrons et des mods du membre sélectionné</p>
+        </div>
+
+        <div class="header-actions">
+            <div class="player-selector">
+                <i class="bi bi-person-circle"></i>
+                <select id="playerSelector" aria-label="Choisir un joueur">
+                    <option value="">Changer de joueur…</option>
+                    <option th:each="joueur : ${joueurs}"
+                            th:value="${joueur.id}"
+                            th:selected="${joueur.id == dashboard.id}"
+                            th:text="${joueur.nom}"></option>
+                </select>
+            </div>
+
+            <button id="themeToggle" class="theme-toggle" type="button" aria-label="Activer le mode sombre" title="Changer de thème">
+                <i class="bi bi-moon-stars-fill"></i>
+                <span>Mode sombre</span>
+            </button>
+
+            <a href="/" class="back-dashboard">
+                <i class="bi bi-grid-1x2-fill"></i>
+                <span>Guilde</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- IDENTITE JOUEUR -->
+    <section class="dash-card player-identity-card">
+        <div class="player-identity-main">
+            <div class="player-avatar">
+                <i class="bi bi-person-fill"></i>
+            </div>
+            <div class="player-identity-copy">
+                <span class="player-eyebrow">PROFIL JOUEUR</span>
+                <h2 th:text="${dashboard.nom}">Joueur</h2>
+                <div class="player-meta">
+                    <span><i class="bi bi-hash"></i> Ally Code <strong th:text="${dashboard.allyCode}">-</strong></span>
+                    <span><i class="bi bi-lightning-charge-fill"></i> PG <strong th:text="${#numbers.formatInteger(dashboard.pgPerso, 1, 'WHITESPACE')}">0</strong></span>
+                    <span><i class="bi bi-clock-history"></i> Capture <strong th:text="${dashboard.derniereCapture}">-</strong></span>
+                </div>
+            </div>
+        </div>
+        <div class="player-identity-side">
+            <div class="identity-score">
+                <span>ModQ</span>
+                <strong th:text="${#numbers.formatDecimal(dashboard.modStats.modQ,1,2)}">0.00</strong>
+            </div>
+        </div>
+    </section>
+
+    <!-- KPIs -->
+    <section class="player-kpi-grid">
+        <article class="dash-card player-kpi-card">
+            <div class="heading-icon orange"><i class="bi bi-collection-fill"></i></div>
+            <div class="player-kpi-content">
+                <span>Roster</span>
+                <strong th:text="${dashboard.totalPersonnages}">0</strong>
+                <small>personnages</small>
+            </div>
+        </article>
+
+        <article class="dash-card player-kpi-card">
+            <div class="heading-icon blue"><i class="bi bi-stars"></i></div>
+            <div class="player-kpi-content">
+                <span>7 étoiles</span>
+                <strong th:text="${dashboard.personnages7Etoiles}">0</strong>
+                <small>personnages 7★</small>
+            </div>
+        </article>
+
+        <article class="dash-card player-kpi-card">
+            <div class="heading-icon green"><i class="bi bi-shield-fill-check"></i></div>
+            <div class="player-kpi-content">
+                <span>Gear 13</span>
+                <strong th:text="${dashboard.personnagesG13}">0</strong>
+                <small>personnages G13</small>
+            </div>
+        </article>
+
+        <article class="dash-card player-kpi-card">
+            <div class="heading-icon purple"><i class="bi bi-gem"></i></div>
+            <div class="player-kpi-content">
+                <span>Reliques</span>
+                <strong th:text="${dashboard.personnagesRelique}">0</strong>
+                <small>personnages reliqués</small>
+            </div>
+        </article>
+    </section>
+
+    <!-- OMICRONS + MODS -->
+    <section class="dashboard-grid player-main-grid">
+        <article class="dash-card player-section-card">
+            <div class="card-heading">
+                <div class="heading-icon purple"><i class="bi bi-lightning-charge-fill"></i></div>
+                <div>
+                    <h2>Omicrons</h2>
+                    <span th:text="${dashboard.omicrons.size()} + ' capacité(s) détectée(s)'">0 capacité(s)</span>
+                </div>
+            </div>
+
+            <div th:if="${dashboard.omicrons != null && !dashboard.omicrons.isEmpty()}" class="omicron-list">
+                <div class="omicron-row" th:each="o : ${dashboard.omicrons}">
+                    <div class="omicron-icon"><i class="bi bi-lightning-charge-fill"></i></div>
+                    <div class="omicron-character">
+                        <strong th:text="${o.nomFrancais != null and !#strings.isEmpty(o.nomFrancais) ? o.nomFrancais : o.personnage}">
+                            Personnage
+                        </strong>
+                        <span th:text="${o.typeCapacite}">Type</span>
+                    </div>
+                    <span class="active-pill" th:classappend="${o.actif ? 'active' : 'inactive'}"
+                          th:text="${o.actif ? 'Actif' : 'Inactif'}">Actif</span>
+                </div>
+            </div>
+
+            <div th:if="${dashboard.omicrons == null || dashboard.omicrons.isEmpty()}" class="empty-feature player-empty">
+                <i class="bi bi-lightning"></i>
+                <span>Aucun Omicron trouvé pour ce joueur.</span>
+            </div>
+        </article>
+
+        <article class="dash-card player-section-card mods-card">
+            <div class="card-heading">
+                <div class="heading-icon blue"><i class="bi bi-speedometer2"></i></div>
+                <div>
+                    <h2>Qualité des mods</h2>
+                    <span>Répartition par vitesse secondaire</span>
+                </div>
+            </div>
+
+            <div class="modq-summary">
+                <div>
+                    <span>Score ModQ</span>
+                    <strong th:text="${#numbers.formatDecimal(dashboard.modStats.modQ,1,2)}">0.00</strong>
+                </div>
+                <div>
+                    <span>Vitesse moyenne</span>
+                    <strong th:text="${#numbers.formatDecimal(dashboard.modStats.vitesseMoyenne,1,1)}">0.0</strong>
+                </div>
+                <div>
+                    <span>Total mods</span>
+                    <strong th:text="${dashboard.modStats.total}">0</strong>
+                </div>
+            </div>
+
+            <div class="mod-speed-list">
+                <div class="mod-speed-row muted-speed">
+                    <span>Sans vitesse</span>
+                    <div class="mod-speed-track"><span th:style="'width:' + (${dashboard.modStats.total > 0 ? dashboard.modStats.sansVitesse * 100.0 / dashboard.modStats.total : 0}) + '%' "></span></div>
+                    <strong th:text="${dashboard.modStats.sansVitesse}">0</strong>
+                </div>
+                <div class="mod-speed-row low-speed">
+                    <span>1–14</span>
+                    <div class="mod-speed-track"><span th:style="'width:' + (${dashboard.modStats.total > 0 ? dashboard.modStats.vitesse1a14 * 100.0 / dashboard.modStats.total : 0}) + '%' "></span></div>
+                    <strong th:text="${dashboard.modStats.vitesse1a14}">0</strong>
+                </div>
+                <div class="mod-speed-row medium-speed">
+                    <span>15–19</span>
+                    <div class="mod-speed-track"><span th:style="'width:' + (${dashboard.modStats.total > 0 ? dashboard.modStats.vitesse15a19 * 100.0 / dashboard.modStats.total : 0}) + '%' "></span></div>
+                    <strong th:text="${dashboard.modStats.vitesse15a19}">0</strong>
+                </div>
+                <div class="mod-speed-row high-speed">
+                    <span>20–24</span>
+                    <div class="mod-speed-track"><span th:style="'width:' + (${dashboard.modStats.total > 0 ? dashboard.modStats.vitesse20a24 * 100.0 / dashboard.modStats.total : 0}) + '%' "></span></div>
+                    <strong th:text="${dashboard.modStats.vitesse20a24}">0</strong>
+                </div>
+                <div class="mod-speed-row elite-speed">
+                    <span>25+</span>
+                    <div class="mod-speed-track"><span th:style="'width:' + (${dashboard.modStats.total > 0 ? dashboard.modStats.vitesse25Plus * 100.0 / dashboard.modStats.total : 0}) + '%' "></span></div>
+                    <strong th:text="${dashboard.modStats.vitesse25Plus}">0</strong>
+                </div>
+            </div>
+
+            <div class="mod-type-footer">
+                <div><span>Mods normaux</span><strong th:text="${dashboard.modStats.modsNormaux}">0</strong></div>
+                <div><span>Mods OR</span><strong th:text="${dashboard.modStats.modsOr}">0</strong></div>
+            </div>
+        </article>
+    </section>
+
+    <!-- GEAR + RELIQUES -->
+    <section class="dashboard-grid player-progress-grid">
+        <article class="dash-card player-section-card">
+            <div class="card-heading">
+                <div class="heading-icon orange"><i class="bi bi-shield-shaded"></i></div>
+                <div>
+                    <h2>Niveaux d'équipement</h2>
+                    <span>Répartition du roster par Gear</span>
+                </div>
+            </div>
+
+            <div class="bars-list">
+                <div class="bar-row" th:each="g : ${dashboard.gearStats}" th:if="${g.count > 0}">
+                    <span th:text="${g.label}">G13</span>
+                    <div class="bar-track">
+                        <div class="bar-fill orange-fill"
+                             th:style="'width:' + (${dashboard.totalPersonnages > 0 ? (g.count * 100.0 / dashboard.totalPersonnages) : 0}) + '%' "></div>
+                    </div>
+                    <strong th:text="${g.count}">0</strong>
+                </div>
+            </div>
+        </article>
+
+        <article class="dash-card player-section-card">
+            <div class="card-heading">
+                <div class="heading-icon purple"><i class="bi bi-gem"></i></div>
+                <div>
+                    <h2>Reliques</h2>
+                    <span>Répartition des personnages reliqués</span>
+                </div>
+            </div>
+
+            <div class="bars-list" th:if="${dashboard.personnagesRelique > 0}">
+                <div class="bar-row" th:each="r : ${dashboard.relicStats}" th:if="${r.count > 0}">
+                    <span th:text="${r.label}">R5</span>
+                    <div class="bar-track">
+                        <div class="bar-fill purple-fill"
+                             th:style="'width:' + (${dashboard.personnagesRelique > 0 ? (r.count * 100.0 / dashboard.personnagesRelique) : 0}) + '%' "></div>
+                    </div>
+                    <strong th:text="${r.count}">0</strong>
+                </div>
+            </div>
+
+            <div th:if="${dashboard.personnagesRelique == 0}" class="empty-feature player-empty">
+                <i class="bi bi-gem"></i>
+                <span>Aucune relique pour ce joueur.</span>
+            </div>
+        </article>
+    </section>
+
+    <!-- ROSTER -->
+    <section class="dash-card roster-card player-roster-card">
+        <div class="ups-header player-roster-header">
+            <div class="card-heading compact">
+                <div class="heading-icon green"><i class="bi bi-list-stars"></i></div>
+                <div>
+                    <h2>Roster complet</h2>
+                    <span><strong id="rosterVisibleCount" th:text="${dashboard.roster.size()}">0</strong> personnage(s) affiché(s)</span>
+                </div>
+            </div>
+
+            <div class="roster-search-wrap">
+                <i class="bi bi-search"></i>
+                <input id="rosterSearch" class="roster-search" type="search" placeholder="Rechercher un personnage…" autocomplete="off">
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table id="rosterTable" class="ups-table player-roster-table">
+                <thead>
+                <tr>
+                    <th>Personnage</th>
+                    <th>Étoiles</th>
+                    <th>Niveau</th>
+                    <th>Gear</th>
+                    <th>Relique</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${dashboard.roster}">
+                    <td>
+                        <div class="roster-character-cell">
+                            <div class="roster-character-icon"><i class="bi bi-person-fill"></i></div>
+                            <strong th:text="${p.nomFrancais != null and !#strings.isEmpty(p.nomFrancais) ? p.nomFrancais : p.nom}">
+                                Personnage
+                            </strong>
+                        </div>
+                    </td>
+                    <td><span class="stars" th:text="${p.etoiles} + '★'">7★</span></td>
+                    <td><span class="level-badge" th:text="${p.niveau}">85</span></td>
+                    <td><span class="gear-badge" th:text="'G' + ${p.gear}">G13</span></td>
+                    <td>
+                        <span th:if="${p.relic > 0}" class="relic-badge" th:text="'R' + ${p.relic}">R5</span>
+                        <span th:unless="${p.relic > 0}" class="muted-dash">—</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+</body>
+</html>

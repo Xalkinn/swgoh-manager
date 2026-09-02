@@ -33,10 +33,17 @@ public class ComparatifObjectif {
     }
     public int getProgression() {
 
-        if (relic_cible == null || relic_cible == 0) {
+        if (relic_cible == null || relic_cible == 0 || relic_actuelle == null) {
             return 0;
         }
 
-        return (relic_actuelle * 100) / relic_cible;
+        int progression = (relic_actuelle * 100) / relic_cible;
+        return Math.min(progression, 100);
+    }
+
+    public boolean isObjectifTermine() {
+        return relic_actuelle != null
+                && relic_cible != null
+                && relic_actuelle >= relic_cible;
     }
 }

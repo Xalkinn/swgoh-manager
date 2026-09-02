@@ -1,105 +1,28 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
-
-<head>
-    <meta charset="UTF-8">
-    <title>SWGOH Manager - Les Baguettes Enflammées</title>
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-          rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-</head>
-
-<body class="bg-light">
-	<!-- MENU -->
-	<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
-	    <div class="container-fluid">
-	        <a class="navbar-brand fw-bold" href="/">
-	            Gestion de la guilde
-	        </a>
-	        <div class="navbar-nav">
-	            <a class="nav-link active" href="/">
-	                <i class="bi bi-house-fill"></i>
-	                Accueil
-	            </a>
-	            <a class="nav-link" href="/omicrons">
-	                <i class="bi bi-stars"></i>
-	                Omicrons
-	            </a>
-	            <a class="nav-link" href="/joueurs">
-	                <i class="bi bi-people-fill"></i>
-	                Joueurs
-	            </a>
-	        </div>
-	    </div>
-	</nav>
-	<div class="container mt-5">
-	    <!-- Titre -->
-	    <div class="mb-4">
-	        <h1 class="display-5">
-	            Bienvenue sur SWGOH Manager
-	        </h1>
-	        <p class="lead text-muted">
-	            Interface de gestion de la guilde
-	            <strong>Les Baguettes Enflammées</strong>
-	        </p>
-	    </div>
-	    <!-- Cartes -->
-	    <div class="row">
-	        <div class="col-lg-6">
-	            <div class="card shadow-sm">
-	                <div class="card-header bg-primary text-white">
-	                    <h5 class="mb-0">
-	                        🚀 Batch Omicron
-	                    </h5>
-	                </div>
-	                <div class="card-body">
-	                    <p>
-	                        Lance une analyse complète de la guilde afin de
-	                        mettre à jour les Omicrons dans la base de données.
-	                    </p>
-	                    <a href="/batch/omicron"
-	                       class="btn btn-primary">
-	                        <i class="bi bi-play-fill"></i>
-	                        Lancer le batch
-	                    </a>
-	                </div>
-	            </div>
-	        </div>
-	        <div class="col-lg-6">
-	            <div class="card shadow-sm">
-	                <div class="card-header bg-success text-white">
-	                    <h5 class="mb-0">
-	                        📊 Informations
-	                    </h5>
-	                </div>
-	                <div class="card-body">
-	                    <table class="table table-sm">
-	                        <tr>
-	                            <td>Base de données</td>
-	                            <td>
-	                                <span class="badge bg-success">
-	                                    Connectée
-	                                </span>
-	                            </td>
-	                        </tr>
-	                        <tr>
-	                            <td>Batch Omicron</td>
-	                            <td>
-	                                Prêt
-	                            </td>
-	                        </tr>
-	                        <tr>
-	                            <td>Version</td>
-	                            <td>1.0</td>
-	                        </tr>
-	                    </table>
-	                </div>
-	            </div>
-	        </div>
-	    </div>
-	</div>
+<head th:replace="~{fragments/head :: head}"></head>
+<body class="app-page">
+<div th:replace="~{fragments/menu :: menu}"></div>
+<main class="app-container">
+    <header class="app-page-header">
+        <div class="app-page-heading">
+            <span class="app-kicker">Les Baguettes Enflammées</span>
+            <h1><i class="bi bi-stars me-2"></i>SWGOH Manager</h1>
+            <p>Interface de gestion et de suivi de la guilde.</p>
+        </div>
+        <div class="app-header-actions"><button id="themeToggle" class="app-theme-toggle" type="button"><i class="bi bi-moon-stars-fill"></i><span>Mode sombre</span></button></div>
+    </header>
+    <div class="app-grid-2">
+        <section class="app-card">
+            <div class="app-card-header"><div class="app-card-title"><span class="app-card-icon purple"><i class="bi bi-grid-1x2-fill"></i></span><div><h2>Tableau de bord</h2><p>Accède à la vue générale de la guilde.</p></div></div></div>
+            <div class="app-card-body"><p class="text-muted">Retrouve les principaux indicateurs, les batchs et les dernières évolutions de la guilde.</p><a href="/" class="app-primary-btn"><i class="bi bi-arrow-right-circle-fill"></i>Ouvrir le dashboard</a></div>
+        </section>
+        <section class="app-card">
+            <div class="app-card-header"><div class="app-card-title"><span class="app-card-icon green"><i class="bi bi-database-check"></i></span><div><h2>Système</h2><p>État général de l'application.</p></div></div></div>
+            <div class="app-card-body"><div class="app-stat-strip" style="grid-template-columns:1fr 1fr"><div class="app-stat"><span>Base de données</span><strong style="font-size:1rem">Connectée</strong></div><div class="app-stat"><span>Application</span><strong style="font-size:1rem">Prête</strong></div></div></div>
+        </section>
+    </div>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
 </body>
 </html>

@@ -1,276 +1,155 @@
 <!DOCTYPE html>
-<html lang="fr"
-      xmlns:th="http://www.thymeleaf.org">
-
-<head th:replace="~{fragments/head :: head}">
-</head>
-
-
-<body>
-
-<!-- MENU -->
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body class="app-page">
 <div th:replace="~{fragments/menu :: menu}"></div>
 
+<main class="app-container">
+    <header class="app-page-header">
+        <div class="app-page-heading">
+            <span class="app-kicker">Analyse & progression</span>
+            <h1><i class="bi bi-people-fill me-2"></i>Suivi joueur</h1>
+            <p>Consulte l'évolution d'un joueur ou compare deux extractions du roster.</p>
+        </div>
+        <div class="app-header-actions">
+            <button id="themeToggle" class="app-theme-toggle" type="button" aria-label="Activer le mode sombre">
+                <i class="bi bi-moon-stars-fill"></i><span>Mode sombre</span>
+            </button>
+        </div>
+    </header>
 
-<div class="container mt-5">
-
-    <h1>
-        Suivi joueur
-    </h1>
-
-
-    <!-- ONGLET -->
-    <div class="card text-center mt-4">
-        <div class="card-header">
-            <ul class="nav nav-pills card-header-pills">
+    <section class="app-card">
+        <div class="app-card-body">
+            <ul class="nav app-tabs">
                 <li class="nav-item">
-                    <a class="nav-link"
-                       th:classappend="${onglet == 'avance' ? '' : 'active'}"
-                       href="/joueurs">
-                        Recherche joueur
+                    <a class="nav-link" th:classappend="${onglet == 'avance' ? '' : 'active'}" href="/joueurs">
+                        <i class="bi bi-person-search"></i>Recherche joueur
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link"
-                       th:classappend="${onglet == 'avance' ? 'active' : ''}"
-                       href="/joueurs?onglet=avance">
-                        Recherche avancée
+                    <a class="nav-link" th:classappend="${onglet == 'avance' ? 'active' : ''}" href="/joueurs?onglet=avance">
+                        <i class="bi bi-arrow-left-right"></i>Comparaison avancée
                     </a>
                 </li>
             </ul>
-        </div>
-
-
-        <div class="card-body">
-
-
-            <!-- ========================= -->
-            <!-- RECHERCHE CLASSIQUE -->
-            <!-- ========================= -->
 
             <div th:if="${onglet != 'avance'}">
-
-
-                <h5 class="card-title">
-                    Recherche d'un joueur
-                </h5>
-
-
+                <div class="app-card-title mb-3">
+                    <span class="app-card-icon blue"><i class="bi bi-person-lines-fill"></i></span>
+                    <div>
+                        <h2>Évolution récente d'un joueur</h2>
+                        <p>Sélectionne un membre pour comparer automatiquement ses deux dernières extractions.</p>
+                    </div>
+                </div>
                 <form method="get" action="/joueurs">
-
-
-                    <input type="hidden"
-                           name="onglet"
-                           value="base">
-
-
-                    <select class="form-select"
-                            name="joueurId">
-
-
-                        <option value="">
-                            -- Choisir un joueur --
-                        </option>
-
-
-                        <option
-                            th:each="joueur : ${joueurs}"
-                            th:value="${joueur.id}"
-                            th:text="${joueur.nom}"
-                            th:selected="${joueur.id == joueurId}">
-                        </option>
-
-
-                    </select>
-
-
-                    <button class="btn btn-primary mt-3">
-                        Afficher
-                    </button>
-
-
+                    <input type="hidden" name="onglet" value="base">
+                    <div class="app-grid-2">
+                        <div class="app-field">
+                            <label for="joueurBase">Joueur</label>
+                            <select id="joueurBase" class="form-select" name="joueurId">
+                                <option value="">-- Choisir un joueur --</option>
+                                <option th:each="joueur : ${joueurs}" th:value="${joueur.id}" th:text="${joueur.nom}" th:selected="${joueur.id == joueurId}"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="app-form-actions">
+                        <button class="app-primary-btn" type="submit"><i class="bi bi-search"></i>Afficher l'évolution</button>
+                    </div>
                 </form>
-
-
             </div>
 
-
-
-
-            <!-- ========================= -->
-            <!-- RECHERCHE AVANCEE -->
-            <!-- ========================= -->
-
             <div th:if="${onglet == 'avance'}">
-
-
-                <h5 class="card-title">
-                    Comparaison de roster
-                </h5>
-
-
-                <form method="get"
-                      action="/joueurs">
-
-
-                    <input type="hidden"
-                           name="onglet"
-                           value="avance">
-
-
-
-                    <!-- Joueur -->
-
-                    <label class="form-label mt-3">
-                        Joueur
-                    </label>
-                    <select class="form-select"
-                            name="joueurId">
-                        <option value="">
-                            -- Choisir un joueur --
-                        </option>
-                        <option
-                            th:each="joueur : ${joueurs}"
-                            th:value="${joueur.id}"
-                            th:text="${joueur.nom}"
-                            th:selected="${joueur.id == joueurId}">
-                        </option>
-                    </select>
-
-                    <!-- Ancienne extraction -->
-
-                    <label class="form-label mt-3">
-                        Ancienne extraction
-                    </label>
-                    <select class="form-select"
-                            name="ancienneExtraction">
-                        <option value="">
-                            -- Choisir --
-                        </option>
-                        <option
-                            th:each="e : ${extractions}"
-                            th:value="${e.id}"
-                            th:selected="${e.id == ancienneExtraction}"
-                            th:text="'Extraction #' + ${e.id} 
-                            + ' du ' 
-                            + ${#temporals.format(e.dateFin,'d MMMM yyyy à HH''h''mm')}">
-                        </option>
-                    </select>
-                    <!-- Nouvelle extraction -->
-                    <label class="form-label mt-3">
-                        Nouvelle extraction
-                    </label>
-                    <select class="form-select"
-                            name="nouvelleExtraction">
-                        <option value="">
-                            -- Choisir --
-                        </option>
-                        <option
-                            th:each="e : ${extractions}"
-                            th:value="${e.id}"
-                            th:selected="${e.id == nouvelleExtraction}"
-                            th:text="'Extraction #' + ${e.id} 
-                            + ' du ' 
-                            + ${#temporals.format(e.dateFin,'d MMMM yyyy à HH''h''mm')}">
-                        </option>
-                    </select>
-                    <button class="btn btn-success mt-4">
-                        Comparer
-                    </button>
+                <div class="app-card-title mb-3">
+                    <span class="app-card-icon purple"><i class="bi bi-clock-history"></i></span>
+                    <div>
+                        <h2>Comparaison de roster</h2>
+                        <p>Compare deux extractions pour un joueur précis ou pour l'ensemble de la guilde.</p>
+                    </div>
+                </div>
+                <form method="get" action="/joueurs">
+                    <input type="hidden" name="onglet" value="avance">
+                    <div class="app-form-grid">
+                        <div class="app-field">
+                            <label for="joueurAvance">Joueur <span class="text-muted">(optionnel)</span></label>
+                            <select id="joueurAvance" class="form-select" name="joueurId">
+                                <option value="">Tous les joueurs</option>
+                                <option th:each="joueur : ${joueurs}" th:value="${joueur.id}" th:text="${joueur.nom}" th:selected="${joueur.id == joueurId}"></option>
+                            </select>
+                        </div>
+                        <div class="app-field">
+                            <label for="ancienneExtraction">Ancienne extraction</label>
+                            <select id="ancienneExtraction" class="form-select" name="ancienneExtraction">
+                                <option value="">-- Choisir --</option>
+                                <option th:each="e : ${extractions}" th:value="${e.id}" th:selected="${e.id == ancienneExtraction}"
+                                        th:text="'Extraction #' + ${e.id} + ' du ' + ${#temporals.format(e.dateFin,'d MMMM yyyy à HH''h''mm')}"></option>
+                            </select>
+                        </div>
+                        <div class="app-field">
+                            <label for="nouvelleExtraction">Nouvelle extraction</label>
+                            <select id="nouvelleExtraction" class="form-select" name="nouvelleExtraction">
+                                <option value="">-- Choisir --</option>
+                                <option th:each="e : ${extractions}" th:value="${e.id}" th:selected="${e.id == nouvelleExtraction}"
+                                        th:text="'Extraction #' + ${e.id} + ' du ' + ${#temporals.format(e.dateFin,'d MMMM yyyy à HH''h''mm')}"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="app-form-actions">
+                        <button class="app-primary-btn" type="submit"><i class="bi bi-arrow-left-right"></i>Comparer</button>
+                    </div>
                 </form>
             </div>
         </div>
-    </div>
+    </section>
 
-
-
-
-
-    <!-- RESULTATS -->
-
-    <div class="mt-5"
-         th:if="${evolutions != null}">
-        <h2>
-            Évolutions du roster
-        </h2>
-        <table id=tableEvolutionJoueur class="table table-striped mt-3">
-			<thead class="table-dark">
-			    <tr>
-			        <th onclick="trierEvolutionJoueur(0)" style="cursor:pointer;">
-			            Joueur ↕
-			        </th>
-			        <th onclick="trierEvolutionJoueur(1)" style="cursor:pointer;">
-			            Personnage ↕
-			        </th>
-			        <th onclick="trierEvolutionJoueur(2)" style="cursor:pointer;">
-			            Gear ↕
-			        </th>
-			        <th onclick="trierEvolutionJoueur(3)" style="cursor:pointer;">
-			            Relique ↕
-			        </th>
-			        <th onclick="trierEvolutionJoueur(4)" style="cursor:pointer;">
-			            Étoiles ↕
-			        </th>
-			    </tr>
-			</thead>
-			<tbody>
-            <tr th:each="evo : ${evolutions}">
-				<td th:text="${evo.joueur}">
-				</td>
-			
-                <td th:text="${evo.nom}">
-                </td>
-                <td>
-                    <span th:if="${evo.ancienGear != evo.nouveauGear}">
-
-                        <span th:text="${evo.ancienGear}">
-                        </span>
-                        →
-						<strong class="text-success" th:text="${evo.nouveauGear}">
-						</strong>
-                    </span>
-                    <span th:if="${evo.ancienGear == evo.nouveauGear}">
-                        -
-                    </span>
-                </td>
-                <td>
-                    <span th:if="${evo.ancienneRelique != evo.nouvelleRelique}">
-                        <span th:text="${evo.ancienneRelique}">
-                        </span>
-                        →
-						<strong class="text-warning" th:text="${evo.nouvelleRelique}">
-						</strong>
-                    </span>
-                    <span th:if="${evo.ancienneRelique == evo.nouvelleRelique}">
-                        -
-                    </span>
-                </td>
-                <td>
-
-                    <span th:if="${evo.anciennesEtoiles != evo.nouvellesEtoiles}">
-                        <span th:text="${evo.anciennesEtoiles}">
-                        </span>
-                        →
-						<strong class="text-primary" th:text="${evo.nouvellesEtoiles}">
-						</strong>
-                    </span>
-                    <span th:if="${evo.anciennesEtoiles == evo.nouvellesEtoiles}">
-                        -
-                    </span>
-                </td>
-            </tr>
-			</tbody>
-        </table>
-    </div>
-</div>
-
-
-
-
-<!-- FOOTER -->
+    <section class="app-card" th:if="${evolutions != null}">
+        <div class="app-card-header">
+            <div class="app-card-title">
+                <span class="app-card-icon green"><i class="bi bi-graph-up-arrow"></i></span>
+                <div>
+                    <h2>Évolutions du roster</h2>
+                    <p>Les changements détectés entre les extractions sélectionnées.</p>
+                </div>
+            </div>
+            <span class="app-badge neutral" th:text="${#lists.size(evolutions)} + ' évolution(s)'">0 évolution</span>
+        </div>
+        <div class="app-table-wrap" th:if="${!#lists.isEmpty(evolutions)}">
+            <table id="tableEvolutionJoueur" class="app-table">
+                <thead>
+                <tr>
+                    <th class="app-sortable" onclick="trierEvolutionJoueur(0)">Joueur ↕</th>
+                    <th class="app-sortable" onclick="trierEvolutionJoueur(1)">Personnage ↕</th>
+                    <th class="app-sortable" onclick="trierEvolutionJoueur(2)">Gear ↕</th>
+                    <th class="app-sortable" onclick="trierEvolutionJoueur(3)">Relique ↕</th>
+                    <th class="app-sortable" onclick="trierEvolutionJoueur(4)">Étoiles ↕</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="evo : ${evolutions}">
+                    <td><strong th:text="${evo.joueur}"></strong></td>
+                    <td th:text="${evo.nom}"></td>
+                    <td>
+                        <span th:if="${evo.ancienGear != evo.nouveauGear}"><span class="app-badge neutral" th:text="${evo.ancienGear}"></span> → <span class="app-badge green" th:text="${evo.nouveauGear}"></span></span>
+                        <span th:if="${evo.ancienGear == evo.nouveauGear}" class="text-muted">—</span>
+                    </td>
+                    <td>
+                        <span th:if="${evo.ancienneRelique != evo.nouvelleRelique}"><span class="app-badge neutral" th:text="${evo.ancienneRelique}"></span> → <span class="app-badge orange" th:text="${evo.nouvelleRelique}"></span></span>
+                        <span th:if="${evo.ancienneRelique == evo.nouvelleRelique}" class="text-muted">—</span>
+                    </td>
+                    <td>
+                        <span th:if="${evo.anciennesEtoiles != evo.nouvellesEtoiles}"><span class="app-badge neutral" th:text="${evo.anciennesEtoiles}"></span> → <span class="app-badge blue" th:text="${evo.nouvellesEtoiles}"></span></span>
+                        <span th:if="${evo.anciennesEtoiles == evo.nouvellesEtoiles}" class="text-muted">—</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="app-empty" th:if="${#lists.isEmpty(evolutions)}">
+            <div class="app-empty-icon"><i class="bi bi-check2-circle"></i></div>
+            <h3>Aucune évolution détectée</h3>
+            <p>Les deux extractions ne présentent pas de changement pour cette sélection.</p>
+        </div>
+    </section>
+</main>
 <div th:replace="~{fragments/footer :: footer}"></div>
-
-
 </body>
-
 </html>

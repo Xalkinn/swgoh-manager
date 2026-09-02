@@ -19,14 +19,17 @@ public class BatchRosterService {
 	//private ExtractionService extractionServiceold;
 	private final ExtractionService extractionService;
 	private final BatchRosterStatusService rosterStatusService;
+	private final LocalizationService localizationService;
 
 
 	public BatchRosterService(
 	        ExtractionService extractionService,
-	        BatchRosterStatusService rosterStatusService) {
+	        BatchRosterStatusService rosterStatusService,
+	        LocalizationService localizationService) {
 
 	    this.extractionService = extractionService;
 	    this.rosterStatusService = rosterStatusService;
+	    this.localizationService = localizationService;
 	}
     public void lancerBatch() {
         Thread thread = new Thread(() -> {
@@ -42,6 +45,14 @@ public class BatchRosterService {
     }
     
     private void traiterRosters() throws Exception {
+
+        // La traduction n'est jamais bloquante pour l'import du roster.
+        // On profite simplement du batch pour garder le bundle français à jour.
+        try {
+            System.out.println("🌍 " + localizationService.rafraichir());
+        } catch (Exception e) {
+            System.out.println("⚠️ Localisations françaises non rafraîchies : " + e.getMessage());
+        }
 
         int extractionId = extractionService.debutExtraction();
         try(Connection conn = DatabaseManager.getConnection();
@@ -113,6 +124,15 @@ public class BatchRosterService {
                 );
             }
         }
+        // Les nouveaux base_id importés pendant ce batch sont maintenant
+        // ajoutés au référentiel personnage_definition avec leur nom français.
+        try {
+            int definitions = localizationService.synchroniserDefinitionsDepuisCache();
+            System.out.println("🌍 personnage_definition synchronisée : " + definitions + " personnage(s)");
+        } catch (Exception e) {
+            System.out.println("⚠️ Référentiel personnages non synchronisé : " + e.getMessage());
+        }
+
         extractionService.finExtraction(extractionId);
         rosterStatusService.terminer();
     }

@@ -65,6 +65,7 @@ public class DashboardControleur {
 
         model.addAttribute("extraction", extraction);
         model.addAttribute("stats", stats);
+        model.addAttribute("joueurs", dashboardService.getJoueursGuilde());
         model.addAttribute("etatSysteme", etatSysteme);
         model.addAttribute("extraction", extraction);
         model.addAttribute("actualisation", actualisationService.getActualisation());

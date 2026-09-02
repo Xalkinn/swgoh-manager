@@ -53,7 +53,16 @@ public class ObjectifControleur {
     @GetMapping("/objectifs/{nom}/comparatif")
     public String comparatif(@PathVariable String nom, Model model) {
     	System.out.println("Compare d'objectif");
-        model.addAttribute("comparatif",objectifService.getComparatif(nom));
+
+        List<ComparatifObjectif> comparatif = objectifService.getComparatif(nom);
+        long nbComplets = comparatif.stream()
+                .filter(ComparatifObjectif::isObjectifTermine)
+                .count();
+
+        model.addAttribute("comparatif", comparatif);
+        model.addAttribute("nbComplets", nbComplets);
+        model.addAttribute("nbJoueursComparatif", comparatif.size());
+
         return "comparatif";
     }
     

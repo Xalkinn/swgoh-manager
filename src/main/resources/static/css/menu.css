@@ -1,0 +1,365 @@
+/* =========================================================
+   MENU PRINCIPAL - SWGOH Manager
+   Harmonisé avec les dashboards clair / sombre
+   ========================================================= */
+
+.swgoh-navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    padding: 12px 18px 0;
+    background: transparent;
+}
+
+.swgoh-navbar-inner {
+    max-width: 1600px;
+    min-height: 70px;
+    margin: 0 auto;
+    padding: 9px 12px;
+    background: color-mix(in srgb, var(--dash-card) 94%, transparent);
+    border: 1px solid var(--dash-border);
+    border-radius: 18px;
+    box-shadow: 0 8px 30px rgba(31, 43, 68, .08);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+.swgoh-brand {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 245px;
+    margin-right: 22px;
+    padding: 4px 8px 4px 4px;
+    color: var(--dash-text) !important;
+}
+
+.swgoh-brand-icon {
+    width: 44px;
+    height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 44px;
+    border-radius: 14px;
+    color: #fff;
+    font-size: 1.15rem;
+    background: linear-gradient(135deg, var(--purple), #987ee9);
+    box-shadow: 0 8px 20px rgba(118, 87, 232, .24);
+}
+
+.swgoh-brand-copy {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.swgoh-brand-copy strong {
+    font-size: .93rem;
+    font-weight: 850;
+    letter-spacing: -.01em;
+}
+
+.swgoh-brand-copy small {
+    margin-top: 5px;
+    color: var(--dash-muted);
+    font-size: .68rem;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+.swgoh-nav-main,
+.swgoh-nav-tools {
+    align-items: center;
+    gap: 4px;
+}
+
+.swgoh-nav-link {
+    position: relative;
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 7px 10px !important;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    color: var(--dash-muted) !important;
+    font-size: .78rem;
+    font-weight: 750;
+    white-space: nowrap;
+    transition: background-color .18s ease, color .18s ease, transform .18s ease;
+}
+
+.swgoh-nav-link:hover,
+.swgoh-nav-link:focus-visible {
+    color: var(--dash-text) !important;
+    background: var(--dash-soft);
+    transform: translateY(-1px);
+}
+
+.swgoh-nav-link.active {
+    color: var(--dash-text) !important;
+    background: var(--purple-soft);
+}
+
+.swgoh-nav-link.active::after {
+    content: "";
+    position: absolute;
+    left: 15px;
+    right: 15px;
+    bottom: -9px;
+    height: 3px;
+    border-radius: 5px 5px 0 0;
+    background: var(--purple);
+}
+
+.swgoh-nav-icon {
+    width: 30px;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 30px;
+    border-radius: 9px;
+    font-size: .82rem;
+}
+
+.swgoh-nav-icon.purple,
+.dropdown-icon.purple { background: var(--purple-soft); color: var(--purple); }
+.swgoh-nav-icon.blue,
+.dropdown-icon.blue { background: var(--blue-soft); color: var(--blue); }
+.swgoh-nav-icon.orange,
+.dropdown-icon.orange { background: var(--orange-soft); color: var(--orange); }
+.swgoh-nav-icon.green,
+.dropdown-icon.green { background: var(--green-soft); color: var(--green); }
+.swgoh-nav-icon.neutral,
+.dropdown-icon.neutral { background: var(--dash-soft); color: var(--dash-muted); }
+
+.swgoh-tools-trigger::after {
+    margin-left: 1px;
+    opacity: .55;
+}
+
+.swgoh-dropdown {
+    width: 290px;
+    margin-top: 12px !important;
+    padding: 8px;
+    border: 1px solid var(--dash-border);
+    border-radius: 16px;
+    background: var(--dash-card);
+    box-shadow: 0 16px 42px rgba(20, 30, 50, .14);
+}
+
+.swgoh-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px;
+    border-radius: 11px;
+    color: var(--dash-text);
+    white-space: normal;
+}
+
+.swgoh-dropdown-item:hover,
+.swgoh-dropdown-item:focus,
+.swgoh-dropdown-item.active {
+    color: var(--dash-text);
+    background: var(--dash-soft);
+}
+
+.dropdown-icon {
+    width: 36px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 36px;
+    border-radius: 10px;
+}
+
+.swgoh-dropdown-item > span:last-child {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+}
+
+.swgoh-dropdown-item strong {
+    font-size: .78rem;
+    font-weight: 800;
+}
+
+.swgoh-dropdown-item small {
+    margin-top: 4px;
+    color: var(--dash-muted);
+    font-size: .67rem;
+}
+
+.swgoh-dropdown .dropdown-divider {
+    border-color: var(--dash-border);
+    opacity: 1;
+}
+
+.swgoh-menu-toggle {
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border: 1px solid var(--dash-border) !important;
+    border-radius: 11px;
+    color: var(--dash-text);
+    background: var(--dash-soft);
+    box-shadow: none !important;
+}
+
+.swgoh-menu-toggle i {
+    font-size: 1.35rem;
+}
+
+html.dark-mode .swgoh-navbar-inner {
+    box-shadow: 0 10px 34px rgba(0, 0, 0, .22);
+}
+
+html.dark-mode .swgoh-dropdown {
+    box-shadow: 0 18px 45px rgba(0, 0, 0, .30);
+}
+
+html.dark-mode .swgoh-brand-icon {
+    box-shadow: 0 8px 22px rgba(118, 87, 232, .20);
+}
+
+@media (max-width: 1199.98px) {
+    .swgoh-navbar {
+        padding: 10px 12px 0;
+    }
+
+    .swgoh-navbar-inner {
+        padding: 9px 10px;
+    }
+
+    #swgohMainMenu {
+        padding-top: 10px;
+    }
+
+    .swgoh-nav-main,
+    .swgoh-nav-tools {
+        align-items: stretch;
+        gap: 3px;
+    }
+
+    .swgoh-nav-link {
+        width: 100%;
+        padding: 8px 9px !important;
+    }
+
+    .swgoh-nav-link.active::after {
+        top: 9px;
+        bottom: 9px;
+        left: -10px;
+        right: auto;
+        width: 3px;
+        height: auto;
+        border-radius: 0 5px 5px 0;
+    }
+
+    .swgoh-nav-tools {
+        margin-top: 7px;
+        padding-top: 7px;
+        border-top: 1px solid var(--dash-border);
+    }
+
+    .swgoh-dropdown {
+        width: 100%;
+        margin-top: 4px !important;
+        box-shadow: none;
+    }
+}
+
+@media (max-width: 520px) {
+    .swgoh-navbar {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+    .swgoh-brand {
+        min-width: 0;
+        margin-right: 8px;
+    }
+
+    .swgoh-brand-copy small {
+        display: none;
+    }
+
+    .swgoh-brand-icon {
+        width: 40px;
+        height: 40px;
+        flex-basis: 40px;
+    }
+}
+
+
+/* =========================================================
+   MODE SOMBRE - MENU
+   ========================================================= */
+
+/* Libellés standards */
+html.dark-mode .swgoh-nav-link {
+    color: #aeb8c8 !important;
+}
+
+html.dark-mode .swgoh-nav-link:hover,
+html.dark-mode .swgoh-nav-link:focus-visible {
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, .06);
+}
+
+/*
+ * Onglet actif :
+ * on évite --purple-soft car cette variable est très claire
+ * et prévue à l'origine pour le thème clair.
+ */
+html.dark-mode .swgoh-nav-link.active {
+    color: #ffffff !important;
+    background: rgba(118, 87, 232, .24) !important;
+}
+
+html.dark-mode .swgoh-nav-link.active:hover,
+html.dark-mode .swgoh-nav-link.active:focus-visible {
+    color: #ffffff !important;
+    background: rgba(118, 87, 232, .32) !important;
+}
+
+/* Petit trait violet sous l'onglet courant */
+html.dark-mode .swgoh-nav-link.active::after {
+    background: #8d72f4;
+}
+
+/* Nom de l'application / guilde */
+html.dark-mode .swgoh-brand,
+html.dark-mode .swgoh-brand-copy strong {
+    color: #f4f6fa !important;
+}
+
+html.dark-mode .swgoh-brand-copy small {
+    color: #aeb8c8 !important;
+}
+
+/* Dropdown Outils */
+html.dark-mode .swgoh-dropdown {
+    background: #171d29;
+    border-color: #293242;
+}
+
+html.dark-mode .swgoh-dropdown-item {
+    color: #dfe5ef !important;
+}
+
+html.dark-mode .swgoh-dropdown-item:hover,
+html.dark-mode .swgoh-dropdown-item:focus {
+    color: #ffffff !important;
+    background: #222a39;
+}
+
+html.dark-mode .swgoh-dropdown-item.active {
+    color: #ffffff !important;
+    background: rgba(118, 87, 232, .24);
+}

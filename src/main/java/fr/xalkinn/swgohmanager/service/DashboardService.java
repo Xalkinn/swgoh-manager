@@ -36,6 +36,12 @@ public class DashboardService {
         return stats;
     }
     
+
+
+    public List<fr.xalkinn.swgohmanager.modele.Joueur> getJoueursGuilde() {
+        return joueurRepository.trouverTousLesJoueursParNom();
+    }
+
     public List<EvolutionGuilde> getDerniersUps() {
 
         return personnageRepository.trouverDerniersUpsGuilde();

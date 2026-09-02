@@ -1,5 +1,7 @@
 package fr.xalkinn.swgohmanager.modele;
 
+import org.springframework.data.annotation.Transient;
+
 
 public class Omicron {
 
@@ -8,6 +10,10 @@ public class Omicron {
     private String joueurId;
     private String nomJoueur;
     private String personnage;
+
+    @Transient
+    private String nomFrancais;
+
     private String typeCapacite;
     private boolean actif;
 
@@ -41,6 +47,14 @@ public class Omicron {
 
     public void setPersonnage(String personnage) {
         this.personnage = personnage;
+    }
+
+    public String getNomFrancais() {
+        return nomFrancais;
+    }
+
+    public void setNomFrancais(String nomFrancais) {
+        this.nomFrancais = nomFrancais;
     }
 
     public String getTypeCapacite() {

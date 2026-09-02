@@ -1,34 +1,54 @@
 <!DOCTYPE html>
-<html lang="fr"
-xmlns:th="http://www.thymeleaf.org">
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body class="app-page">
+<div th:replace="~{fragments/menu :: menu}"></div>
+<main class="app-container">
+    <header class="app-page-header">
+        <div class="app-page-heading">
+            <span class="app-kicker">Capacités de guilde</span>
+            <h1><i class="bi bi-lightning-charge-fill me-2"></i>Omicrons</h1>
+            <p>Vue globale des capacités Omicron enregistrées pour les membres de la guilde.</p>
+        </div>
+        <div class="app-header-actions">
+            <span class="app-badge purple" th:text="${#lists.size(omicrons)} + ' omicron(s)'">0 omicron</span>
+            <button id="themeToggle" class="app-theme-toggle" type="button"><i class="bi bi-moon-stars-fill"></i><span>Mode sombre</span></button>
+        </div>
+    </header>
 
-
-<head th:replace="~{fragments/head :: head}">
-
-<body>
-	<!-- MENU -->
-		<div th:replace="~{fragments/menu :: menu}"></div>
-		<div class="container mt-5">
-				<h1>
-				Liste des Omicrons
-				</h1>
-			<table class="table table-striped">
-				<tr>
-					<th>Joueur</th>
-					<th>Personnage</th>
-					<th>Type</th>
-					<th>Actif</th>
-				</tr>
-				<tr th:each="o : ${omicrons}">
-					<td th:text="${o.nomJoueur}"></td>
-					<td th:text="${o.personnage}"></td>
-					<td th:text="${o.typeCapacite}"></td>
-					<td th:text="${o.actif ? 'Oui':'Non'}"></td>
-				</tr>
-				</table>
-			</div>
-	<!-- Footer -->
-		<div th:replace="~{fragments/footer :: footer}"></div>
+    <section class="app-card">
+        <div class="app-card-header">
+            <div class="app-card-title">
+                <span class="app-card-icon purple"><i class="bi bi-stars"></i></span>
+                <div><h2>Liste des Omicrons</h2><p>Joueur, personnage, type de capacité et statut.</p></div>
+            </div>
+        </div>
+        <div class="app-table-wrap" th:if="${!#lists.isEmpty(omicrons)}">
+            <table class="app-table">
+                <thead><tr><th>Joueur</th><th>Personnage</th><th>Type</th><th>Statut</th></tr></thead>
+                <tbody>
+                <tr th:each="o : ${omicrons}">
+                    <td><strong th:text="${o.nomJoueur}"></strong></td>
+                    <td>
+                        <strong th:text="${o.nomFrancais != null and !#strings.isEmpty(o.nomFrancais) ? o.nomFrancais : o.personnage}">
+                            Personnage
+                        </strong>
+                    </td>
+                    <td><span class="app-badge purple" th:text="${o.typeCapacite}"></span></td>
+                    <td>
+                        <span class="app-badge green" th:if="${o.actif}"><i class="bi bi-check-circle-fill"></i>Actif</span>
+                        <span class="app-badge neutral" th:unless="${o.actif}"><i class="bi bi-dash-circle"></i>Inactif</span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="app-empty" th:if="${#lists.isEmpty(omicrons)}">
+            <div class="app-empty-icon"><i class="bi bi-lightning"></i></div>
+            <h3>Aucun Omicron enregistré</h3><p>La liste se remplira après la prochaine synchronisation des données.</p>
+        </div>
+    </section>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
 </body>
-
 </html>

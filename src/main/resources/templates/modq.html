@@ -1,135 +1,64 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-
-<head th:replace="~{fragments/head :: head}">
-
-</head>
-
-<body>
-
-<!-- MENU -->
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body class="app-page">
 <div th:replace="~{fragments/menu :: menu}"></div>
-<!-- ONGLET -->
-	<div class="container mt-5">
-	
-	    <h1>
-	        Qualité des mods
-	    </h1>
-	
-	    <div class="card text-center mt-4">
-	
-	        <div class="card-header">
-	
-	            <ul class="nav nav-pills card-header-pills">
-	
-	                <li class="nav-item">
-	                    <a class="nav-link"
-	                       th:classappend="${onglet == 'stats' ? '' : 'active'}"
-	                       href="/mods">
-	                        Qualité des mods
-	                    </a>
-	                </li>
-	
-	                <li class="nav-item">
-	                    <a class="nav-link"
-	                       th:classappend="${onglet == 'stats' ? 'active' : ''}"
-	                       href="/mods?onglet=stats">
-	                        Statistiques
-	                    </a>
-	                </li>
-	
-	            </ul>
-	
-	        </div>
-								
-	        <div class="card-body">
-	
-	            <!-- ========================= -->
-	            <!-- CLASSEMENT -->
-	            <!-- ========================= -->
-	
-				<div th:if="${onglet != 'stats'}">
-												
-                <h5 class="card-title">
-                    Classement ModQ
-                </h5>
-				<div class="mb-3">
-				    <a href="/actions/maj-modq"
-				       class="btn btn-primary">
-				    	<i class="bi bi-arrow-repeat"></i> Actualiser les données
-				    </a>
-				</div>
-				<div class="mt-3">
+<main class="app-container">
+    <header class="app-page-header">
+        <div class="app-page-heading">
+            <span class="app-kicker">Qualité des mods</span>
+            <h1><i class="bi bi-bar-chart-fill me-2"></i>Mods / ModQ</h1>
+            <p>Classement de la guilde selon la qualité et la vitesse des mods.</p>
+        </div>
+        <div class="app-header-actions">
+            <a href="/actions/maj-modq" class="app-primary-btn"><i class="bi bi-arrow-repeat"></i>Actualiser</a>
+            <button id="themeToggle" class="app-theme-toggle" type="button"><i class="bi bi-moon-stars-fill"></i><span>Mode sombre</span></button>
+        </div>
+    </header>
 
-				    <span id="modsEtat"
-				          class="badge bg-secondary">
-				        Repos
-				    </span>
+    <section class="app-card">
+        <div class="app-card-body">
+            <ul class="nav app-tabs">
+                <li class="nav-item"><a class="nav-link" th:classappend="${onglet == 'stats' ? '' : 'active'}" href="/modq"><i class="bi bi-trophy-fill"></i>Classement ModQ</a></li>
+                <li class="nav-item"><a class="nav-link" th:classappend="${onglet == 'stats' ? 'active' : ''}" href="/modq?onglet=stats"><i class="bi bi-pie-chart-fill"></i>Statistiques</a></li>
+            </ul>
 
-				    <div id="modsEtape" class="mt-2">
-				        -
-				    </div>
-						<div class="mb-4">
-						    <div class="progress mt-2">
-						        <div id="modsProgress" class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%">
-						            0%
-						        </div>
-						</div>
-				    </div>
+            <div th:if="${onglet != 'stats'}">
+                <div class="app-progress-status">
+                    <div class="app-progress-row"><div><strong>Mise à jour des ModQ</strong><div id="modsEtape" class="small text-muted mt-1">-</div></div><span id="modsEtat" class="app-badge neutral">Repos</span></div>
+                    <div class="progress"><div id="modsProgress" class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%">0%</div></div>
+                </div>
 
-				</div>
-                <table id="tableauModQ" class="styled-table">
-                    <thead>
-                    <tr>
-                        <th onclick="trierTableauModQ(0)">Rang ↕</th>
-                        <th onclick="trierTableauModQ(1)">Joueur ↕</th>
-                        <th onclick="trierTableauModQ(2)">Mods 15-19 ↕</th>
-                        <th onclick="trierTableauModQ(3)">Mods 20-24 ↕</th>
-                        <th onclick="trierTableauModQ(4)">Mods 25+ ↕</th>
-                        <th onclick="trierTableauModQ(5)">ModQ ↕</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="m, stat : ${modq}">
-                        <td th:text="${stat.index + 1}"></td>
-                        <td th:text="${m.joueur}"></td>
-                        <td th:text="${m.nb15_19}"></td>
-                        <td th:text="${m.nb20_24}"></td>
-                        <td th:text="${m.nb25}"></td>
-						<td>
-						    <strong th:text="${#numbers.formatDecimal(m.modQ,1,2)}"></strong>
-						</td>
-                    </tr>
-                    </tbody>
-                </table>
+                <div class="app-table-wrap">
+                    <table id="tableauModQ" class="app-table">
+                        <thead><tr>
+                            <th class="app-sortable" onclick="trierTableauModQ(0)">Rang ↕</th>
+                            <th class="app-sortable" onclick="trierTableauModQ(1)">Joueur ↕</th>
+                            <th class="app-sortable" onclick="trierTableauModQ(2)">15–19 ↕</th>
+                            <th class="app-sortable" onclick="trierTableauModQ(3)">20–24 ↕</th>
+                            <th class="app-sortable" onclick="trierTableauModQ(4)">25+ ↕</th>
+                            <th class="app-sortable" onclick="trierTableauModQ(5)">ModQ ↕</th>
+                        </tr></thead>
+                        <tbody>
+                        <tr th:each="m, stat : ${modq}">
+                            <td><span class="app-badge" th:classappend="${stat.index == 0 ? ' orange' : (stat.index == 1 ? ' blue' : (stat.index == 2 ? ' green' : ' neutral'))}" th:text="'#' + ${stat.index + 1}"></span></td>
+                            <td><strong th:text="${m.joueur}"></strong></td>
+                            <td th:text="${m.nb15_19}"></td><td th:text="${m.nb20_24}"></td><td th:text="${m.nb25}"></td>
+                            <td><span class="app-badge purple" th:text="${#numbers.formatDecimal(m.modQ,1,2)}"></span></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-	            <!-- ========================= -->
-	            <!-- STATISTIQUES -->
-	            <!-- ========================= -->
-	
-	            <div th:if="${onglet == 'stats'}">
-	
-	                <h5 class="card-title">
-	                    Statistiques des mods
-	                </h5>
-	
-	                <p class="text-muted">
-	                    À venir...
-	                </p>
-	
-	            </div>
-	
-	        </div>
-	
-	    </div>
-	
-	</div>
-
-
-<!-- Footer -->
+            <div th:if="${onglet == 'stats'}" class="app-empty">
+                <div class="app-empty-icon"><i class="bi bi-pie-chart-fill"></i></div>
+                <h3>Statistiques détaillées</h3>
+                <p>Cette partie est prête visuellement pour accueillir les futures statistiques de mods.</p>
+            </div>
+        </div>
+    </section>
+</main>
 <div th:replace="~{fragments/footer :: footer}"></div>
-
-
 </body>
 </html>

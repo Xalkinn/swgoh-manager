@@ -1,42 +1,88 @@
-<nav th:fragment="menu"
-     class="navbar navbar-expand-lg navbar-dark bg-dark">
+<nav th:fragment="menu" class="swgoh-navbar navbar navbar-expand-xl" aria-label="Navigation principale">
+    <div class="container-fluid swgoh-navbar-inner">
 
-    <div class="container-fluid">
+        <a class="swgoh-brand navbar-brand" href="/" aria-label="Accueil SWGOH Manager">
+            <span class="swgoh-brand-icon"><i class="bi bi-stars"></i></span>
+            <span class="swgoh-brand-copy">
+                <strong>SWGOH Manager</strong>
+                <small>Les Baguettes Enflammées</small>
+            </span>
+        </a>
 
-        <a class="navbar-brand" href="/">Dashboard - Les Baguettes Enflammées</a>
-        <div class="navbar-nav">
-            <a class="nav-link" href="/">
-				<i class="bi bi-house"></i>
-				Tableau de bord
-			</a>
-            <a class="nav-link" href="/joueurs">
-				<i class="bi bi-people"></i>
-				Joueurs
-			</a>
-			<a class="nav-link" href="/omicrons">
-				<i class="bi bi-lightning-charge"></i>
-				Omicrons
-			</a>
-			<a class="nav-link" href="/objectifs" >
-				<i class="bi bi-lightning-charge"></i>
-			    Objectifs
-			</a>
-            <a class="nav-link" href="/modq">
-                <i class="bi bi-bar-chart"></i>
-                Mods / ModQ
-            </a>
-			<a class="nav-link" href="/analyse">
-                <i class="bi bi-eye-fill"></i>
-                Analyse nouveau joueur
-            </a>
-            <a class="nav-link" href="/exports">
-                <i class="bi bi-file-earmark-arrow-down"></i>
-                Exports
-            </a>
-            <a class="nav-link" href="/admin">
-                <i class="bi bi-gear"></i>
-                Administration
-            </a>
+        <button class="navbar-toggler swgoh-menu-toggle" type="button"
+                data-bs-toggle="collapse" data-bs-target="#swgohMainMenu"
+                aria-controls="swgohMainMenu" aria-expanded="false"
+                aria-label="Afficher le menu">
+            <i class="bi bi-list"></i>
+        </button>
+
+        <div class="collapse navbar-collapse" id="swgohMainMenu">
+            <div class="navbar-nav swgoh-nav-main">
+                <a class="nav-link swgoh-nav-link" href="/" data-menu-path="/">
+                    <span class="swgoh-nav-icon purple"><i class="bi bi-grid-1x2-fill"></i></span>
+                    <span>Tableau de bord</span>
+                </a>
+
+                <a class="nav-link swgoh-nav-link" href="/joueurs" data-menu-path="/joueurs">
+                    <span class="swgoh-nav-icon blue"><i class="bi bi-people-fill"></i></span>
+                    <span>Suivi joueur</span>
+                </a>
+
+                <a class="nav-link swgoh-nav-link" href="/omicrons" data-menu-path="/omicrons">
+                    <span class="swgoh-nav-icon purple"><i class="bi bi-lightning-charge-fill"></i></span>
+                    <span>Omicrons</span>
+                </a>
+
+                <a class="nav-link swgoh-nav-link" href="/objectifs" data-menu-path="/objectifs">
+                    <span class="swgoh-nav-icon orange"><i class="bi bi-bullseye"></i></span>
+                    <span>Objectifs</span>
+                </a>
+
+                <a class="nav-link swgoh-nav-link" href="/modq" data-menu-path="/modq">
+                    <span class="swgoh-nav-icon green"><i class="bi bi-bar-chart-fill"></i></span>
+                    <span>Mods / ModQ</span>
+                </a>
+            </div>
+
+            <div class="navbar-nav swgoh-nav-tools ms-xl-auto">
+                <div class="nav-item dropdown">
+                    <button class="nav-link swgoh-nav-link swgoh-tools-trigger dropdown-toggle" type="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="swgoh-nav-icon neutral"><i class="bi bi-grid-fill"></i></span>
+                        <span>Outils</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end swgoh-dropdown">
+                        <li>
+                            <a class="dropdown-item swgoh-dropdown-item" href="/analyse" data-menu-path="/analyse">
+                                <span class="dropdown-icon blue"><i class="bi bi-person-plus-fill"></i></span>
+                                <span>
+                                    <strong>Analyse joueur</strong>
+                                    <small>Étudier un nouveau joueur</small>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item swgoh-dropdown-item" href="/exports" data-menu-path="/exports">
+                                <span class="dropdown-icon green"><i class="bi bi-file-earmark-arrow-down-fill"></i></span>
+                                <span>
+                                    <strong>Exports</strong>
+                                    <small>Exporter les données</small>
+                                </span>
+                            </a>
+                        </li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <a class="dropdown-item swgoh-dropdown-item" href="/admin" data-menu-path="/admin">
+                                <span class="dropdown-icon neutral"><i class="bi bi-gear-fill"></i></span>
+                                <span>
+                                    <strong>Administration</strong>
+                                    <small>Réglages et maintenance</small>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 </nav>

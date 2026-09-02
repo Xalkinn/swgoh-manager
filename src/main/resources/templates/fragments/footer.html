@@ -114,15 +114,16 @@
 		setInterval(chargerStatutRoster,2000);
 		chargerStatutRoster();
 		
-		document.getElementById("personnageSelect")
-		.addEventListener("change", function() {
-
-		    let option = this.options[this.selectedIndex];
-
-		    document.getElementById("baseId").value = this.value;
-		    document.getElementById("nom").value = option.dataset.nom;
-
-		});
+		const personnageSelect = document.getElementById("personnageSelect");
+		if (personnageSelect) {
+		    personnageSelect.addEventListener("change", function() {
+		        let option = this.options[this.selectedIndex];
+		        const baseId = document.getElementById("baseId");
+		        const nom = document.getElementById("nom");
+		        if (baseId) baseId.value = this.value;
+		        if (nom) nom.value = option.dataset.nom ?? option.text;
+		    });
+		}
 		
 		function mettreNomPersonnage(select) {
 		    let nom = select.options[select.selectedIndex].text;
@@ -159,4 +160,7 @@
 	<script th:src="@{/js/upGuile.js}"></script>
 	<script th:src="@{/js/modQ.js}"></script>
 	<script th:src="@{/js/trierEvolutionJoueur.js}"></script>
+	<script th:src="@{/js/dashboard.js}"></script>
+	<script th:src="@{/js/menu.js}"></script>
+	<script th:src="@{/js/dashboardjoueur.js}"></script>
 </footer>

@@ -1,77 +1,50 @@
-<head>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
-</head>
-<div class="comparatif-actions">
-    <input 
-        type="text" 
-        id="rechercheJoueur" 
-        placeholder="🔎 Rechercher un joueur..."
-    >
-	<button 
-	class="btn-action btn-reset"
-	onclick="resetComparatif()">
-	🔄
-	</button>
+<div xmlns:th="http://www.thymeleaf.org">
+    <div class="d-flex flex-column flex-md-row gap-2 align-items-md-center justify-content-between mb-3">
+        <div class="flex-grow-1">
+            <input type="text" class="form-control app-search-input" id="rechercheJoueur" placeholder="Rechercher un joueur…">
+        </div>
+        <button class="app-secondary-btn" type="button" onclick="resetComparatif()"><i class="bi bi-arrow-counterclockwise"></i>Réinitialiser</button>
+    </div>
+    <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-3">
+        <div id="compteurJoueur" class="small text-muted"></div>
+        <div class="d-flex flex-wrap gap-2">
+            <span class="app-badge green">
+                <i class="bi bi-check-circle-fill me-1"></i>
+                <strong th:text="${nbComplets}">0</strong>&nbsp;terminé(s)
+            </span>
+            <span class="app-badge neutral">
+                <strong th:text="${nbJoueursComparatif}">0</strong>&nbsp;joueur(s)
+            </span>
+        </div>
+    </div>
+    <div class="app-table-wrap">
+        <table class="app-table">
+            <thead><tr>
+                <th class="app-sortable" onclick="trierTableau(0)">Joueur ↕</th>
+                <th class="app-sortable" onclick="trierTableau(1)">Relique actuelle ↕</th>
+                <th class="app-sortable" onclick="trierTableau(2)">Relique cible ↕</th>
+                <th class="app-sortable" onclick="trierTableau(3)">Progression ↕</th>
+            </tr></thead>
+            <tbody id="tableComparatif">
+            <tr th:each="ligne : ${comparatif}">
+                <td><strong th:text="${ligne.joueur}"></strong></td>
+                <td><span class="app-badge neutral">R<span th:text="${ligne.relicActuelle}"></span></span></td>
+                <td><span class="app-badge orange">R<span th:text="${ligne.relicCible}"></span></span></td>
+                <td style="min-width:200px">
+                    <div class="progress" style="height:9px;background:var(--dash-progress-bg);border-radius:999px;">
+                        <div class="progress-bar" role="progressbar" style="border-radius:999px;"
+                             th:style="'width:' + ${ligne.progression} + '%'"
+                             th:classappend="${ligne.relicActuelle >= ligne.relicCible} ? 'bg-success' : (${ligne.relicActuelle >= ligne.relicCible - 1} ? 'bg-warning' : 'bg-danger')"></div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 mt-1">
+                        <div class="small text-muted" th:text="${ligne.progression} + '%'">0%</div>
+                        <span class="app-badge green" th:if="${ligne.objectifTermine}">
+                            <i class="bi bi-check-lg"></i> Terminé
+                        </span>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
-<div id="compteurJoueur" class="compteur-joueur"></div>
-<table class="table table-striped">
-
-    <thead class="table-dark">
-        <tr>
-			<th onclick="trierTableau(0)">
-			    Joueur ↕
-			</th>
-			<th onclick="trierTableau(1)">
-			    Relique actuelle ↕
-			</th>
-			<th onclick="trierTableau(2)">
-			    Relique cible ↕
-			</th>
-			<th onclick="trierTableau(3)">
-			    Progression ↕
-			</th>
-        </tr>
-    </thead>
-    <tbody id="tableComparatif">
-        <tr th:each="ligne : ${comparatif}">
-            <td th:text="${ligne.joueur}">
-            </td>
-            <td>
-                R<span th:text="${ligne.relicActuelle}"></span>
-            </td>
-            <td>
-                R<span th:text="${ligne.relicCible}"></span>
-            </td>
-			<td>
-
-			    <div class="progress" style="height: 25px;">
-
-			        <div class="progress-bar"
-			             role="progressbar"
-			             th:style="'width:' + ${ligne.progression} + '%'"
-			             th:classappend="
-			                ${ligne.relicActuelle >= ligne.relicCible} ? 
-			                'bg-success' :
-			                (${ligne.relicActuelle >= ligne.relicCible - 1} ?
-			                'bg-warning' :
-			                'bg-danger')
-			             "
-			             th:text="${ligne.progression} + '%'">
-			        </div>
-			    </div>
-			</td>
-			<!-- Verificaction -->
-<!--			<td>-->
-<!--			    Actuelle :-->
-<!--			    <span th:text="${ligne.relicActuelle}"></span>-->
-
-<!--			    Cible :-->
-<!--			    <span th:text="${ligne.relicCible}"></span>-->
-
-<!--			    Progression :-->
-<!--			    <span th:text="${ligne.progression}"></span>-->
-<!--			</td>-->
-        </tr>
-    </tbody>
-</table>
-<div th:replace="~{fragments/footer :: footer}"></div>
