@@ -8,13 +8,17 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
 import fr.xalkinn.swgohmanager.modele.EtatSysteme;
+import fr.xalkinn.swgohmanager.config.SwgohProperties;
 
 
 @Service
 public class HealthService {
     private final JdbcTemplate jdbcTemplate;
-    public HealthService(JdbcTemplate jdbcTemplate) {
+    private final SwgohProperties swgohProperties;
+
+    public HealthService(JdbcTemplate jdbcTemplate, SwgohProperties swgohProperties) {
         this.jdbcTemplate = jdbcTemplate;
+        this.swgohProperties = swgohProperties;
     }
 
     public EtatSysteme getEtat() {
@@ -50,7 +54,7 @@ public class HealthService {
             java.net.HttpURLConnection connexion =
                     (java.net.HttpURLConnection)
                     new java.net.URL(
-                    "http://localhost:3000"
+                    swgohProperties.getComlink().endpoint("")
                     ).openConnection();
             connexion.setRequestMethod("GET");
             connexion.setConnectTimeout(2000);

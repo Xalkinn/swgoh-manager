@@ -10,10 +10,14 @@ public class SynchronisationGuildeService {
 
 
     private final SynchronisationGuildeStatusService statusService;
+    private final GuildeService guildeService;
 
 
-    public SynchronisationGuildeService(SynchronisationGuildeStatusService statusService) {
+    public SynchronisationGuildeService(
+            SynchronisationGuildeStatusService statusService,
+            GuildeService guildeService) {
         this.statusService = statusService;
+        this.guildeService = guildeService;
     }
 
 
@@ -32,6 +36,8 @@ public class SynchronisationGuildeService {
 
     private void synchroniserGuilde() throws Exception {
 
+        guildeService.appliquerConfigurationRuntime();
+
         PseudosGuilde.lancerSynchronisation((etape, courant, total) -> {
                 if(courant == 0) {
                     statusService.demarrer("Synchronisation Guilde",total);
@@ -39,6 +45,7 @@ public class SynchronisationGuildeService {
                 statusService.miseAJour(etape,courant);
             }
         );
+        guildeService.marquerSynchronisation();
         statusService.terminer();
     }
 }

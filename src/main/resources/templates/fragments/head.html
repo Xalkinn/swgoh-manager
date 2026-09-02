@@ -2,7 +2,7 @@
 
     <meta charset="UTF-8">
 
-    <title>SWGOH Manager - Les Baguettes Enflammées</title>
+    <title th:text="${guildeActive != null and guildeActive.nom != null ? 'SWGOH Manager - ' + guildeActive.nom : 'SWGOH Manager'}">SWGOH Manager</title>
 
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body class="app-page">
+
+<div th:replace="~{fragments/menu :: menu}"></div>
+
+<main class="app-container">
+    <header class="app-page-header">
+        <div class="app-page-heading">
+            <span class="app-kicker">Configuration de l'instance</span>
+            <h1><i class="bi bi-gear-fill me-2"></i>Administration</h1>
+            <p>État de l'installation, configuration de la guilde et services techniques.</p>
+        </div>
+
+        <div class="app-header-actions">
+            <a href="/setup?reconfigure=true" class="app-secondary-btn">
+                <i class="bi bi-pencil-square"></i>Changer de guilde
+            </a>
+            <button id="themeToggle" class="app-theme-toggle" type="button">
+                <i class="bi bi-moon-stars-fill"></i><span>Mode sombre</span>
+            </button>
+        </div>
+    </header>
+
+    <div th:if="${param.comlink != null}" class="alert"
+         th:classappend="${param.comlink[0] == 'ok'} ? ' alert-success' : ' alert-danger'">
+        <i class="bi"
+           th:classappend="${param.comlink[0] == 'ok'} ? ' bi-check-circle-fill' : ' bi-x-circle-fill'"></i>
+        <span th:text="${param.comlink[0] == 'ok'} ? 'Connexion Comlink réussie.' : 'Impossible de joindre Comlink.'"></span>
+    </div>
+
+    <div class="app-grid-2 admin-grid">
+        <section class="app-card">
+            <div class="app-card-header">
+                <div class="app-card-title">
+                    <span class="app-card-icon purple"><i class="bi bi-shield-fill"></i></span>
+                    <div>
+                        <h2>Guilde active</h2>
+                        <p>Configuration métier utilisée par tous les batchs.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="app-card-body">
+                <div class="admin-guild-name" th:text="${guilde.nom}">Nom de guilde</div>
+
+                <dl class="admin-details">
+                    <div>
+                        <dt>Guild ID</dt>
+                        <dd><code th:text="${guilde.guildId}">guild-id</code></dd>
+                    </div>
+                    <div>
+                        <dt>Dernière synchronisation</dt>
+                        <dd th:text="${guilde.dateDerniereSynchro != null ? #temporals.format(guilde.dateDerniereSynchro, 'dd/MM/yyyy HH:mm') : 'Jamais'}">Jamais</dd>
+                    </div>
+                    <div>
+                        <dt>Ajoutée le</dt>
+                        <dd th:text="${guilde.dateAjout != null ? #temporals.format(guilde.dateAjout, 'dd/MM/yyyy HH:mm') : '-'}">-</dd>
+                    </div>
+                </dl>
+
+                <div class="app-form-actions">
+                    <a href="/actions/synchronisation-guilde" class="app-primary-btn">
+                        <i class="bi bi-arrow-repeat"></i>Synchroniser la guilde
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section class="app-card">
+            <div class="app-card-header">
+                <div class="app-card-title">
+                    <span class="app-card-icon blue"><i class="bi bi-hdd-network-fill"></i></span>
+                    <div>
+                        <h2>swgoh-comlink</h2>
+                        <p>Serveur utilisé pour les données et les localisations.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="app-card-body">
+                <div class="admin-service-status">
+                    <span class="setup-status-dot" th:classappend="${etatSysteme.comlinkOk} ? ' ok' : ' ko'"></span>
+                    <div>
+                        <strong th:text="${etatSysteme.comlinkOk} ? 'Disponible' : 'Indisponible'">État</strong>
+                        <code th:text="${comlinkUrl}">http://localhost:3000</code>
+                    </div>
+                </div>
+
+                <form th:action="@{/admin/test-comlink}" method="post" class="mt-3">
+                    <button class="app-secondary-btn" type="submit">
+                        <i class="bi bi-activity"></i>Tester la connexion
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <section class="app-card">
+            <div class="app-card-header">
+                <div class="app-card-title">
+                    <span class="app-card-icon green"><i class="bi bi-database-fill"></i></span>
+                    <div>
+                        <h2>Base de données</h2>
+                        <p>Informations non sensibles de la connexion active.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="app-card-body">
+                <dl class="admin-details">
+                    <div><dt>Hôte</dt><dd th:text="${dbHost}">localhost</dd></div>
+                    <div><dt>Port</dt><dd th:text="${dbPort}">3306</dd></div>
+                    <div><dt>Base</dt><dd th:text="${dbName}">swgoh</dd></div>
+                    <div><dt>Utilisateur</dt><dd th:text="${dbUser}">swgoh</dd></div>
+                    <div><dt>Mot de passe</dt><dd><span class="app-badge green"><i class="bi bi-shield-lock-fill"></i> Masqué</span></dd></div>
+                </dl>
+            </div>
+        </section>
+
+        <section class="app-card">
+            <div class="app-card-header">
+                <div class="app-card-title">
+                    <span class="app-card-icon orange"><i class="bi bi-bar-chart-fill"></i></span>
+                    <div>
+                        <h2>Données</h2>
+                        <p>Volume actuel des principales tables.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="app-card-body">
+                <div class="admin-count-grid">
+                    <div class="admin-count" th:each="entry : ${compteurs}">
+                        <span th:text="${entry.key}">Table</span>
+                        <strong th:text="${#numbers.formatInteger(entry.value, 0, 'WHITESPACE')}">0</strong>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

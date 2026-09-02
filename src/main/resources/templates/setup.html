@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+
+<body class="app-page setup-page">
+
+<main class="setup-shell">
+    <section class="setup-panel">
+        <div class="setup-brand">
+            <span class="setup-brand-icon"><i class="bi bi-stars"></i></span>
+            <div>
+                <span class="app-kicker">Première configuration</span>
+                <h1>Bienvenue dans SWGOH Manager</h1>
+                <p>Entre simplement ton Ally Code : SWGOH Manager détectera automatiquement ta guilde via Comlink.</p>
+            </div>
+        </div>
+
+        <div class="setup-status-row">
+            <div class="setup-status">
+                <span class="setup-status-dot" th:classappend="${comlinkOk} ? ' ok' : ' ko'"></span>
+                <div>
+                    <strong>swgoh-comlink</strong>
+                    <small th:text="${comlinkOk} ? 'Serveur disponible' : 'Serveur indisponible'">État</small>
+                </div>
+            </div>
+            <code th:text="${comlinkUrl}">http://localhost:3000</code>
+        </div>
+
+        <div th:if="${erreur}" class="alert alert-danger setup-alert" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <span th:text="${erreur}">Erreur</span>
+        </div>
+
+        <div th:if="${guildeActuelle != null}" class="alert alert-info setup-alert" role="alert">
+            <i class="bi bi-info-circle-fill"></i>
+            <span>
+                Guilde actuelle :
+                <strong th:text="${guildeActuelle.nom}">Ma guilde</strong>.
+                La validation remplacera la guilde active de cette installation.
+            </span>
+        </div>
+
+        <form th:action="@{/setup}" method="post" class="setup-form">
+            <label for="allyCode" class="form-label">Ally Code SWGOH</label>
+            <div class="setup-input-group">
+                <span><i class="bi bi-person-badge-fill"></i></span>
+                <input
+                    id="allyCode"
+                    name="allyCode"
+                    type="text"
+                    inputmode="numeric"
+                    class="form-control"
+                    th:value="${allyCode}"
+                    placeholder="Ex. 599225682 ou 599-225-682"
+                    autocomplete="off"
+                    maxlength="11"
+                    required>
+            </div>
+
+            <p class="setup-help">
+                SWGOH Manager interrogera <code>/player</code> avec cet Ally Code, récupérera automatiquement
+                le <code>guildId</code> du joueur, puis vérifiera la guilde auprès de Comlink avant de l'enregistrer.
+                Aucun Guild ID technique n'a besoin d'être recherché manuellement.
+            </p>
+
+            <div class="setup-actions">
+                <a th:if="${guildeActuelle != null}" href="/admin" class="app-secondary-btn">
+                    <i class="bi bi-arrow-left"></i>Annuler
+                </a>
+                <button class="app-primary-btn setup-submit" type="submit">
+                    <i class="bi bi-check2-circle"></i>
+                    <span>Détecter et configurer ma guilde</span>
+                </button>
+            </div>
+        </form>
+
+        <div class="setup-security">
+            <i class="bi bi-shield-lock-fill"></i>
+            <div>
+                <strong>Configuration sécurisée</strong>
+                <p>Les identifiants MySQL restent dans <code>.env</code> / les variables d'environnement et ne sont jamais affichés ici.</p>
+            </div>
+        </div>
+    </section>
+
+    <button id="themeToggle" class="app-theme-toggle setup-theme-toggle" type="button">
+        <i class="bi bi-moon-stars-fill"></i>
+        <span>Mode sombre</span>
+    </button>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/dashboard.js}"></script>
+</body>
+</html>

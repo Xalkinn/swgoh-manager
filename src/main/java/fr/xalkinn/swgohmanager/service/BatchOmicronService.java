@@ -15,9 +15,13 @@ import org.springframework.scheduling.annotation.Async;
 public class BatchOmicronService {
 
     private final BatchStatusService batchStatusService;
+    private final GuildeService guildeService;
 
-    public BatchOmicronService(BatchStatusService batchStatusService) {
+    public BatchOmicronService(
+            BatchStatusService batchStatusService,
+            GuildeService guildeService) {
         this.batchStatusService = batchStatusService;
+        this.guildeService = guildeService;
     }
     @Async
     public ResultatBatch lancerBatch() {
@@ -25,6 +29,7 @@ public class BatchOmicronService {
         System.out.println("================================");
         System.out.println("        Batch Omicron");
         System.out.println("================================");
+        guildeService.appliquerConfigurationRuntime();
         DatabaseInitializer.initialiser();
         List<BatchStep> omicrons = chargerOmicrons();
         int total = omicrons.size();

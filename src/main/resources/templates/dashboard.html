@@ -13,7 +13,7 @@
     <!-- HEADER -->
     <section class="dashboard-header">
         <div>
-            <span class="dashboard-kicker">SWGOH • GESTION DE GUILDE</span>
+            <span class="dashboard-kicker" th:text="${guildeActive != null and guildeActive.nom != null ? 'SWGOH • ' + guildeActive.nom : 'SWGOH • GESTION DE GUILDE'}">SWGOH • GESTION DE GUILDE</span>
             <h1><i class="bi bi-speedometer2"></i> Tableau de bord</h1>
             <p>Vue d'ensemble de l'activité de la guilde</p>
         </div>

@@ -6,7 +6,7 @@
 <main class="app-container">
     <header class="app-page-header">
         <div class="app-page-heading">
-            <span class="app-kicker">Les Baguettes Enflammées</span>
+            <span class="app-kicker" th:text="${guildeActive != null ? guildeActive.nom : 'SWGOH Manager'}">SWGOH Manager</span>
             <h1><i class="bi bi-stars me-2"></i>SWGOH Manager</h1>
             <p>Interface de gestion et de suivi de la guilde.</p>
         </div>

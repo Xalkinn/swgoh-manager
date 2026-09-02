@@ -5,7 +5,7 @@
             <span class="swgoh-brand-icon"><i class="bi bi-stars"></i></span>
             <span class="swgoh-brand-copy">
                 <strong>SWGOH Manager</strong>
-                <small>Les Baguettes Enflammées</small>
+                <small th:text="${guildeActive != null and guildeActive.nom != null ? guildeActive.nom : 'Guilde non configurée'}">Guilde</small>
             </span>
         </a>
 

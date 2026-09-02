@@ -4,11 +4,12 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
+
+import fr.xalkinn.swgohmanager.config.SwgohProperties;
 
 /**
  * Client minimal dédié aux localisations SWGOH exposées par swgoh-comlink.
@@ -21,10 +22,9 @@ public class SwgohLocalizationClient {
 
     private final RestClient restClient;
 
-    public SwgohLocalizationClient(
-            @Value("${swgoh.comlink.base-url:http://localhost:3000}") String baseUrl) {
+    public SwgohLocalizationClient(SwgohProperties properties) {
         this.restClient = RestClient.builder()
-                .baseUrl(baseUrl)
+                .baseUrl(properties.getComlink().getBaseUrl())
                 .build();
     }
 

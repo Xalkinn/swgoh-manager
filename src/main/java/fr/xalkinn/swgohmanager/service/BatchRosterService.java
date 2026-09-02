@@ -3,6 +3,8 @@ package fr.xalkinn.swgohmanager.service;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 
+import fr.xalkinn.swgohmanager.config.SwgohProperties;
+
 import swgoh.comlink.RosterImporter;
 import utils.HttpUtils;
 import java.sql.Connection;
@@ -20,16 +22,22 @@ public class BatchRosterService {
 	private final ExtractionService extractionService;
 	private final BatchRosterStatusService rosterStatusService;
 	private final LocalizationService localizationService;
+	private final SwgohProperties swgohProperties;
+	private final GuildeService guildeService;
 
 
 	public BatchRosterService(
 	        ExtractionService extractionService,
 	        BatchRosterStatusService rosterStatusService,
-	        LocalizationService localizationService) {
+	        LocalizationService localizationService,
+	        SwgohProperties swgohProperties,
+	        GuildeService guildeService) {
 
 	    this.extractionService = extractionService;
 	    this.rosterStatusService = rosterStatusService;
 	    this.localizationService = localizationService;
+	    this.swgohProperties = swgohProperties;
+	    this.guildeService = guildeService;
 	}
     public void lancerBatch() {
         Thread thread = new Thread(() -> {
@@ -45,6 +53,8 @@ public class BatchRosterService {
     }
     
     private void traiterRosters() throws Exception {
+
+        guildeService.appliquerConfigurationRuntime();
 
         // La traduction n'est jamais bloquante pour l'import du roster.
         // On profite simplement du batch pour garder le bundle français à jour.
@@ -97,7 +107,7 @@ public class BatchRosterService {
 
                 JSONObject joueur =
                     HttpUtils.callComlink(
-                        "http://localhost:3000/player",
+                        swgohProperties.getComlink().endpoint("/player"),
                         body
                     );
                 if(joueur.has("rosterUnit")) {
