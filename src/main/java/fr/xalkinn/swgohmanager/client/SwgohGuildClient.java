@@ -17,10 +17,12 @@ import fr.xalkinn.swgohmanager.dto.GuildeDetectee;
 public class SwgohGuildClient {
 
     private final SwgohProperties properties;
+    private final SwgohPlayerClient playerClient;
     private final HttpClient httpClient;
 
-    public SwgohGuildClient(SwgohProperties properties) {
+    public SwgohGuildClient(SwgohProperties properties, SwgohPlayerClient playerClient) {
         this.properties = properties;
+        this.playerClient = playerClient;
         this.httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(5))
                 .build();
@@ -34,39 +36,7 @@ public class SwgohGuildClient {
      * guilde et récupérer ses informations complètes.
      */
     public GuildeDetectee rechercherGuildeParAllyCode(String allyCode) throws Exception {
-        String allyCodeNormalise = normaliserAllyCode(allyCode);
-
-        JSONObject payload = new JSONObject().put("allyCode", allyCodeNormalise);
-        JSONObject body = new JSONObject().put("payload", payload);
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(properties.getComlink().endpoint("/player")))
-                .timeout(Duration.ofSeconds(20))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(body.toString()))
-                .build();
-
-        HttpResponse<String> response =
-                httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-        if (response.statusCode() >= 400) {
-            throw new IllegalStateException(
-                    "Impossible de récupérer le joueur depuis Comlink (HTTP "
-                    + response.statusCode() + ").");
-        }
-
-        if (response.body() == null || response.body().isBlank()) {
-            throw new IllegalStateException(
-                    "Comlink n'a renvoyé aucune donnée pour cet Ally Code.");
-        }
-
-        JSONObject joueur = new JSONObject(response.body());
-
-        // Certains wrappers peuvent éventuellement encapsuler le joueur.
-        JSONObject player = joueur.optJSONObject("player");
-        if (player == null) {
-            player = joueur;
-        }
+        JSONObject player = playerClient.rechercherParAllyCode(allyCode);
 
         String guildId = player.optString("guildId", "").trim();
         String guildName = player.optString("guildName", "").trim();
@@ -84,9 +54,8 @@ public class SwgohGuildClient {
         try {
             return rechercherGuilde(guildId);
         } catch (Exception e) {
-            // Le /player nous donne déjà les informations essentielles. Si /guild
-            // est temporairement moins bavard, on peut tout de même conserver la
-            // guilde détectée, sans inventer un nombre de membres.
+            // /player contient déjà les informations essentielles. Si /guild
+            // est temporairement indisponible, on garde la guilde détectée.
             if (!guildName.isBlank()) {
                 return new GuildeDetectee(guildId, guildName, 0);
             }
@@ -174,22 +143,6 @@ public class SwgohGuildClient {
         }
     }
 
-    private String normaliserAllyCode(String allyCode) {
-        if (allyCode == null || allyCode.isBlank()) {
-            throw new IllegalArgumentException("L'Ally Code est obligatoire.");
-        }
-
-        // Accepte 599225682, 599-225-682 ou encore 599 225 682.
-        String normalise = allyCode.replaceAll("\\D", "");
-
-        if (!normalise.matches("\\d{9}")) {
-            throw new IllegalArgumentException(
-                    "L'Ally Code doit contenir exactement 9 chiffres.");
-        }
-
-        return normalise;
-    }
-
     private String extraireNomGuilde(JSONObject guild) {
         String nom = guild.optString("name", null);
 
@@ -206,24 +159,7 @@ public class SwgohGuildClient {
     }
 
     private String recupererNomGuildeDepuisJoueur(String playerId) throws Exception {
-        JSONObject payload = new JSONObject().put("playerId", playerId);
-        JSONObject body = new JSONObject().put("payload", payload);
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(properties.getComlink().endpoint("/player")))
-                .timeout(Duration.ofSeconds(15))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(body.toString()))
-                .build();
-
-        HttpResponse<String> response =
-                httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-        if (response.statusCode() >= 400) {
-            return null;
-        }
-
-        JSONObject joueur = new JSONObject(response.body());
+        JSONObject joueur = playerClient.rechercherParPlayerId(playerId);
         return joueur.optString("guildName", null);
     }
 }

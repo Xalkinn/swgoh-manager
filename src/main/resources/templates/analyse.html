@@ -1,25 +1,322 @@
 <!DOCTYPE html>
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{fragments/head :: head}"></head>
-<body class="app-page">
+<body class="app-page analyse-page">
+
 <div th:replace="~{fragments/menu :: menu}"></div>
-<main class="app-container">
+
+<main class="app-container analyse-container">
+
     <header class="app-page-header">
         <div class="app-page-heading">
             <span class="app-kicker">Recrutement</span>
             <h1><i class="bi bi-person-plus-fill me-2"></i>Analyse joueur</h1>
-            <p>Analyse un candidat externe à partir de son Ally Code.</p>
+            <p>Analyse ponctuellement un candidat depuis Comlink et compare ses indicateurs à ceux de ta guilde.</p>
         </div>
-        <div class="app-header-actions"><button id="themeToggle" class="app-theme-toggle" type="button"><i class="bi bi-moon-stars-fill"></i><span>Mode sombre</span></button></div>
+        <div class="app-header-actions">
+            <button id="themeToggle" class="app-theme-toggle" type="button">
+                <i class="bi bi-moon-stars-fill"></i>
+                <span>Mode sombre</span>
+            </button>
+        </div>
     </header>
-    <section class="app-card">
-        <div class="app-empty">
-            <div class="app-empty-icon"><i class="bi bi-person-bounding-box"></i></div>
-            <h3>Analyse de candidat</h3>
-            <p>La page est maintenant harmonisée avec le reste de l'application et prête à recevoir la future analyse par Ally Code.</p>
+
+    <!-- RECHERCHE -->
+    <section class="app-card analyse-search-card">
+        <div class="app-card-body analyse-search-body">
+            <div class="analyse-search-copy">
+                <div class="app-card-icon blue"><i class="bi bi-person-bounding-box"></i></div>
+                <div>
+                    <h2>Analyser un candidat</h2>
+                    <p>Entre simplement son Ally Code. Les données sont lues depuis <code>/player</code> et ne sont pas enregistrées dans ta BDD.</p>
+                </div>
+            </div>
+
+            <form id="analyseForm" th:action="@{/analyse}" method="post" class="analyse-form">
+                <div class="analyse-input-wrap">
+                    <i class="bi bi-person-badge-fill"></i>
+                    <input
+                        id="allyCode"
+                        name="allyCode"
+                        type="text"
+                        inputmode="numeric"
+                        class="form-control"
+                        th:value="${allyCode}"
+                        placeholder="599225682 ou 599-225-682"
+                        autocomplete="off"
+                        maxlength="11"
+                        required>
+                </div>
+                <button id="analyseSubmit" class="app-primary-btn analyse-submit" type="submit">
+                    <i class="bi bi-search"></i>
+                    <span>Analyser</span>
+                </button>
+            </form>
         </div>
     </section>
+
+    <div th:if="${erreur}" class="alert alert-danger analyse-alert" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <div>
+            <strong>Analyse impossible</strong>
+            <span th:text="${erreur}">Erreur</span>
+        </div>
+    </div>
+
+    <!-- ÉTAT VIDE -->
+    <section th:if="${analyse == null and erreur == null}" class="app-card analyse-empty-card">
+        <div class="app-empty">
+            <div class="app-empty-icon"><i class="bi bi-clipboard2-pulse-fill"></i></div>
+            <h3>Prêt pour une analyse</h3>
+            <p>
+                Le candidat n'est pas ajouté à ta guilde et aucune extraction n'est créée.
+                SWGOH Manager calcule les statistiques directement en mémoire à partir de sa réponse Comlink.
+            </p>
+            <div class="analyse-empty-features">
+                <span><i class="bi bi-person-vcard-fill"></i> Profil</span>
+                <span><i class="bi bi-collection-fill"></i> Roster</span>
+                <span><i class="bi bi-speedometer2"></i> Mods / ModQ</span>
+                <span><i class="bi bi-bar-chart-line-fill"></i> Comparaison guilde</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- RÉSULTAT -->
+    <div th:if="${analyse != null}" class="analyse-results">
+
+        <!-- PROFIL -->
+        <section class="app-card candidate-profile-card">
+            <div class="candidate-profile-main">
+                <div class="candidate-avatar"><i class="bi bi-person-fill"></i></div>
+                <div class="candidate-identity">
+                    <div class="candidate-title-row">
+                        <div>
+                            <span class="app-kicker">Candidat analysé</span>
+                            <h2 th:text="${analyse.nom}">Pseudo</h2>
+                        </div>
+                        <span class="candidate-live-badge"><i class="bi bi-lightning-charge-fill"></i>Données Comlink</span>
+                    </div>
+                    <div class="candidate-meta">
+                        <span><i class="bi bi-person-badge"></i> Ally Code <strong th:text="${analyse.allyCode}">000000000</strong></span>
+                        <span><i class="bi bi-people"></i> <strong th:text="${#strings.isEmpty(analyse.guildName) ? 'Sans guilde' : analyse.guildName}">Guilde</strong></span>
+                        <span><i class="bi bi-star"></i> Niveau <strong th:text="${analyse.niveau}">85</strong></span>
+                        <span th:if="${analyse.ligueGac != null and !#strings.isEmpty(analyse.ligueGac)}">
+                            <i class="bi bi-trophy"></i> GAC <strong th:text="${analyse.ligueGac}">KYBER</strong>
+                            <span th:if="${analyse.skillRatingGac > 0}" th:text="| · ${analyse.skillRatingGac}|"> · 0</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="candidate-gp-grid">
+                <div class="candidate-gp-stat">
+                    <span>PG totale</span>
+                    <strong th:text="${#numbers.formatInteger(analyse.pgTotal, 1, 'POINT')}">0</strong>
+                </div>
+                <div class="candidate-gp-stat">
+                    <span>PG personnages</span>
+                    <strong th:text="${#numbers.formatInteger(analyse.pgPerso, 1, 'POINT')}">0</strong>
+                </div>
+                <div class="candidate-gp-stat">
+                    <span>PG vaisseaux</span>
+                    <strong th:text="${#numbers.formatInteger(analyse.pgVaisseaux, 1, 'POINT')}">0</strong>
+                </div>
+            </div>
+        </section>
+
+        <!-- KPI ROSTER -->
+        <section class="analyse-kpi-grid">
+            <article class="analyse-kpi">
+                <span class="analyse-kpi-icon blue"><i class="bi bi-people-fill"></i></span>
+                <div><span>Personnages</span><strong th:text="${analyse.totalPersonnages}">0</strong><small th:text="|${analyse.totalVaisseaux} vaisseau(x) à côté|">0 vaisseaux</small></div>
+            </article>
+            <article class="analyse-kpi">
+                <span class="analyse-kpi-icon orange"><i class="bi bi-star-fill"></i></span>
+                <div><span>7 étoiles</span><strong th:text="${analyse.personnages7Etoiles}">0</strong><small>personnages 7★</small></div>
+            </article>
+            <article class="analyse-kpi">
+                <span class="analyse-kpi-icon green"><i class="bi bi-shield-fill-check"></i></span>
+                <div><span>Gear 13</span><strong th:text="${analyse.personnagesG13}">0</strong><small>personnages G13</small></div>
+            </article>
+            <article class="analyse-kpi">
+                <span class="analyse-kpi-icon purple"><i class="bi bi-gem"></i></span>
+                <div><span>Reliqués</span><strong th:text="${analyse.personnagesRelique}">0</strong><small>R1 et plus</small></div>
+            </article>
+        </section>
+
+        <!-- RELIQUES + MODS -->
+        <section class="app-grid-2 analyse-main-grid">
+            <article class="app-card">
+                <div class="app-card-header">
+                    <div class="app-card-title">
+                        <span class="app-card-icon purple"><i class="bi bi-gem"></i></span>
+                        <div>
+                            <h2>Profondeur du roster</h2>
+                            <p>Répartition des niveaux de relique élevés</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="app-card-body">
+                    <div class="relic-depth-grid">
+                        <div><span>R5+</span><strong th:text="${analyse.personnagesR5Plus}">0</strong></div>
+                        <div><span>R7+</span><strong th:text="${analyse.personnagesR7Plus}">0</strong></div>
+                        <div><span>R8+</span><strong th:text="${analyse.personnagesR8Plus}">0</strong></div>
+                        <div><span>R9+</span><strong th:text="${analyse.personnagesR9Plus}">0</strong></div>
+                        <div class="r10"><span>R10</span><strong th:text="${analyse.personnagesR10}">0</strong></div>
+                    </div>
+                </div>
+            </article>
+
+            <article class="app-card">
+                <div class="app-card-header">
+                    <div class="app-card-title">
+                        <span class="app-card-icon blue"><i class="bi bi-speedometer2"></i></span>
+                        <div>
+                            <h2>Qualité des mods</h2>
+                            <p>Calculée directement depuis les mods équipés</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="app-card-body">
+                    <div class="candidate-modq-summary">
+                        <div><span>ModQ</span><strong th:text="${#numbers.formatDecimal(analyse.modStats.modQ, 1, 2)}">0.00</strong></div>
+                        <div><span>Vitesse moyenne</span><strong th:text="${#numbers.formatDecimal(analyse.modStats.vitesseMoyenne, 1, 1)}">0.0</strong></div>
+                        <div><span>Total mods</span><strong th:text="${analyse.modStats.total}">0</strong></div>
+                    </div>
+                    <div class="candidate-mod-buckets">
+                        <div><span>Sans vitesse</span><strong th:text="${analyse.modStats.sansVitesse}">0</strong></div>
+                        <div><span>15–19</span><strong th:text="${analyse.modStats.vitesse15a19}">0</strong></div>
+                        <div><span>20–24</span><strong th:text="${analyse.modStats.vitesse20a24}">0</strong></div>
+                        <div class="elite"><span>25+</span><strong th:text="${analyse.modStats.vitesse25Plus}">0</strong></div>
+                    </div>
+                    <div class="candidate-mod-types">
+                        <span>Normaux <strong th:text="${analyse.modStats.modsNormaux}">0</strong></span>
+                        <span>OR <strong th:text="${analyse.modStats.modsOr}">0</strong></span>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <!-- COMPARAISON GUILDE -->
+        <section class="app-card comparison-card">
+            <div class="app-card-header comparison-heading">
+                <div class="app-card-title">
+                    <span class="app-card-icon green"><i class="bi bi-bar-chart-line-fill"></i></span>
+                    <div>
+                        <h2>Comparaison avec ta guilde</h2>
+                        <p>
+                            Moyenne et médiane calculées sur
+                            <strong th:text="${analyse.comparaisonGuilde.nombreJoueurs}">0</strong>
+                            membre(s) actuellement en guilde.
+                        </p>
+                    </div>
+                </div>
+                <span class="comparison-note"><i class="bi bi-info-circle"></i> La médiane limite l'effet des très gros comptes</span>
+            </div>
+
+            <div th:if="${analyse.comparaisonGuilde.nombreJoueurs > 0}" class="table-responsive">
+                <table class="comparison-table">
+                    <thead>
+                    <tr>
+                        <th>Indicateur</th>
+                        <th>Candidat</th>
+                        <th>Moyenne guilde</th>
+                        <th>Médiane guilde</th>
+                        <th>Écart médiane</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="m : ${analyse.comparaisonGuilde.metriques}">
+                        <td><strong th:text="${m.label}">Indicateur</strong></td>
+                        <td class="candidate-value" th:text="${m.candidat}">0</td>
+                        <td th:text="${m.moyenne}">0</td>
+                        <td th:text="${m.mediane}">0</td>
+                        <td>
+                            <span class="comparison-pill" th:classappend="${m.tendance}">
+                                <strong th:text="${m.ecart}">+0 %</strong>
+                                <small th:text="${m.tendanceLibelle}">Proche</small>
+                            </span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:if="${analyse.comparaisonGuilde.nombreJoueurs == 0}" class="app-empty compact-empty">
+                <div class="app-empty-icon"><i class="bi bi-bar-chart"></i></div>
+                <h3>Pas encore de comparaison disponible</h3>
+                <p>Lance d'abord une synchronisation de guilde et un Batch Roster pour disposer d'une base de comparaison.</p>
+            </div>
+        </section>
+
+        <!-- ROSTER COMPLET -->
+        <section class="app-card candidate-roster-card">
+            <div class="candidate-roster-header">
+                <div class="app-card-title">
+                    <span class="app-card-icon orange"><i class="bi bi-list-stars"></i></span>
+                    <div>
+                        <h2>Roster personnages</h2>
+                        <p><strong id="rosterVisibleCount" th:text="${analyse.roster.size()}">0</strong> personnage(s) affiché(s)</p>
+                    </div>
+                </div>
+                <div class="candidate-roster-search">
+                    <i class="bi bi-search"></i>
+                    <input id="rosterSearch" class="form-control" type="search" placeholder="Rechercher un personnage…" autocomplete="off">
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table id="rosterTable" class="candidate-roster-table">
+                    <thead>
+                    <tr>
+                        <th>Personnage</th>
+                        <th>Étoiles</th>
+                        <th>Niveau</th>
+                        <th>Gear</th>
+                        <th>Relique</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="p : ${analyse.roster}">
+                        <td>
+                            <div class="candidate-character">
+                                <span><i class="bi bi-person-fill"></i></span>
+                                <div>
+                                    <strong th:text="${p.nomFrancais != null and !#strings.isEmpty(p.nomFrancais) ? p.nomFrancais : p.nom}">Personnage</strong>
+                                    <small th:text="${p.baseId}">BASEID</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td><span class="stars" th:text="${p.etoiles} + '★'">7★</span></td>
+                        <td><span class="level-badge" th:text="${p.niveau}">85</span></td>
+                        <td><span class="gear-badge" th:text="'G' + ${p.gear}">G13</span></td>
+                        <td>
+                            <span th:if="${p.relic > 0}" class="relic-badge" th:text="'R' + ${p.relic}">R7</span>
+                            <span th:unless="${p.relic > 0}" class="muted-dash">—</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- NOTE V1 -->
+        <section class="analyse-v1-note">
+            <i class="bi bi-lightning-charge"></i>
+            <div>
+                <strong>Omicrons</strong>
+                <p>
+                    L'analyse générique des Omicrons n'est volontairement pas incluse dans cette V1.
+                    Elle sera ajoutée lorsque la détection ne dépendra plus d'une liste de personnages codée en dur.
+                </p>
+            </div>
+        </section>
+
+    </div>
+
 </main>
+
 <div th:replace="~{fragments/footer :: footer}"></div>
+
 </body>
 </html>
