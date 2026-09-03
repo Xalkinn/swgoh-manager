@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import fr.xalkinn.swgohmanager.dto.JoueurDashboard;
 import fr.xalkinn.swgohmanager.dto.JoueurDashboard.GearStat;
 import fr.xalkinn.swgohmanager.dto.JoueurDashboard.OmicronInfo;
+import fr.xalkinn.swgohmanager.dto.JoueurDashboard.OmicronPriorityDetail;
+import fr.xalkinn.swgohmanager.dto.JoueurDashboard.OmicronPrioritySummary;
 import fr.xalkinn.swgohmanager.dto.JoueurDashboard.RelicStat;
 import fr.xalkinn.swgohmanager.dto.JoueurDashboard.RosterCharacter;
 
@@ -128,39 +130,122 @@ public class JoueurDashboardService {
         }
         d.setRelicStats(relicStats);
 
-        // Les Omicrons sont normalement liés au player_id.
-        // Les deux autres valeurs rendent le dashboard tolérant aux anciennes données importées.
+        // Omicrons réellement posés par le joueur. On conserve les anciens
+        // identifiants de secours tant que toutes les données historiques n'ont
+        // pas été repassées par le nouveau batch dynamique.
         List<Map<String,Object>> omicronRows = jdbc.queryForList("""
-            SELECT personnage, type_capacite, actif
+            SELECT personnage, type_capacite, categorie, actif
             FROM omicron
             WHERE joueur_id IN (?, ?, ?)
-            ORDER BY personnage
+              AND actif = 1
+            ORDER BY categorie, personnage
             """, playerId, allyCode, String.valueOf(joueurId));
 
         List<OmicronInfo> omicrons = new ArrayList<>();
         for (Map<String,Object> o : omicronRows) {
             String personnageBrut = (String)o.get("personnage");
+            String categorie = o.get("categorie") == null ? null : String.valueOf(o.get("categorie"));
 
             String nomFrancais = personnageDefinitionService.nomAffiche(
                     nomsFrancais,
                     personnageBrut,
                     personnageBrut);
 
+            String typeBrut = o.get("type_capacite") == null ? "" : String.valueOf(o.get("type_capacite"));
+            String type = switch (typeBrut.toUpperCase(java.util.Locale.ROOT)) {
+                case "CHEF" -> "Chef";
+                case "UNIQUE" -> "Unique";
+                case "SPÉCIALE", "SPECIALE" -> "Spéciale";
+                case "BASIQUE" -> "Basique";
+                default -> OmicronCatalogueService.libelleType(typeBrut, null);
+            };
+
             omicrons.add(new OmicronInfo(
                 personnageBrut,
                 nomFrancais,
-                (String)o.get("type_capacite"),
-                Boolean.TRUE.equals(o.get("actif"))
+                type,
+                categorie,
+                OmicronCatalogueService.categorieLabel(categorie),
+                true
             ));
         }
 
-        omicrons.sort(
-                Comparator.comparing(
-                        OmicronInfo::getNomFrancais,
-                        Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER))
-        );
-
+        omicrons.sort(Comparator
+                .comparing(OmicronInfo::getCategorie, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER))
+                .thenComparing(OmicronInfo::getNomFrancais, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER)));
         d.setOmicrons(omicrons);
+
+        // Progression du joueur sur le plan Omicron P1-P4 configuré dans /omicrons.
+        List<Map<String,Object>> planRows = jdbc.queryForList("""
+            SELECT
+                p.priorite,
+                d.base_id,
+                d.skill_id,
+                d.type_capacite,
+                d.numero_capacite,
+                d.categorie,
+                CASE WHEN EXISTS (
+                    SELECT 1
+                    FROM omicron o
+                    WHERE o.joueur_id IN (?, ?, ?)
+                      AND o.skill_id = d.skill_id
+                      AND o.actif = 1
+                ) THEN 1 ELSE 0 END AS possede
+            FROM omicron_priorite p
+            JOIN omicron_definition d ON d.id = p.omicron_definition_id
+            WHERE p.actif = 1
+              AND d.actif = 1
+            ORDER BY p.priorite, d.categorie, d.base_id, d.type_capacite, d.numero_capacite
+            """, playerId, allyCode, String.valueOf(joueurId));
+
+        Map<Integer, OmicronPrioritySummary> priorites = new LinkedHashMap<>();
+        for (int priorite = 1; priorite <= 4; priorite++) {
+            OmicronPrioritySummary summary = new OmicronPrioritySummary();
+            summary.setPriorite(priorite);
+            priorites.put(priorite, summary);
+        }
+
+        int planAtteint = 0;
+        int planTotal = 0;
+        for (Map<String,Object> row : planRows) {
+            int priorite = number(row.get("priorite"));
+            OmicronPrioritySummary summary = priorites.get(priorite);
+            if (summary == null) continue;
+
+            summary.setTotal(summary.getTotal() + 1);
+            planTotal++;
+
+            boolean possede = number(row.get("possede")) == 1;
+            if (possede) {
+                summary.setAtteint(summary.getAtteint() + 1);
+                planAtteint++;
+            } else {
+                String baseId = row.get("base_id") == null ? "" : String.valueOf(row.get("base_id"));
+                String type = row.get("type_capacite") == null ? "AUTRE" : String.valueOf(row.get("type_capacite"));
+                Integer numero = row.get("numero_capacite") == null ? null : number(row.get("numero_capacite"));
+                String categorie = row.get("categorie") == null ? null : String.valueOf(row.get("categorie"));
+                String nomPersonnage = personnageDefinitionService.nomAffiche(nomsFrancais, baseId, baseId);
+
+                summary.getManquantsDetails().add(new OmicronPriorityDetail(
+                        nomPersonnage,
+                        OmicronCatalogueService.libelleType(type, numero),
+                        categorie,
+                        OmicronCatalogueService.categorieLabel(categorie)));
+            }
+        }
+
+        List<OmicronPrioritySummary> prioritesListe = new ArrayList<>();
+        for (OmicronPrioritySummary summary : priorites.values()) {
+            summary.setManquants(Math.max(0, summary.getTotal() - summary.getAtteint()));
+            summary.setPourcentage(summary.getTotal() > 0
+                    ? summary.getAtteint() * 100.0 / summary.getTotal()
+                    : 0.0);
+            prioritesListe.add(summary);
+        }
+        d.setOmicronPriorities(prioritesListe);
+        d.setOmicronPlanAtteint(planAtteint);
+        d.setOmicronPlanTotal(planTotal);
+        d.setOmicronPlanPourcentage(planTotal > 0 ? planAtteint * 100.0 / planTotal : 0.0);
 
         List<Map<String,Object>> modRows = jdbc.queryForList("""
             SELECT vitesse, rarete, type_mod

@@ -105,33 +105,89 @@
 
     <!-- OMICRONS + MODS -->
     <section class="dashboard-grid player-main-grid">
-        <article class="dash-card player-section-card">
-            <div class="card-heading">
+        <article class="dash-card player-section-card player-omicron-plan-card">
+            <div class="card-heading player-omicron-heading">
                 <div class="heading-icon purple"><i class="bi bi-lightning-charge-fill"></i></div>
                 <div>
-                    <h2>Omicrons</h2>
-                    <span th:text="${dashboard.omicrons.size()} + ' capacité(s) détectée(s)'">0 capacité(s)</span>
+                    <h2>Plan Omicron</h2>
+                    <span>Progression selon les priorités de la guilde</span>
                 </div>
+                <a href="/omicrons" class="player-omicron-manage-link">Plan guilde <i class="bi bi-arrow-right"></i></a>
             </div>
 
-            <div th:if="${dashboard.omicrons != null && !dashboard.omicrons.isEmpty()}" class="omicron-list">
-                <div class="omicron-row" th:each="o : ${dashboard.omicrons}">
-                    <div class="omicron-icon"><i class="bi bi-lightning-charge-fill"></i></div>
-                    <div class="omicron-character">
-                        <strong th:text="${o.nomFrancais != null and !#strings.isEmpty(o.nomFrancais) ? o.nomFrancais : o.personnage}">
-                            Personnage
-                        </strong>
-                        <span th:text="${o.typeCapacite}">Type</span>
+            <div th:if="${dashboard.omicronPlanTotal > 0}" class="player-omicron-global">
+                <div class="player-omicron-global-value">
+                    <strong th:text="${dashboard.omicronPlanAtteint} + '/' + ${dashboard.omicronPlanTotal}">0/0</strong>
+                    <span>priorités possédées</span>
+                </div>
+                <div class="player-omicron-global-percent"
+                     th:text="${#numbers.formatDecimal(dashboard.omicronPlanPourcentage,1,1)} + '%'">0%</div>
+            </div>
+
+            <div th:if="${dashboard.omicronPlanTotal > 0}" class="player-priority-list">
+                <div th:each="p : ${dashboard.omicronPriorities}"
+                     th:if="${p.total > 0}"
+                     class="player-priority-row"
+                     th:classappend="|' priority-p' + ${p.priorite}|">
+                    <div class="player-priority-top">
+                        <div class="player-priority-label">
+                            <span class="player-priority-badge" th:text="|'P' + ${p.priorite}|">P1</span>
+                            <div>
+                                <strong th:text="${p.priorite == 1 ? 'Obligatoire' : (p.priorite == 2 ? 'Très prioritaire' : (p.priorite == 3 ? 'Recommandé' : 'Secondaire'))}">Priorité</strong>
+                                <small th:text="${p.atteint} + '/' + ${p.total} + ' acquis'">0/0 acquis</small>
+                            </div>
+                        </div>
+                        <strong class="player-priority-percent"
+                                th:text="${#numbers.formatDecimal(p.pourcentage,1,1)} + '%'">0%</strong>
                     </div>
-                    <span class="active-pill" th:classappend="${o.actif ? 'active' : 'inactive'}"
-                          th:text="${o.actif ? 'Actif' : 'Inactif'}">Actif</span>
+
+                    <div class="player-priority-progress">
+                        <span th:style="|width:${p.pourcentage}%|"></span>
+                    </div>
+
+                    <details th:if="${p.manquants > 0}" class="player-priority-missing">
+                        <summary>
+                            <i class="bi bi-exclamation-circle"></i>
+                            <span th:text="${p.manquants} + ' Omicron(s) manquant(s)'">0 manquant</span>
+                        </summary>
+                        <div class="player-priority-missing-list">
+                            <div th:each="m : ${p.manquantsDetails}" class="player-priority-missing-item">
+                                <div>
+                                    <strong th:text="${m.nomPersonnage}">Personnage</strong>
+                                    <small th:text="${m.typeCapacite}">Unique</small>
+                                </div>
+                                <span class="player-priority-mode" th:text="${m.categorieLabel}">TW</span>
+                            </div>
+                        </div>
+                    </details>
+
+                    <div th:if="${p.manquants == 0}" class="player-priority-complete">
+                        <i class="bi bi-check-circle-fill"></i> Priorité complète
+                    </div>
                 </div>
             </div>
 
-            <div th:if="${dashboard.omicrons == null || dashboard.omicrons.isEmpty()}" class="empty-feature player-empty">
-                <i class="bi bi-lightning"></i>
-                <span>Aucun Omicron trouvé pour ce joueur.</span>
+            <div th:if="${dashboard.omicronPlanTotal == 0}" class="empty-feature player-empty">
+                <i class="bi bi-list-stars"></i>
+                <span>Aucune priorité Omicron n'est encore configurée pour la guilde.</span>
             </div>
+
+            <details class="player-all-omicrons" th:if="${dashboard.omicrons != null && !dashboard.omicrons.isEmpty()}">
+                <summary>
+                    <span><i class="bi bi-lightning-charge"></i> Tous les Omicrons posés</span>
+                    <strong th:text="${dashboard.omicrons.size()}">0</strong>
+                </summary>
+                <div class="omicron-list player-all-omicron-list">
+                    <div class="omicron-row" th:each="o : ${dashboard.omicrons}">
+                        <div class="omicron-icon"><i class="bi bi-lightning-charge-fill"></i></div>
+                        <div class="omicron-character">
+                            <strong th:text="${o.nomFrancais != null and !#strings.isEmpty(o.nomFrancais) ? o.nomFrancais : o.personnage}">Personnage</strong>
+                            <span th:text="${o.typeCapacite}">Type</span>
+                        </div>
+                        <span class="player-omicron-mode-badge" th:text="${o.categorieLabel}">Mode</span>
+                    </div>
+                </div>
+            </details>
         </article>
 
         <article class="dash-card player-section-card mods-card">

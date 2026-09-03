@@ -84,38 +84,46 @@
 
         <!-- OMICRONS -->
         <article class="dash-card omicron-card">
-            <div class="card-heading">
+            <div class="card-heading omicron-dashboard-heading">
                 <div class="heading-icon purple"><i class="bi bi-lightning-charge-fill"></i></div>
                 <div>
                     <h2>Omicrons</h2>
-                    <span>Capacités de la guilde</span>
+                    <span>Répartition des capacités posées par mode</span>
                 </div>
+                <a href="/omicrons" class="omicron-manage-link" title="Gérer les priorités Omicron">
+                    Gérer <i class="bi bi-arrow-right"></i>
+                </a>
             </div>
 
-            <div class="big-number" th:text="${stats.nombreOmicrons}">0</div>
-            <div class="big-number-label">OMICRONS</div>
-
-            <div class="omicron-stats" th:if="${omicronStats != null}">
+            <div class="omicron-dashboard-total">
                 <div>
-                    <i class="bi bi-sword"></i>
-                    <span>Offensifs</span>
-                    <strong th:text="${omicronStats.offensifs}">0</strong>
+                    <strong th:text="${stats.nombreOmicrons}">0</strong>
+                    <span>Omicrons actifs dans la guilde</span>
                 </div>
-                <div>
-                    <i class="bi bi-shield-fill"></i>
-                    <span>Défensifs</span>
-                    <strong th:text="${omicronStats.defensifs}">0</strong>
-                </div>
-                <div>
-                    <i class="bi bi-trophy-fill"></i>
-                    <span>TW / TB</span>
-                    <strong th:text="${omicronStats.twTb}">0</strong>
-                </div>
+                <i class="bi bi-lightning-charge-fill"></i>
             </div>
 
-            <div class="empty-feature" th:unless="${omicronStats != null}">
-                <i class="bi bi-lightning"></i>
-                <span>Détail des Omicrons à venir</span>
+            <div class="omicron-mode-grid" th:if="${omicronModeStats != null}">
+                <div class="omicron-mode-tile tw">
+                    <span>TW</span>
+                    <strong th:text="${omicronModeStats.get('TW')}">0</strong>
+                    <small>Guerre de territoires</small>
+                </div>
+                <div class="omicron-mode-tile tb">
+                    <span>TB</span>
+                    <strong th:text="${omicronModeStats.get('TB')}">0</strong>
+                    <small>Bataille de territoire</small>
+                </div>
+                <div class="omicron-mode-tile raid">
+                    <span>Raid</span>
+                    <strong th:text="${omicronModeStats.get('RAID')}">0</strong>
+                    <small>Omicrons de raid</small>
+                </div>
+                <div class="omicron-mode-tile gac">
+                    <span>GA</span>
+                    <strong th:text="${omicronModeStats.get('GAC')}">0</strong>
+                    <small>Grande Arène</small>
+                </div>
             </div>
         </article>
 

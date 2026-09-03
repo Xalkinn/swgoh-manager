@@ -930,3 +930,115 @@
         grid-column:1 / -1;
     }
 }
+
+
+/* ---------- Omicrons : synthèse par mode ---------- */
+.omicron-dashboard-heading {
+    position:relative;
+    padding-right:58px;
+}
+
+.omicron-manage-link {
+    margin-left:auto;
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    padding:6px 9px;
+    border-radius:999px;
+    text-decoration:none;
+    background:var(--purple-soft);
+    color:var(--purple);
+    font-size:.68rem;
+    font-weight:800;
+    transition:.18s ease;
+}
+
+.omicron-manage-link:hover {
+    color:var(--purple);
+    transform:translateX(2px);
+}
+
+.omicron-dashboard-total {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-top:18px;
+    padding:13px 15px;
+    border:1px solid var(--dash-border);
+    border-radius:15px;
+    background:linear-gradient(135deg,var(--purple-soft),rgba(59,130,246,.05));
+}
+
+.omicron-dashboard-total strong,
+.omicron-dashboard-total span { display:block; }
+
+.omicron-dashboard-total strong {
+    color:var(--purple);
+    font-size:1.65rem;
+    line-height:1;
+}
+
+.omicron-dashboard-total span {
+    margin-top:4px;
+    color:var(--dash-muted);
+    font-size:.69rem;
+    font-weight:700;
+}
+
+.omicron-dashboard-total > i {
+    color:var(--purple);
+    font-size:1.65rem;
+    opacity:.75;
+}
+
+.omicron-mode-grid {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px;
+    margin-top:10px;
+}
+
+.omicron-mode-tile {
+    min-width:0;
+    padding:10px 11px;
+    border:1px solid var(--dash-border);
+    border-radius:13px;
+    background:var(--dash-soft,#f7f7fb);
+}
+
+.omicron-mode-tile span,
+.omicron-mode-tile strong,
+.omicron-mode-tile small { display:block; }
+
+.omicron-mode-tile span {
+    color:var(--dash-muted);
+    font-size:.66rem;
+    font-weight:900;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+}
+
+.omicron-mode-tile strong {
+    margin-top:2px;
+    color:var(--dash-text);
+    font-size:1.18rem;
+}
+
+.omicron-mode-tile small {
+    margin-top:1px;
+    color:var(--dash-muted);
+    font-size:.60rem;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.omicron-mode-tile.tw { border-left:3px solid #7c3aed; }
+.omicron-mode-tile.tb { border-left:3px solid #2563eb; }
+.omicron-mode-tile.raid { border-left:3px solid #ea580c; }
+.omicron-mode-tile.gac { border-left:3px solid #059669; }
+
+html.dark-mode .omicron-mode-tile {
+    background:rgba(255,255,255,.035);
+}

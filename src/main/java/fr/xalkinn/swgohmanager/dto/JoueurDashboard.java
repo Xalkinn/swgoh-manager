@@ -17,6 +17,10 @@ public class JoueurDashboard {
     private String derniereCapture;
 
     private List<OmicronInfo> omicrons = new ArrayList<>();
+    private List<OmicronPrioritySummary> omicronPriorities = new ArrayList<>();
+    private int omicronPlanAtteint;
+    private int omicronPlanTotal;
+    private double omicronPlanPourcentage;
     private ModStats modStats = new ModStats();
     private List<GearStat> gearStats = new ArrayList<>();
     private List<RelicStat> relicStats = new ArrayList<>();
@@ -44,6 +48,14 @@ public class JoueurDashboard {
     public void setDerniereCapture(String derniereCapture) { this.derniereCapture = derniereCapture; }
     public List<OmicronInfo> getOmicrons() { return omicrons; }
     public void setOmicrons(List<OmicronInfo> omicrons) { this.omicrons = omicrons; }
+    public List<OmicronPrioritySummary> getOmicronPriorities() { return omicronPriorities; }
+    public void setOmicronPriorities(List<OmicronPrioritySummary> omicronPriorities) { this.omicronPriorities = omicronPriorities; }
+    public int getOmicronPlanAtteint() { return omicronPlanAtteint; }
+    public void setOmicronPlanAtteint(int omicronPlanAtteint) { this.omicronPlanAtteint = omicronPlanAtteint; }
+    public int getOmicronPlanTotal() { return omicronPlanTotal; }
+    public void setOmicronPlanTotal(int omicronPlanTotal) { this.omicronPlanTotal = omicronPlanTotal; }
+    public double getOmicronPlanPourcentage() { return omicronPlanPourcentage; }
+    public void setOmicronPlanPourcentage(double omicronPlanPourcentage) { this.omicronPlanPourcentage = omicronPlanPourcentage; }
     public ModStats getModStats() { return modStats; }
     public void setModStats(ModStats modStats) { this.modStats = modStats; }
     public List<GearStat> getGearStats() { return gearStats; }
@@ -57,18 +69,74 @@ public class JoueurDashboard {
         private String personnage;
         private String nomFrancais;
         private String typeCapacite;
+        private String categorie;
+        private String categorieLabel;
         private boolean actif;
+
         public OmicronInfo() {}
-        public OmicronInfo(String personnage, String nomFrancais, String typeCapacite, boolean actif) {
+
+        public OmicronInfo(
+                String personnage,
+                String nomFrancais,
+                String typeCapacite,
+                String categorie,
+                String categorieLabel,
+                boolean actif) {
             this.personnage = personnage;
             this.nomFrancais = nomFrancais;
             this.typeCapacite = typeCapacite;
+            this.categorie = categorie;
+            this.categorieLabel = categorieLabel;
             this.actif = actif;
         }
+
         public String getPersonnage() { return personnage; }
         public String getNomFrancais() { return nomFrancais; }
         public String getTypeCapacite() { return typeCapacite; }
+        public String getCategorie() { return categorie; }
+        public String getCategorieLabel() { return categorieLabel; }
         public boolean isActif() { return actif; }
+    }
+
+    public static class OmicronPrioritySummary {
+        private int priorite;
+        private int atteint;
+        private int total;
+        private int manquants;
+        private double pourcentage;
+        private List<OmicronPriorityDetail> manquantsDetails = new ArrayList<>();
+
+        public int getPriorite() { return priorite; }
+        public void setPriorite(int priorite) { this.priorite = priorite; }
+        public int getAtteint() { return atteint; }
+        public void setAtteint(int atteint) { this.atteint = atteint; }
+        public int getTotal() { return total; }
+        public void setTotal(int total) { this.total = total; }
+        public int getManquants() { return manquants; }
+        public void setManquants(int manquants) { this.manquants = manquants; }
+        public double getPourcentage() { return pourcentage; }
+        public void setPourcentage(double pourcentage) { this.pourcentage = pourcentage; }
+        public List<OmicronPriorityDetail> getManquantsDetails() { return manquantsDetails; }
+        public void setManquantsDetails(List<OmicronPriorityDetail> manquantsDetails) { this.manquantsDetails = manquantsDetails; }
+    }
+
+    public static class OmicronPriorityDetail {
+        private String nomPersonnage;
+        private String typeCapacite;
+        private String categorie;
+        private String categorieLabel;
+
+        public OmicronPriorityDetail(String nomPersonnage, String typeCapacite, String categorie, String categorieLabel) {
+            this.nomPersonnage = nomPersonnage;
+            this.typeCapacite = typeCapacite;
+            this.categorie = categorie;
+            this.categorieLabel = categorieLabel;
+        }
+
+        public String getNomPersonnage() { return nomPersonnage; }
+        public String getTypeCapacite() { return typeCapacite; }
+        public String getCategorie() { return categorie; }
+        public String getCategorieLabel() { return categorieLabel; }
     }
 
     public static class ModStats {
