@@ -3,52 +3,327 @@
 <head th:replace="~{fragments/head :: head}"></head>
 <body class="app-page">
 <div th:replace="~{fragments/menu :: menu}"></div>
-<main class="app-container">
+
+<main class="app-container omicron-page">
     <header class="app-page-header">
         <div class="app-page-heading">
-            <span class="app-kicker">Capacités de guilde</span>
+            <span class="app-kicker">Priorités de guilde</span>
             <h1><i class="bi bi-lightning-charge-fill me-2"></i>Omicrons</h1>
-            <p>Vue globale des capacités Omicron enregistrées pour les membres de la guilde.</p>
+            <p>Catalogue autonome construit depuis les Game Data SWGOH, sans classe personnage codée en dur.</p>
         </div>
-        <div class="app-header-actions">
-            <span class="app-badge purple" th:text="${#lists.size(omicrons)} + ' omicron(s)'">0 omicron</span>
+        <div class="app-header-actions omicron-header-actions">
+            <span class="app-badge purple" th:text="${catalogueGestionCount} + ' Omicron(s) gérable(s)'">0 Omicron</span>
+            <span class="app-badge neutral" th:if="${catalogueVersion != null}" th:text="|'Game Data ' + ${catalogueVersion}|">Game Data</span>
             <button id="themeToggle" class="app-theme-toggle" type="button"><i class="bi bi-moon-stars-fill"></i><span>Mode sombre</span></button>
         </div>
     </header>
 
-    <section class="app-card">
-        <div class="app-card-header">
+    <div class="alert alert-success omicron-flash" th:if="${omicronMessage != null}" th:text="${omicronMessage}"></div>
+    <div class="alert alert-danger omicron-flash" th:if="${omicronErreur != null}" th:text="${omicronErreur}"></div>
+
+    <section class="app-card omicron-config-card">
+        <div class="app-card-header omicron-config-heading">
             <div class="app-card-title">
-                <span class="app-card-icon purple"><i class="bi bi-stars"></i></span>
-                <div><h2>Liste des Omicrons</h2><p>Joueur, personnage, type de capacité et statut.</p></div>
+                <span class="app-card-icon purple"><i class="bi bi-sliders2"></i></span>
+                <div>
+                    <h2>Configurer les priorités</h2>
+                    <p>Sélectionne le mode, le personnage, sa capacité Omicron puis la priorité de guilde.</p>
+                </div>
+            </div>
+            <div class="omicron-sync-actions">
+                <form th:action="@{/omicrons/catalogue/actualiser}" method="post">
+                    <button class="btn btn-outline-primary btn-sm" type="submit">
+                        <i class="bi bi-arrow-repeat"></i> Actualiser le catalogue
+                    </button>
+                </form>
+                <form th:action="@{/omicrons/joueurs/actualiser}" method="post">
+                    <button class="btn btn-primary btn-sm" type="submit">
+                        <i class="bi bi-people-fill"></i> Actualiser les joueurs
+                    </button>
+                </form>
             </div>
         </div>
-        <div class="app-table-wrap" th:if="${!#lists.isEmpty(omicrons)}">
-            <table class="app-table">
-                <thead><tr><th>Joueur</th><th>Personnage</th><th>Type</th><th>Statut</th></tr></thead>
+
+        <div th:if="${catalogueGestionCount == 0}" class="omicron-catalog-empty">
+            <i class="bi bi-database-exclamation"></i>
+            <div>
+                <strong>Le catalogue est vide.</strong>
+                <span>Clique sur « Actualiser le catalogue » pour détecter automatiquement les Omicrons depuis Game Data.</span>
+            </div>
+        </div>
+
+        <div th:if="${catalogueGestionCount > 0}" class="omicron-config-surface">
+            <div class="omicron-config-helper">
+                <div class="omicron-config-helper-title">
+                    <span class="app-card-icon purple"><i class="bi bi-magic"></i></span>
+                    <div>
+                        <strong>Créer une priorité Omicron</strong>
+                        <p>Choisis un mode de jeu, le personnage concerné, puis la capacité à suivre avant d'attribuer la priorité P1 à P4.</p>
+                    </div>
+                </div>
+                <div class="omicron-helper-steps">
+                    <span><strong>1</strong> Catégorie</span>
+                    <span><strong>2</strong> Personnage</span>
+                    <span><strong>3</strong> Capacité</span>
+                    <span><strong>4</strong> Priorité</span>
+                </div>
+            </div>
+
+            <form th:action="@{/omicrons/priorites/ajouter}"
+                  method="post"
+                  id="omicronPriorityForm"
+                  class="omicron-config-grid">
+
+            <div class="omicron-field">
+                <label for="omicronCategorie">Catégorie</label>
+                <select id="omicronCategorie" class="form-select" required>
+                    <option value="">Choisir…</option>
+                    <option th:each="c : ${omicronCategories}"
+                            th:value="${c.code}"
+                            th:text="${c.label}">TW</option>
+                </select>
+            </div>
+
+            <div class="omicron-field">
+                <label for="omicronPersonnage">Personnage</label>
+                <select id="omicronPersonnage" class="form-select" disabled required>
+                    <option value="">Choisir d'abord une catégorie</option>
+                </select>
+            </div>
+
+            <div class="omicron-field">
+                <label for="omicronDefinition">Capacité Omicron</label>
+                <select id="omicronDefinition" name="definitionId" class="form-select" disabled required>
+                    <option value="">Choisir d'abord un personnage</option>
+                </select>
+            </div>
+
+            <div class="omicron-field omicron-priority-field">
+                <label for="omicronPriorite">Priorité</label>
+                <select id="omicronPriorite" name="priorite" class="form-select" required>
+                    <option value="1">P1 · Obligatoire</option>
+                    <option value="2">P2 · Très prioritaire</option>
+                    <option value="3">P3 · Recommandé</option>
+                    <option value="4">P4 · Secondaire</option>
+                </select>
+            </div>
+
+            <div class="omicron-add-wrap">
+                <button class="btn btn-primary" type="submit" id="omicronAddButton" disabled>
+                    <i class="bi bi-plus-lg"></i> Ajouter au plan
+                </button>
+            </div>
+            </form>
+        </div>
+
+        <!-- Données techniques consommées uniquement par omicrons.js -->
+        <div id="omicronCatalogData" hidden>
+            <span th:each="o : ${omicronOptions}"
+                  class="omicron-catalog-item"
+                  th:attr="data-id=${o.id},
+                           data-category=${o.categorie},
+                           data-category-label=${o.categorieLabel},
+                           data-base-id=${o.baseId},
+                           data-character=${o.nomPersonnage},
+                           data-skill=${o.nomCapacite},
+                           data-skill-detail=${o.nomCapaciteDetail},
+                           data-skill-id=${o.skillId},
+                           data-type=${o.typeCapacite},
+                           data-tier=${o.tierRequis}"></span>
+        </div>
+    </section>
+
+    <section class="app-card omicron-plan-card">
+        <div class="app-card-header">
+            <div class="app-card-title">
+                <span class="app-card-icon purple"><i class="bi bi-list-stars"></i></span>
+                <div>
+                    <h2>Plan Omicron de la guilde</h2>
+                    <p>Les priorités sont indépendantes du catalogue SWGOH : tu peux les ajouter, modifier ou retirer librement.</p>
+                </div>
+            </div>
+            <span class="app-badge purple" th:text="${prioritesCount} + ' priorité(s)'">0 priorité</span>
+        </div>
+
+        <div class="app-table-wrap" th:if="${!#lists.isEmpty(omicronPriorites)}">
+            <table class="app-table omicron-plan-table">
+                <thead>
+                <tr>
+                    <th>Priorité</th>
+                    <th>Catégorie</th>
+                    <th>Personnage</th>
+                    <th>Capacité</th>
+                    <th>Possèdent</th>
+                    <th>Manquants</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
                 <tbody>
-                <tr th:each="o : ${omicrons}">
-                    <td><strong th:text="${o.nomJoueur}"></strong></td>
+                <tr th:each="o : ${omicronPriorites}">
                     <td>
-                        <strong th:text="${o.nomFrancais != null and !#strings.isEmpty(o.nomFrancais) ? o.nomFrancais : o.personnage}">
-                            Personnage
-                        </strong>
+                        <span class="omicron-priority-badge"
+                              th:classappend="|' p' + ${o.priorite}|"
+                              th:text="|'P' + ${o.priorite}|">P1</span>
                     </td>
-                    <td><span class="app-badge purple" th:text="${o.typeCapacite}"></span></td>
                     <td>
-                        <span class="app-badge green" th:if="${o.actif}"><i class="bi bi-check-circle-fill"></i>Actif</span>
-                        <span class="app-badge neutral" th:unless="${o.actif}"><i class="bi bi-dash-circle"></i>Inactif</span>
+                        <span class="omicron-mode-badge"
+                              th:attr="data-category=${o.categorie}"
+                              th:text="${o.categorieLabel}">TW</span>
+                    </td>
+                    <td>
+                        <button type="button"
+                                class="omicron-player-link"
+                                data-bs-toggle="modal"
+                                th:attr="data-bs-target=${'#' + o.modalId}">
+                            <strong th:text="${o.nomPersonnage}">Personnage</strong>
+                            <small class="omicron-tech" th:text="${o.baseId}">BASE_ID</small>
+                            <span class="omicron-open-indicator"><i class="bi bi-people"></i> Voir qui possède / qui manque</span>
+                        </button>
+                    </td>
+                    <td>
+                        <strong th:text="${o.nomCapacite}">Unique</strong>
+                        <small class="omicron-tech" th:if="${o.nomCapaciteDetail != null}" th:text="${o.nomCapaciteDetail}">Bonus de défense</small>
+                        <small class="omicron-tech omicron-tech-fade" th:text="${o.skillId}">skillId</small>
+                    </td>
+                    <td>
+                        <button type="button"
+                                class="omicron-coverage good omicron-coverage-button"
+                                data-bs-toggle="modal"
+                                th:attr="data-bs-target=${'#' + o.modalId}">
+                            <strong th:text="${o.possesseurs}">0</strong>/<span th:text="${o.totalJoueurs}">0</span>
+                        </button>
+                    </td>
+                    <td>
+                        <button type="button"
+                                class="omicron-coverage omicron-coverage-button"
+                                th:classappend="${o.manquants == 0} ? ' complete' : ' missing'"
+                                data-bs-toggle="modal"
+                                th:attr="data-bs-target=${'#' + o.modalId}">
+                            <span th:text="${o.manquants == 0 ? 'Complet' : o.manquants}">0</span>
+                        </button>
+                    </td>
+                    <td class="omicron-actions-cell">
+                        <form th:action="@{/omicrons/priorites/{id}/modifier(id=${o.prioriteId})}" method="post" class="omicron-inline-form">
+                            <select name="priorite" class="form-select form-select-sm" aria-label="Modifier la priorité">
+                                <option th:each="p : ${#numbers.sequence(1,4)}"
+                                        th:value="${p}"
+                                        th:selected="${p == o.priorite}"
+                                        th:text="|'P' + ${p}|">P1</option>
+                            </select>
+                            <button class="btn btn-outline-primary btn-sm" type="submit" title="Mettre à jour">
+                                <i class="bi bi-check-lg"></i>
+                            </button>
+                        </form>
+                        <form th:action="@{/omicrons/priorites/{id}/supprimer(id=${o.prioriteId})}" method="post">
+                            <button class="btn btn-outline-danger btn-sm" type="submit"
+                                    title="Retirer du plan"
+                                    onclick="return confirm('Retirer cet Omicron du plan de guilde ?');">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
                     </td>
                 </tr>
                 </tbody>
             </table>
         </div>
-        <div class="app-empty" th:if="${#lists.isEmpty(omicrons)}">
-            <div class="app-empty-icon"><i class="bi bi-lightning"></i></div>
-            <h3>Aucun Omicron enregistré</h3><p>La liste se remplira après la prochaine synchronisation des données.</p>
+
+        <div class="app-empty" th:if="${#lists.isEmpty(omicronPriorites)}">
+            <div class="app-empty-icon"><i class="bi bi-lightning-charge"></i></div>
+            <h3>Aucune priorité configurée</h3>
+            <p>Ajoute ton premier Omicron avec le bandeau situé au-dessus.</p>
         </div>
     </section>
+
+    <div th:each="o : ${omicronPriorites}"
+         class="modal fade omicron-roster-modal"
+         th:id="${o.modalId}"
+         tabindex="-1"
+         aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <h5 class="modal-title" th:text="${o.nomPersonnage}">Personnage</h5>
+                        <div class="omicron-modal-subtitle">
+                            <span class="omicron-mode-badge" th:attr="data-category=${o.categorie}" th:text="${o.categorieLabel}">TW</span>
+                            <span class="omicron-priority-badge" th:classappend="|' p' + ${o.priorite}|" th:text="|'P' + ${o.priorite}|">P1</span>
+                            <span class="omicron-modal-capacity" th:text="${o.nomCapacite}">Unique</span>
+                        </div>
+                        <small class="omicron-tech" th:if="${o.nomCapaciteDetail != null}" th:text="${o.nomCapaciteDetail}">Bonus de défense</small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="omicron-modal-summary">
+                        <div><span>Total joueurs</span><strong th:text="${o.totalJoueurs}">0</strong></div>
+                        <div><span>Possèdent</span><strong th:text="${o.possesseurs}">0</strong></div>
+                        <div><span>Manquants</span><strong th:text="${o.manquants}">0</strong></div>
+                    </div>
+
+                    <div class="omicron-modal-block">
+                        <p class="omicron-modal-explanation">Joueurs actuellement dans la guilde qui <strong>possèdent</strong> cet Omicron.</p>
+                        <div th:if="${!#lists.isEmpty(o.possesseursDetails)}" class="omicron-player-list">
+                            <div th:each="joueur : ${o.possesseursDetails}" class="omicron-player-row omicron-player-row-have">
+                                <span class="omicron-player-avatar"><i class="bi bi-check-circle-fill"></i></span>
+                                <div>
+                                    <strong th:text="${joueur.playerName}">Joueur</strong>
+                                    <small th:text="${joueur.playerId}">playerId</small>
+                                </div>
+                                <span class="omicron-player-status">Possède</span>
+                            </div>
+                        </div>
+                        <div th:if="${#lists.isEmpty(o.possesseursDetails)}" class="omicron-modal-empty omicron-modal-empty-good">
+                            <i class="bi bi-person-x"></i>
+                            <div>
+                                <strong>Aucun possesseur détecté</strong>
+                                <span>Le batch Omicron n'a trouvé aucun joueur avec cette capacité active pour l'instant.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="omicron-modal-block omicron-modal-block-separator">
+                        <p class="omicron-modal-explanation">Joueurs actuellement dans la guilde qui <strong>n'ont pas</strong> cet Omicron.</p>
+                        <div th:if="${!#lists.isEmpty(o.manquantsDetails)}" class="omicron-player-list">
+                            <div th:each="joueur : ${o.manquantsDetails}" class="omicron-player-row omicron-player-row-missing">
+                                <span class="omicron-player-avatar omicron-player-avatar-muted"><i class="bi bi-person-dash-fill"></i></span>
+                                <div>
+                                    <strong th:text="${joueur.playerName}">Joueur</strong>
+                                    <small th:text="${joueur.playerId}">playerId</small>
+                                </div>
+                                <span class="omicron-player-status omicron-player-status-missing">Manque</span>
+                            </div>
+                        </div>
+                        <div th:if="${#lists.isEmpty(o.manquantsDetails)}" class="omicron-modal-empty omicron-modal-empty-perfect">
+                            <i class="bi bi-trophy-fill"></i>
+                            <div>
+                                <strong>Omicron complet 🎉</strong>
+                                <span>Tous les joueurs actuellement présents dans la guilde possèdent cet Omicron.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="omicron-info-grid">
+        <article class="app-card omicron-info-card">
+            <i class="bi bi-database-check"></i>
+            <div>
+                <strong>Catalogue automatique</strong>
+                <span th:text="${catalogueCount} + ' Omicron(s) détecté(s) au total dans Game Data.'">0 Omicron</span>
+            </div>
+        </article>
+        <article class="app-card omicron-info-card">
+            <i class="bi bi-shield-check"></i>
+            <div>
+                <strong>Plus de classes AbilitiesXXX</strong>
+                <span>Le batch Omicron lit désormais les skills du roster et le référentiel Game Data.</span>
+            </div>
+        </article>
+    </section>
 </main>
+
 <div th:replace="~{fragments/footer :: footer}"></div>
 </body>
 </html>
