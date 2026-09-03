@@ -774,3 +774,159 @@
     }
 
 
+
+/* =========================================================
+   TERRITORY BATTLE - bandeau dashboard
+   ========================================================= */
+.tb-dashboard-card {
+    margin-bottom:24px;
+    padding:22px;
+}
+
+.tb-dashboard-heading {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom:18px;
+}
+
+.tb-detail-link {
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:9px 13px;
+    border:1px solid var(--dash-border);
+    border-radius:10px;
+    color:var(--dash-text);
+    text-decoration:none;
+    font-weight:700;
+    font-size:.86rem;
+    background:var(--dash-soft);
+    transition:.2s ease;
+}
+
+.tb-detail-link:hover {
+    transform:translateY(-1px);
+    color:#2563eb;
+    border-color:#93c5fd;
+}
+
+.tb-latest {
+    display:grid;
+    grid-template-columns:minmax(150px, 1.35fr) repeat(5, minmax(90px, 1fr));
+    gap:10px;
+    margin-bottom:16px;
+}
+
+.tb-latest-stars,
+.tb-latest-stat {
+    border:1px solid var(--dash-border);
+    background:var(--dash-soft);
+    border-radius:13px;
+    padding:13px 15px;
+}
+
+.tb-latest-stars span,
+.tb-latest-stat span,
+.tb-latest-stars small,
+.tb-latest-stat small {
+    display:block;
+    color:var(--dash-muted);
+    font-size:.72rem;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+}
+
+.tb-latest-stars strong {
+    display:block;
+    margin:4px 0 2px;
+    font-size:1.6rem;
+    color:#f59e0b;
+}
+
+.tb-latest-stat strong {
+    display:block;
+    margin:4px 0 1px;
+    font-size:1.22rem;
+    color:var(--dash-text);
+}
+
+.tb-latest-stat.accent strong {
+    color:#7c3aed;
+}
+
+.tb-dashboard-table-wrap {
+    overflow-x:auto;
+    border:1px solid var(--dash-border);
+    border-radius:12px;
+}
+
+.tb-dashboard-table {
+    width:100%;
+    min-width:680px;
+    border-collapse:collapse;
+    font-size:.84rem;
+}
+
+.tb-dashboard-table th,
+.tb-dashboard-table td {
+    padding:10px 14px;
+    text-align:center;
+    border-bottom:1px solid var(--dash-border);
+    color:var(--dash-text);
+}
+
+.tb-dashboard-table th:first-child,
+.tb-dashboard-table td:first-child {
+    text-align:left;
+}
+
+.tb-dashboard-table thead th {
+    color:var(--dash-muted);
+    font-size:.7rem;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    background:var(--dash-soft);
+}
+
+.tb-dashboard-table tbody tr:last-child td {
+    border-bottom:none;
+}
+
+.tb-trend {
+    display:inline-flex;
+    vertical-align:middle;
+    margin-left:3px;
+    font-size:1rem;
+}
+
+.tb-trend.up { color:#16a34a; }
+.tb-trend.down { color:#dc2626; }
+.tb-trend.same { color:var(--dash-muted); }
+
+.tb-empty {
+    min-height:100px;
+}
+
+@media (max-width: 1100px) {
+    .tb-latest {
+        grid-template-columns:repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 700px) {
+    .tb-dashboard-heading {
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+    .tb-latest {
+        grid-template-columns:repeat(2, 1fr);
+    }
+
+    .tb-latest-stars {
+        grid-column:1 / -1;
+    }
+}

@@ -104,6 +104,12 @@
                             <i class="bi bi-trophy"></i> GAC <strong th:text="${analyse.ligueGac}">KYBER</strong>
                             <span th:if="${analyse.skillRatingGac > 0}" th:text="| · ${analyse.skillRatingGac}|"> · 0</span>
                         </span>
+                        <span th:if="${analyse.rangArenePersonnages > 0}">
+                            <i class="bi bi-person-arms-up"></i> Arène persos <strong th:text="|#${analyse.rangArenePersonnages}|">#0</strong>
+                        </span>
+                        <span th:if="${analyse.rangAreneFlotte > 0}">
+                            <i class="bi bi-rocket-takeoff"></i> Arène flotte <strong th:text="|#${analyse.rangAreneFlotte}|">#0</strong>
+                        </span>
                     </div>
                 </div>
             </div>

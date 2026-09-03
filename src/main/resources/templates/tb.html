@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body class="dashboard-page tb-page">
+
+<div th:replace="~{fragments/menu :: menu}"></div>
+
+<main class="container-fluid tb-container">
+
+    <section class="tb-page-header">
+        <div>
+            <span class="dashboard-kicker">BATAILLES DE TERRITOIRE • HISTORIQUE</span>
+            <h1><i class="bi bi-globe-americas"></i> Batailles de territoire</h1>
+            <p>Historique, phases, missions spéciales et performances individuelles.</p>
+        </div>
+        <div class="tb-header-actions">
+            <form action="/tb/importer" method="post">
+                <button class="tb-import-btn" type="submit">
+                    <i class="bi bi-cloud-arrow-down-fill"></i>
+                    Importer la dernière bataille
+                </button>
+            </form>
+            <button id="themeToggle" class="theme-toggle" type="button" aria-label="Activer le mode sombre" title="Changer de thème">
+                <i class="bi bi-moon-stars-fill"></i><span>Mode sombre</span>
+            </button>
+        </div>
+    </section>
+
+    <div th:if="${tbMessage}" class="alert alert-success tb-alert">
+        <i class="bi bi-check-circle-fill"></i><span th:text="${tbMessage}">Import terminé</span>
+    </div>
+    <div th:if="${tbErreur}" class="alert alert-danger tb-alert">
+        <i class="bi bi-exclamation-triangle-fill"></i><span th:text="${tbErreur}">Erreur</span>
+    </div>
+
+    <section th:if="${tbDetail == null}" class="dash-card tb-empty-state">
+        <i class="bi bi-globe2"></i>
+        <h2>Aucune bataille de territoire historisée</h2>
+        <p>
+            Utilise « Importer la dernière bataille » ou lance une synchronisation de guilde.
+            Chaque <code>instanceId</code> n'est enregistré qu'une seule fois.
+        </p>
+    </section>
+
+    <div th:if="${tbDetail != null}">
+
+        <!-- SÉLECTION / HISTORIQUE -->
+        <section class="dash-card tb-history-card">
+            <div class="tb-section-heading">
+                <div>
+                    <span class="tb-kicker">Historique</span>
+                    <h2>Batailles enregistrées</h2>
+                </div>
+                <span class="tb-count" th:text="${tbHistorique.size() + ' bataille' + (tbHistorique.size() > 1 ? 's' : '')}">0 bataille</span>
+            </div>
+
+            <div class="tb-history-strip">
+                <a th:each="tb : ${tbHistorique}"
+                   th:href="@{/tb(tbId=${tb.id})}"
+                   class="tb-history-item"
+                   th:classappend="${tbSelectionneeId == tb.id} ? ' active' : ''">
+                    <span th:text="${tb.endTime != null ? #temporals.format(tb.endTime, 'dd/MM/yyyy') : '-'}">Date</span>
+                    <strong th:text="${tb.totalStars} + ' ★'">0 ★</strong>
+                    <small>Résultat final</small>
+                </a>
+            </div>
+        </section>
+
+        <!-- KPIs -->
+        <section class="tb-kpi-grid">
+            <article class="tb-kpi star">
+                <span><i class="bi bi-star-fill"></i></span>
+                <div><small>Étoiles</small><strong th:text="${tbDetail.tb.totalStars}">0</strong></div>
+            </article>
+            <article class="tb-kpi">
+                <span><i class="bi bi-sword"></i></span>
+                <div><small>Vagues gagnées</small><strong th:text="${#numbers.formatInteger(tbDetail.totalVagues, 1, 'POINT')}">0</strong></div>
+            </article>
+            <article class="tb-kpi">
+                <span><i class="bi bi-crosshair"></i></span>
+                <div><small>Combats tentés</small><strong th:text="${#numbers.formatInteger(tbDetail.totalCombats, 1, 'POINT')}">0</strong></div>
+            </article>
+            <article class="tb-kpi purple">
+                <span><i class="bi bi-gem"></i></span>
+                <div>
+                    <small>Missions spéciales</small>
+                    <strong><span th:text="${tbDetail.totalMsReussies}">0</span>/<span th:text="${tbDetail.totalMsTentees}">0</span></strong>
+                    <em th:text="${#numbers.formatDecimal(tbDetail.tauxMs, 1, 1)} + '%'">0%</em>
+                </div>
+            </article>
+            <article class="tb-kpi green">
+                <span><i class="bi bi-lightning-charge-fill"></i></span>
+                <div><small>Puissance déployée</small><strong th:text="${#numbers.formatInteger(tbDetail.totalPuissanceDeployee, 1, 'POINT')}">0</strong></div>
+            </article>
+            <article class="tb-kpi blue">
+                <span><i class="bi bi-box-seam-fill"></i></span>
+                <div><small>Unités données</small><strong th:text="${#numbers.formatInteger(tbDetail.totalUnitesDonnees, 1, 'POINT')}">0</strong></div>
+            </article>
+        </section>
+
+        <!-- PHASES -->
+        <section class="dash-card tb-section-card">
+            <div class="tb-section-heading">
+                <div>
+                    <span class="tb-kicker">Performance collective</span>
+                    <h2>Phases 1 → 6</h2>
+                </div>
+                <span class="tb-date-chip">
+                    <i class="bi bi-calendar-event"></i>
+                    <span th:text="${tbDetail.tb.endTime != null ? #temporals.format(tbDetail.tb.endTime, 'dd/MM/yyyy') : '-'}">Date</span>
+                </span>
+            </div>
+
+            <div class="table-responsive tb-table-shell">
+                <table class="tb-table">
+                    <thead>
+                    <tr>
+                        <th>Phase</th>
+                        <th>Combats tentés</th>
+                        <th>Vagues</th>
+                        <th>Vagues / combat</th>
+                        <th>MS tentées</th>
+                        <th>Puissance déployée</th>
+                        <th>Unités données</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="r : ${tbDetail.rounds}">
+                        <td><span class="phase-chip" th:text="|Phase ${r.roundNum}|">Phase 1</span></td>
+                        <td th:text="${r.combatsTentes}">0</td>
+                        <td><strong th:text="${r.vagues}">0</strong></td>
+                        <td th:text="${#numbers.formatDecimal(r.vaguesParCombat, 1, 2)}">0.00</td>
+                        <td th:text="${r.msTentees}">0</td>
+                        <td th:text="${#numbers.formatInteger(r.puissanceDeployee, 1, 'POINT')}">0</td>
+                        <td th:text="${r.unitesDonnees}">0</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- MISSIONS SPÉCIALES -->
+        <section class="dash-card tb-section-card">
+            <div class="tb-section-heading">
+                <div>
+                    <span class="tb-kicker">Missions spéciales</span>
+                    <h2>Tentatives & réussites</h2>
+                </div>
+                <span class="tb-info-chip"><i class="bi bi-info-circle"></i> Comptage joueur par joueur</span>
+            </div>
+
+            <div th:if="${!tbDetail.missions.isEmpty()}" class="tb-mission-grid">
+                <article th:each="ms : ${tbDetail.missions}"
+                         class="tb-mission-card tb-mission-clickable"
+                         role="button"
+                         tabindex="0"
+                         data-bs-toggle="modal"
+                         th:attr="data-bs-target=|#${ms.modalId}|,aria-label=|Voir le détail de la mission ${ms.label}|">
+                    <div class="tb-mission-top">
+                        <div>
+                            <small th:text="|Phase ${ms.phase} · Zone ${ms.conflict}|">Phase 1</small>
+                            <strong th:text="${ms.label}">Mission</strong>
+                        </div>
+                        <div class="tb-mission-badges">
+                            <span th:if="${ms.bonus}" class="bonus-chip">Bonus</span>
+                            <span class="tb-failure-chip"
+                                  th:classappend="${ms.nombreEchecs == 0} ? 'success' : ''">
+                                <i th:class="${ms.nombreEchecs == 0} ? 'bi bi-check-circle-fill' : 'bi bi-x-circle-fill'"></i>
+                                <span th:text="${ms.nombreEchecs == 0 ? '0 échec' : ms.nombreEchecs + ' échec' + (ms.nombreEchecs > 1 ? 's' : '')}">0 échec</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="tb-mission-values">
+                        <div><span>Réussies</span><strong th:text="${ms.reussies}">0</strong></div>
+                        <div><span>Tentées</span><strong th:text="${ms.tentees}">0</strong></div>
+                        <div><span>Taux</span><strong th:text="${#numbers.formatDecimal(ms.tauxReussite, 1, 1)} + '%'">0%</strong></div>
+                    </div>
+                    <div class="tb-rate-bar"><span th:style="|width:${ms.tauxReussite}%|"></span></div>
+                    <div class="tb-mission-open-hint"><i class="bi bi-box-arrow-up-right"></i> Cliquer pour voir les échecs et les missions non tentées</div>
+                </article>
+            </div>
+
+            <!-- Popins missions spéciales : joueurs ayant tenté sans réussir -->
+            <div th:each="ms : ${tbDetail.missions}"
+                 class="modal fade tb-mission-modal"
+                 th:id="${ms.modalId}"
+                 tabindex="-1"
+                 aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div>
+                                <span class="tb-kicker">Mission spéciale</span>
+                                <h5 class="modal-title" th:text="${ms.label}">Mission</h5>
+                                <small th:text="|Phase ${ms.phase} · Zone ${ms.conflict}${ms.bonus ? ' · Bonus' : ''}|">Phase 1</small>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="tb-modal-summary tb-modal-summary-4">
+                                <div><span>Tentées</span><strong th:text="${ms.tentees}">0</strong></div>
+                                <div><span>Réussies</span><strong th:text="${ms.reussies}">0</strong></div>
+                                <div><span>Échecs</span><strong th:text="${ms.nombreEchecs}">0</strong></div>
+                                <div><span>Non tentées</span><strong th:text="${ms.nombreNonTentes}">0</strong></div>
+                            </div>
+
+                            <div class="tb-modal-block">
+                                <p class="tb-modal-explanation">
+                                    Joueurs ayant <strong>tenté cette mission</strong> mais sans obtenir la validation.
+                                </p>
+
+                                <div th:if="${ms.nombreEchecs > 0}" class="tb-failure-list">
+                                    <div th:each="joueur : ${ms.echecs}" class="tb-failure-player">
+                                        <span class="tb-failure-avatar"><i class="bi bi-person-x-fill"></i></span>
+                                        <div>
+                                            <strong th:text="${joueur.playerName}">Joueur</strong>
+                                            <small th:text="${joueur.playerId}">playerId</small>
+                                        </div>
+                                        <span class="tb-failure-status">Échec</span>
+                                    </div>
+                                </div>
+
+                                <div th:if="${ms.nombreEchecs == 0}" class="tb-mission-perfect">
+                                    <i class="bi bi-trophy-fill"></i>
+                                    <div>
+                                        <strong>Aucun échec 🎉</strong>
+                                        <span>Tous les joueurs ayant tenté cette mission l'ont réussie.</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tb-modal-block tb-modal-block-separator">
+                                <p class="tb-modal-explanation">
+                                    Joueurs de la guilde qui <strong>n'ont pas tenté</strong> cette mission.
+                                </p>
+
+                                <div th:if="${ms.nombreNonTentes > 0}" class="tb-failure-list">
+                                    <div th:each="joueur : ${ms.nonTentes}" class="tb-failure-player tb-failure-player-muted">
+                                        <span class="tb-failure-avatar tb-neutral-avatar"><i class="bi bi-person-dash-fill"></i></span>
+                                        <div>
+                                            <strong th:text="${joueur.playerName}">Joueur</strong>
+                                            <small th:text="${joueur.playerId}">playerId</small>
+                                        </div>
+                                        <span class="tb-failure-status tb-neutral-status">Non tentée</span>
+                                    </div>
+                                </div>
+
+                                <div th:if="${ms.nombreNonTentes == 0}" class="tb-mission-perfect tb-mission-perfect-neutral">
+                                    <i class="bi bi-check2-all"></i>
+                                    <div>
+                                        <strong>Tout le monde a tenté ✅</strong>
+                                        <span>Aucun joueur actuellement présent dans la guilde n'a été détecté sans tentative sur cette mission.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div th:if="${tbDetail.missions.isEmpty()}" class="tb-inline-empty">Aucune mission spéciale détectée pour cette bataille.</div>
+        </section>
+
+        <!-- JOUEURS -->
+        <section class="dash-card tb-section-card">
+            <div class="tb-section-heading tb-player-heading">
+                <div>
+                    <span class="tb-kicker">Contribution individuelle</span>
+                    <h2>Joueurs</h2>
+                </div>
+                <div class="tb-player-search">
+                    <i class="bi bi-search"></i>
+                    <input id="tbPlayerSearch" type="search" placeholder="Rechercher un joueur…" autocomplete="off">
+                </div>
+            </div>
+
+            <div class="table-responsive tb-table-shell">
+                <table id="tbPlayerTable" class="tb-table tb-player-table">
+                    <thead>
+                    <tr>
+                        <th>Joueur</th>
+                        <th>Combats</th>
+                        <th>Vagues</th>
+                        <th>Vagues / combat</th>
+                        <th>MS</th>
+                        <th>Taux MS</th>
+                        <th>Déploiement</th>
+                        <th>Unités</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="j : ${tbDetail.joueurs}">
+                        <td class="player-name"><strong th:text="${j.playerName}">Joueur</strong><small th:text="${j.playerId}">ID</small></td>
+                        <td th:text="${j.combatsTentes}">0</td>
+                        <td><strong th:text="${j.vagues}">0</strong></td>
+                        <td th:text="${#numbers.formatDecimal(j.vaguesParCombat, 1, 2)}">0</td>
+                        <td><span th:text="${j.msReussies}">0</span>/<span th:text="${j.msTentees}">0</span></td>
+                        <td th:text="${#numbers.formatDecimal(j.tauxMs, 1, 1)} + '%'">0%</td>
+                        <td th:text="${#numbers.formatInteger(j.puissanceDeployee, 1, 'POINT')}">0</td>
+                        <td th:text="${j.unitesDonnees}">0</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- HISTORIQUE COMPLET -->
+        <section class="dash-card tb-section-card">
+            <div class="tb-section-heading">
+                <div>
+                    <span class="tb-kicker">Évolution</span>
+                    <h2>Historique complet des batailles</h2>
+                </div>
+            </div>
+            <div class="table-responsive tb-table-shell">
+                <table class="tb-table compact">
+                    <thead><tr><th>Date</th><th>Étoiles</th><th>P3</th><th>P4</th><th>P5</th><th>P6</th><th>MS tentées</th></tr></thead>
+                    <tbody>
+                    <tr th:each="tb : ${tbHistorique}">
+                        <td><a th:href="@{/tb(tbId=${tb.id})}" th:text="${tb.endTime != null ? #temporals.format(tb.endTime, 'dd/MM/yyyy') : '-'}">Date</a></td>
+                        <td><strong th:text="${tb.totalStars} + ' ★'">0 ★</strong><span class="tb-trend" th:if="${tb.starsTrend != null}" th:classappend="${tb.starsTrend}"><i th:class="${tb.starsTrend == 'up' ? 'bi bi-arrow-up-short' : (tb.starsTrend == 'down' ? 'bi bi-arrow-down-short' : 'bi bi-dash')}"></i></span></td>
+                        <td th:text="${tb.vaguesP3}">0</td>
+                        <td th:text="${tb.vaguesP4}">0</td>
+                        <td th:text="${tb.vaguesP5}">0</td>
+                        <td th:text="${tb.vaguesP6}">0</td>
+                        <td th:text="${tb.msTentees}">0</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

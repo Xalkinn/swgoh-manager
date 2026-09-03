@@ -30,10 +30,6 @@ public class SwgohGuildClient {
 
     /**
      * Recherche automatiquement la guilde d'un joueur à partir de son Ally Code.
-     *
-     * Comlink /player renvoie directement guildId et guildName dans le profil du
-     * joueur. Une fois le guildId récupéré, on interroge /guild pour vérifier la
-     * guilde et récupérer ses informations complètes.
      */
     public GuildeDetectee rechercherGuildeParAllyCode(String allyCode) throws Exception {
         JSONObject player = playerClient.rechercherParAllyCode(allyCode);
@@ -64,37 +60,8 @@ public class SwgohGuildClient {
     }
 
     public GuildeDetectee rechercherGuilde(String guildId) throws Exception {
-        if (guildId == null || guildId.isBlank()) {
-            throw new IllegalArgumentException("Le Guild ID est obligatoire.");
-        }
-
-        JSONObject payload = new JSONObject()
-                .put("guildId", guildId.trim())
-                .put("includeRecentGuildActivityInfo", true);
-
-        JSONObject body = new JSONObject().put("payload", payload);
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(properties.getComlink().endpoint("/guild")))
-                .timeout(Duration.ofSeconds(20))
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(body.toString()))
-                .build();
-
-        HttpResponse<String> response =
-                httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-        if (response.statusCode() >= 400) {
-            throw new IllegalStateException(
-                    "Comlink a répondu avec le code HTTP " + response.statusCode());
-        }
-
-        JSONObject root = new JSONObject(response.body());
-
-        JSONObject guild = root.optJSONObject("guild");
-        if (guild == null) {
-            guild = root;
-        }
+        JSONObject root = recupererGuildeComplete(guildId);
+        JSONObject guild = extraireObjetGuilde(root);
 
         JSONArray membres = guild.optJSONArray("member");
         if (membres == null) {
@@ -125,6 +92,44 @@ public class SwgohGuildClient {
         return new GuildeDetectee(guildId.trim(), nom, membres.length());
     }
 
+    /**
+     * Renvoie la réponse complète de /guild. Cette méthode est utilisée par le
+     * module Territory Battle afin de conserver les finalStat bruts nécessaires
+     * à l'historisation.
+     */
+    public JSONObject recupererGuildeComplete(String guildId) throws Exception {
+        if (guildId == null || guildId.isBlank()) {
+            throw new IllegalArgumentException("Le Guild ID est obligatoire.");
+        }
+
+        JSONObject payload = new JSONObject()
+                .put("guildId", guildId.trim())
+                .put("includeRecentGuildActivityInfo", true);
+
+        JSONObject body = new JSONObject().put("payload", payload);
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(properties.getComlink().endpoint("/guild")))
+                .timeout(Duration.ofSeconds(45))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(body.toString()))
+                .build();
+
+        HttpResponse<String> response =
+                httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() >= 400) {
+            throw new IllegalStateException(
+                    "Comlink a répondu avec le code HTTP " + response.statusCode());
+        }
+
+        if (response.body() == null || response.body().isBlank()) {
+            throw new IllegalStateException("Comlink n'a renvoyé aucune donnée de guilde.");
+        }
+
+        return new JSONObject(response.body());
+    }
+
     public boolean testerConnexion() {
         try {
             HttpRequest request = HttpRequest.newBuilder()
@@ -141,6 +146,11 @@ public class SwgohGuildClient {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    private JSONObject extraireObjetGuilde(JSONObject root) {
+        JSONObject guild = root.optJSONObject("guild");
+        return guild != null ? guild : root;
     }
 
     private String extraireNomGuilde(JSONObject guild) {

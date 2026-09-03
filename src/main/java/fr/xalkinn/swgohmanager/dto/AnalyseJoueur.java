@@ -24,6 +24,8 @@ public class AnalyseJoueur {
 
     private String ligueGac;
     private int skillRatingGac;
+    private int rangArenePersonnages;
+    private int rangAreneFlotte;
 
     private int totalPersonnages;
     private int totalVaisseaux;
@@ -62,6 +64,10 @@ public class AnalyseJoueur {
     public void setLigueGac(String ligueGac) { this.ligueGac = ligueGac; }
     public int getSkillRatingGac() { return skillRatingGac; }
     public void setSkillRatingGac(int skillRatingGac) { this.skillRatingGac = skillRatingGac; }
+    public int getRangArenePersonnages() { return rangArenePersonnages; }
+    public void setRangArenePersonnages(int rangArenePersonnages) { this.rangArenePersonnages = rangArenePersonnages; }
+    public int getRangAreneFlotte() { return rangAreneFlotte; }
+    public void setRangAreneFlotte(int rangAreneFlotte) { this.rangAreneFlotte = rangAreneFlotte; }
     public int getTotalPersonnages() { return totalPersonnages; }
     public void setTotalPersonnages(int totalPersonnages) { this.totalPersonnages = totalPersonnages; }
     public int getTotalVaisseaux() { return totalVaisseaux; }

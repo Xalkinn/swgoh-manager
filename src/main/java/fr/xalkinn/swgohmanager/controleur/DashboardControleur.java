@@ -23,6 +23,7 @@ import fr.xalkinn.swgohmanager.service.ExtractionService;
 import fr.xalkinn.swgohmanager.service.HealthService;
 import fr.xalkinn.swgohmanager.service.MiseAJourService;
 import fr.xalkinn.swgohmanager.service.SynchronisationGuildeStatusService;
+import fr.xalkinn.swgohmanager.service.TerritoryBattleStatsService;
 
 
 @Controller
@@ -34,13 +35,15 @@ public class DashboardControleur {
 	private final PersonnageRepository personnageRepository;
 	private final ExtractionRepository extractionRepository;
 	private final MiseAJourService miseAJourService;
+	private final TerritoryBattleStatsService territoryBattleStatsService;
 
 
     public DashboardControleur(
             DashboardService dashboardService,
             HealthService healthService, ExtractionService extractionService,
             ActualisationService actualisationService, PersonnageRepository personnageRepository,
-            ExtractionRepository extractionRepository, MiseAJourService miseAJourService) {
+            ExtractionRepository extractionRepository, MiseAJourService miseAJourService,
+            TerritoryBattleStatsService territoryBattleStatsService) {
 
         this.dashboardService = dashboardService;
         this.healthService = healthService;
@@ -49,6 +52,7 @@ public class DashboardControleur {
 		this.personnageRepository = personnageRepository;
 		this.extractionRepository = extractionRepository;
 		this.miseAJourService = miseAJourService;
+		this.territoryBattleStatsService = territoryBattleStatsService;
 
     }
 
@@ -71,6 +75,7 @@ public class DashboardControleur {
         model.addAttribute("actualisation", actualisationService.getActualisation());
         model.addAttribute("derniersUps", personnageRepository.trouverDerniersUpsGuilde());
         model.addAttribute("dernieresExtractions",extractionRepository.trouverDernieresExtractions());
+        model.addAttribute("tbHistorique", territoryBattleStatsService.getHistoriqueDashboard(5));
         //model.addAttribute("derniersUps", null);
         return "dashboard";
     }

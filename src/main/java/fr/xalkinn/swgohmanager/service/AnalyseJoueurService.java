@@ -69,6 +69,22 @@ public class AnalyseJoueurService {
         analyse.setPgPerso(lireStat(profileStats, STAT_PG_PERSO));
         analyse.setPgVaisseaux(lireStat(profileStats, STAT_PG_VAISSEAUX));
 
+        JSONArray pvpProfiles = player.optJSONArray("pvpProfile");
+        if (pvpProfiles != null) {
+            for (int i = 0; i < pvpProfiles.length(); i++) {
+                JSONObject pvp = pvpProfiles.optJSONObject(i);
+                if (pvp == null) continue;
+
+                int tab = pvp.optInt("tab", 0);
+                int rank = pvp.optInt("rank", 0);
+                if (tab == 1) {
+                    analyse.setRangArenePersonnages(rank);
+                } else if (tab == 2) {
+                    analyse.setRangAreneFlotte(rank);
+                }
+            }
+        }
+
         JSONObject playerRating = player.optJSONObject("playerRating");
         if (playerRating != null) {
             JSONObject skill = playerRating.optJSONObject("playerSkillRating");
