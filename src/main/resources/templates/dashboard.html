@@ -104,26 +104,30 @@
             </div>
 
             <div class="omicron-mode-grid" th:if="${omicronModeStats != null}">
-                <div class="omicron-mode-tile tw">
+                <button type="button" class="omicron-mode-tile tw" data-bs-toggle="modal" data-bs-target="#dashboardOmicronModal-TW">
                     <span>TW</span>
                     <strong th:text="${omicronModeStats.get('TW')}">0</strong>
                     <small>Guerre de territoires</small>
-                </div>
-                <div class="omicron-mode-tile tb">
+                    <em><i class="bi bi-people"></i> Voir le détail</em>
+                </button>
+                <button type="button" class="omicron-mode-tile tb" data-bs-toggle="modal" data-bs-target="#dashboardOmicronModal-TB">
                     <span>TB</span>
                     <strong th:text="${omicronModeStats.get('TB')}">0</strong>
                     <small>Bataille de territoire</small>
-                </div>
-                <div class="omicron-mode-tile raid">
+                    <em><i class="bi bi-people"></i> Voir le détail</em>
+                </button>
+                <button type="button" class="omicron-mode-tile raid" data-bs-toggle="modal" data-bs-target="#dashboardOmicronModal-RAID">
                     <span>Raid</span>
                     <strong th:text="${omicronModeStats.get('RAID')}">0</strong>
                     <small>Omicrons de raid</small>
-                </div>
-                <div class="omicron-mode-tile gac">
+                    <em><i class="bi bi-people"></i> Voir le détail</em>
+                </button>
+                <button type="button" class="omicron-mode-tile gac" data-bs-toggle="modal" data-bs-target="#dashboardOmicronModal-GAC">
                     <span>GA</span>
                     <strong th:text="${omicronModeStats.get('GAC')}">0</strong>
                     <small>Grande Arène</small>
-                </div>
+                    <em><i class="bi bi-people"></i> Voir le détail</em>
+                </button>
             </div>
         </article>
 
@@ -390,6 +394,67 @@
     </section>
 
 </main>
+
+<!-- DÉTAIL DES OMICRONS PAR MODE -->
+<div th:each="mode : ${omicronModeDetails}"
+     class="modal fade dashboard-omicron-modal"
+     th:id="${mode.modalId}"
+     tabindex="-1"
+     aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <span class="dashboard-omicron-modal-kicker">Omicrons de guilde</span>
+                    <h5 class="modal-title" th:text="${mode.label}">Guerre de territoires</h5>
+                    <p>
+                        <strong th:text="${mode.totalPoses}">0</strong> Omicron(s) posé(s)
+                        · <strong th:text="${mode.nombreOmicronsDifferents}">0</strong> capacité(s) différente(s)
+                    </p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+
+            <div class="modal-body">
+                <div th:if="${!#lists.isEmpty(mode.omicrons)}" class="dashboard-omicron-detail-list">
+                    <article th:each="o : ${mode.omicrons}" class="dashboard-omicron-detail-card">
+                        <div class="dashboard-omicron-detail-head">
+                            <div>
+                                <strong th:text="${o.nomPersonnage}">Poggle le Bref</strong>
+                                <div class="dashboard-omicron-detail-meta">
+                                    <span th:text="${o.typeCapacite}">Unique</span>
+                                    <small th:if="${o.nomCapaciteDetail != null}" th:text="${o.nomCapaciteDetail}">Capacité</small>
+                                </div>
+                            </div>
+                            <span class="dashboard-omicron-player-count">
+                                <strong th:text="${o.nombreJoueurs}">0</strong>
+                                joueur<span th:if="${o.nombreJoueurs != 1}">s</span>
+                            </span>
+                        </div>
+
+                        <div class="dashboard-omicron-player-grid">
+                            <div th:each="joueur : ${o.joueurs}" class="dashboard-omicron-player-pill">
+                                <i class="bi bi-check-circle-fill"></i>
+                                <div>
+                                    <strong th:text="${joueur.playerName}">Joueur</strong>
+                                    <small th:text="${joueur.playerId}">playerId</small>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+
+                <div th:if="${#lists.isEmpty(mode.omicrons)}" class="dashboard-omicron-empty">
+                    <i class="bi bi-lightning-charge"></i>
+                    <div>
+                        <strong>Aucun Omicron détecté pour ce mode</strong>
+                        <span>La liste se remplira automatiquement après la prochaine synchronisation des Omicrons joueurs.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 
