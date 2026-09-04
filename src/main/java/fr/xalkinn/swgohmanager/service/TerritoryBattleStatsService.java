@@ -73,6 +73,7 @@ public class TerritoryBattleStatsService {
         detail.setRounds(rounds);
         detail.setMissions(missions);
         detail.setJoueurs(joueurs);
+        detail.setTotalParticipantsActifs(nombreParticipantsActifs(id));
 
         long totalVagues = rounds.stream().mapToLong(RoundRow::getVagues).sum();
         long totalCombats = rounds.stream().mapToLong(RoundRow::getCombatsTentes).sum();
@@ -157,7 +158,10 @@ public class TerritoryBattleStatsService {
                     COALESCE(SUM(CASE WHEN a.stat_type = 'power' THEN s.score ELSE 0 END), 0) AS puissance_deployee,
                     COALESCE(SUM(CASE WHEN a.stat_type = 'unit_donated' THEN s.score ELSE 0 END), 0) AS unites_donnees
                 FROM tb_activite a
-                LEFT JOIN tb_score_joueur s ON s.tb_activite_id = a.id
+                JOIN tb_score_joueur s ON s.tb_activite_id = a.id
+                JOIN joueur j
+                  ON j.player_id = s.player_id
+                 AND j.dans_guilde = 1
                 WHERE a.territory_battle_id = ?
                   AND a.round_num IS NOT NULL
                 GROUP BY a.round_num
@@ -205,10 +209,17 @@ public class TerritoryBattleStatsService {
                     a.conflict_num,
                     a.bonus,
                     a.covert_num,
-                    SUM(CASE WHEN a.stat_type = 'covert_round_attempted' AND s.id IS NOT NULL THEN 1 ELSE 0 END) AS tentees,
-                    SUM(CASE WHEN a.stat_type = 'covert_complete' AND s.id IS NOT NULL THEN 1 ELSE 0 END) AS reussies
+                    COUNT(DISTINCT CASE
+                        WHEN a.stat_type = 'covert_round_attempted' AND j.player_id IS NOT NULL
+                        THEN s.player_id END) AS tentees,
+                    COUNT(DISTINCT CASE
+                        WHEN a.stat_type = 'covert_complete' AND j.player_id IS NOT NULL
+                        THEN s.player_id END) AS reussies
                 FROM tb_activite a
                 LEFT JOIN tb_score_joueur s ON s.tb_activite_id = a.id
+                LEFT JOIN joueur j
+                  ON j.player_id = s.player_id
+                 AND j.dans_guilde = 1
                 WHERE a.territory_battle_id = ?
                   AND a.phase IS NOT NULL
                   AND a.stat_type IN ('covert_round_attempted', 'covert_complete')
@@ -254,8 +265,9 @@ public class TerritoryBattleStatsService {
                 FROM tb_score_joueur tentative
                 JOIN tb_activite activite_tentative
                   ON activite_tentative.id = tentative.tb_activite_id
-                LEFT JOIN joueur j
+                JOIN joueur j
                   ON j.player_id = tentative.player_id
+                 AND j.dans_guilde = 1
                 WHERE activite_tentative.territory_battle_id = ?
                   AND activite_tentative.stat_type = 'covert_round_attempted'
                   AND activite_tentative.phase = ?
@@ -290,8 +302,11 @@ public class TerritoryBattleStatsService {
 
 
     /**
-     * Retourne les joueurs encore marqués dans la guilde mais qui n'ont pas
-     * tenté la mission spéciale sur cette TB.
+     * Retourne uniquement les participants de cette TB qui sont toujours
+     * membres de la guilde (dans_guilde = 1) et qui n'ont pas tenté la mission.
+     *
+     * La population de référence est donc :
+     * participants TB ∩ membres actuels de la guilde.
      */
     private List<MissionFailureRow> chargerNonTentesMission(long tbId, MissionRow mission) {
         return jdbc.query("""
@@ -300,6 +315,14 @@ public class TerritoryBattleStatsService {
                     COALESCE(j.nom, j.player_id) AS player_name
                 FROM joueur j
                 WHERE j.dans_guilde = 1
+                  AND EXISTS (
+                      SELECT 1
+                      FROM tb_score_joueur participation
+                      JOIN tb_activite activite_participation
+                        ON activite_participation.id = participation.tb_activite_id
+                      WHERE participation.player_id = j.player_id
+                        AND activite_participation.territory_battle_id = ?
+                  )
                   AND NOT EXISTS (
                       SELECT 1
                       FROM tb_score_joueur tentative
@@ -319,6 +342,7 @@ public class TerritoryBattleStatsService {
                         rs.getString("player_id"),
                         rs.getString("player_name")),
                 tbId,
+                tbId,
                 mission.getPhase(),
                 mission.getConflict(),
                 mission.isBonus(),
@@ -328,19 +352,36 @@ public class TerritoryBattleStatsService {
     private List<PlayerRow> chargerJoueurs(long tbId) {
         return jdbc.query("""
                 SELECT
-                    s.player_id,
-                    COALESCE(MAX(j.nom), s.player_id) AS player_name,
-                    COALESCE(SUM(CASE WHEN a.round_num IS NOT NULL AND a.stat_type = 'strike_attempt' THEN s.score ELSE 0 END), 0) AS combats_tentes,
-                    COALESCE(SUM(CASE WHEN a.round_num IS NOT NULL AND a.stat_type = 'strike_encounter' THEN s.score ELSE 0 END), 0) AS vagues,
-                    COALESCE(SUM(CASE WHEN a.phase IS NOT NULL AND a.stat_type = 'covert_round_attempted' THEN 1 ELSE 0 END), 0) AS ms_tentees,
-                    COALESCE(SUM(CASE WHEN a.phase IS NOT NULL AND a.stat_type = 'covert_complete' THEN 1 ELSE 0 END), 0) AS ms_reussies,
-                    COALESCE(SUM(CASE WHEN a.round_num IS NOT NULL AND a.stat_type = 'power' THEN s.score ELSE 0 END), 0) AS puissance_deployee,
-                    COALESCE(SUM(CASE WHEN a.round_num IS NOT NULL AND a.stat_type = 'unit_donated' THEN s.score ELSE 0 END), 0) AS unites_donnees
-                FROM tb_score_joueur s
-                JOIN tb_activite a ON a.id = s.tb_activite_id
-                LEFT JOIN joueur j ON j.player_id = s.player_id
-                WHERE a.territory_battle_id = ?
-                GROUP BY s.player_id
+                    j.player_id,
+                    COALESCE(j.nom, j.player_id) AS player_name,
+                    COALESCE(SUM(CASE WHEN x.round_num IS NOT NULL AND x.stat_type = 'strike_attempt' THEN x.score ELSE 0 END), 0) AS combats_tentes,
+                    COALESCE(SUM(CASE WHEN x.round_num IS NOT NULL AND x.stat_type = 'strike_encounter' THEN x.score ELSE 0 END), 0) AS vagues,
+                    COUNT(DISTINCT CASE WHEN x.phase IS NOT NULL AND x.stat_type = 'covert_round_attempted' THEN x.activite_id END) AS ms_tentees,
+                    COUNT(DISTINCT CASE WHEN x.phase IS NOT NULL AND x.stat_type = 'covert_complete' THEN x.activite_id END) AS ms_reussies,
+                    COALESCE(SUM(CASE WHEN x.round_num IS NOT NULL AND x.stat_type = 'power' THEN x.score ELSE 0 END), 0) AS puissance_deployee,
+                    COALESCE(SUM(CASE WHEN x.round_num IS NOT NULL AND x.stat_type = 'unit_donated' THEN x.score ELSE 0 END), 0) AS unites_donnees
+                FROM (
+                    SELECT DISTINCT s.player_id
+                    FROM tb_score_joueur s
+                    JOIN tb_activite a ON a.id = s.tb_activite_id
+                    WHERE a.territory_battle_id = ?
+                ) participants
+                JOIN joueur j
+                  ON j.player_id = participants.player_id
+                 AND j.dans_guilde = 1
+                LEFT JOIN (
+                    SELECT
+                        s.player_id,
+                        s.score,
+                        a.id AS activite_id,
+                        a.round_num,
+                        a.phase,
+                        a.stat_type
+                    FROM tb_score_joueur s
+                    JOIN tb_activite a ON a.id = s.tb_activite_id
+                    WHERE a.territory_battle_id = ?
+                ) x ON x.player_id = participants.player_id
+                GROUP BY j.player_id, j.nom
                 ORDER BY vagues DESC, ms_reussies DESC, player_name
                 """,
                 (rs, rowNum) -> {
@@ -361,7 +402,27 @@ public class TerritoryBattleStatsService {
                             : 0.0);
                     return row;
                 },
+                tbId,
                 tbId);
+    }
+
+    /**
+     * Nombre de joueurs ayant au moins une donnée dans cette TB et qui sont
+     * toujours marqués dans la guilde.
+     */
+    private int nombreParticipantsActifs(long tbId) {
+        Integer n = jdbc.queryForObject("""
+                SELECT COUNT(DISTINCT s.player_id)
+                FROM tb_score_joueur s
+                JOIN tb_activite a ON a.id = s.tb_activite_id
+                JOIN joueur j
+                  ON j.player_id = s.player_id
+                 AND j.dans_guilde = 1
+                WHERE a.territory_battle_id = ?
+                """,
+                Integer.class,
+                tbId);
+        return n == null ? 0 : n;
     }
 
     private void appliquerTendances(List<SummaryRow> rows) {

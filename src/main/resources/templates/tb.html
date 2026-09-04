@@ -105,10 +105,16 @@
                     <span class="tb-kicker">Performance collective</span>
                     <h2>Phases 1 → 6</h2>
                 </div>
-                <span class="tb-date-chip">
-                    <i class="bi bi-calendar-event"></i>
-                    <span th:text="${tbDetail.tb.endTime != null ? #temporals.format(tbDetail.tb.endTime, 'dd/MM/yyyy') : '-'}">Date</span>
-                </span>
+                <div class="tb-heading-chips">
+                    <span class="tb-info-chip">
+                        <i class="bi bi-people-fill"></i>
+                        <span th:text="|${tbDetail.totalParticipantsActifs} participants encore dans la guilde|">0 participant</span>
+                    </span>
+                    <span class="tb-date-chip">
+                        <i class="bi bi-calendar-event"></i>
+                        <span th:text="${tbDetail.tb.endTime != null ? #temporals.format(tbDetail.tb.endTime, 'dd/MM/yyyy') : '-'}">Date</span>
+                    </span>
+                </div>
             </div>
 
             <div class="table-responsive tb-table-shell">
@@ -146,7 +152,7 @@
                     <span class="tb-kicker">Missions spéciales</span>
                     <h2>Tentatives & réussites</h2>
                 </div>
-                <span class="tb-info-chip"><i class="bi bi-info-circle"></i> Comptage joueur par joueur</span>
+                <span class="tb-info-chip"><i class="bi bi-people-fill"></i> <span th:text="|Référence : ${tbDetail.totalParticipantsActifs} participants encore dans la guilde|">Référence participants</span></span>
             </div>
 
             <div th:if="${!tbDetail.missions.isEmpty()}" class="tb-mission-grid">
@@ -231,7 +237,7 @@
 
                             <div class="tb-modal-block tb-modal-block-separator">
                                 <p class="tb-modal-explanation">
-                                    Joueurs de la guilde qui <strong>n'ont pas tenté</strong> cette mission.
+                                    Participants de cette bataille encore dans la guilde qui <strong>n'ont pas tenté</strong> cette mission.
                                 </p>
 
                                 <div th:if="${ms.nombreNonTentes > 0}" class="tb-failure-list">
@@ -249,7 +255,7 @@
                                     <i class="bi bi-check2-all"></i>
                                     <div>
                                         <strong>Tout le monde a tenté ✅</strong>
-                                        <span>Aucun joueur actuellement présent dans la guilde n'a été détecté sans tentative sur cette mission.</span>
+                                        <span>Aucun participant de cette bataille encore présent dans la guilde n'a été détecté sans tentative sur cette mission.</span>
                                     </div>
                                 </div>
                             </div>
@@ -267,9 +273,15 @@
                     <span class="tb-kicker">Contribution individuelle</span>
                     <h2>Joueurs</h2>
                 </div>
-                <div class="tb-player-search">
-                    <i class="bi bi-search"></i>
-                    <input id="tbPlayerSearch" type="search" placeholder="Rechercher un joueur…" autocomplete="off">
+                <div class="tb-player-heading-actions">
+                    <span class="tb-info-chip">
+                        <i class="bi bi-people-fill"></i>
+                        <span th:text="|${tbDetail.totalParticipantsActifs} participants affichés|">0 participant</span>
+                    </span>
+                    <div class="tb-player-search">
+                        <i class="bi bi-search"></i>
+                        <input id="tbPlayerSearch" type="search" placeholder="Rechercher un joueur…" autocomplete="off">
+                    </div>
                 </div>
             </div>
 

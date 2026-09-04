@@ -512,3 +512,25 @@ html.dark-mode .tb-mission-modal .btn-close {
 @media (max-width: 768px) {
     .tb-modal-summary-4 { grid-template-columns:repeat(2,1fr); }
 }
+
+
+/* V2.6 — référence unique : joueurs actuellement dans la guilde */
+.tb-heading-chips,
+.tb-player-heading-actions {
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+@media (max-width: 768px) {
+    .tb-heading-chips,
+    .tb-player-heading-actions {
+        width:100%;
+        justify-content:flex-start;
+    }
+    .tb-player-heading-actions .tb-player-search {
+        width:100%;
+    }
+}

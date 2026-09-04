@@ -17,6 +17,9 @@ public interface JoueurRepository extends ListCrudRepository<Joueur, Integer> {
 	
 	@Query("SELECT MAX(date_capture) FROM personnage")
 	LocalDateTime findDerniereMaj();
+
+    @Query("SELECT COUNT(*) FROM joueur WHERE dans_guilde = 1")
+    int compterJoueursDansGuilde();
 	
 	@Query("""
 		    SELECT *

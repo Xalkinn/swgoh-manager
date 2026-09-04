@@ -43,7 +43,7 @@ public class DashboardService {
 
         DashboardStats stats = new DashboardStats();
 
-        stats.setNombreJoueurs((int) joueurRepository.count());
+        stats.setNombreJoueurs(joueurRepository.compterJoueursDansGuilde());
         stats.setNombreOmicrons(nombreOmicronsActifsGuilde());
         stats.setNombrePersonnages((int) personnageRepository.count());
         stats.setDerniereMajOmicrons(omicronRepository.findDerniereMaj());

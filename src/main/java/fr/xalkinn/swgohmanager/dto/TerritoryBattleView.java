@@ -188,6 +188,7 @@ public final class TerritoryBattleView {
         private List<RoundRow> rounds = new ArrayList<>();
         private List<MissionRow> missions = new ArrayList<>();
         private List<PlayerRow> joueurs = new ArrayList<>();
+        private int totalParticipantsActifs;
         private long totalVagues;
         private long totalCombats;
         private long totalMsTentees;
@@ -204,6 +205,8 @@ public final class TerritoryBattleView {
         public void setMissions(List<MissionRow> missions) { this.missions = missions; }
         public List<PlayerRow> getJoueurs() { return joueurs; }
         public void setJoueurs(List<PlayerRow> joueurs) { this.joueurs = joueurs; }
+        public int getTotalParticipantsActifs() { return totalParticipantsActifs; }
+        public void setTotalParticipantsActifs(int totalParticipantsActifs) { this.totalParticipantsActifs = totalParticipantsActifs; }
         public long getTotalVagues() { return totalVagues; }
         public void setTotalVagues(long totalVagues) { this.totalVagues = totalVagues; }
         public long getTotalCombats() { return totalCombats; }
