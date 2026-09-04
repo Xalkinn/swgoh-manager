@@ -10,9 +10,11 @@ import java.util.Map;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import fr.xalkinn.swgohmanager.dto.TerritoryBattleView.CombatPlayerRow;
 import fr.xalkinn.swgohmanager.dto.TerritoryBattleView.Detail;
 import fr.xalkinn.swgohmanager.dto.TerritoryBattleView.MissionFailureRow;
 import fr.xalkinn.swgohmanager.dto.TerritoryBattleView.MissionRow;
+import fr.xalkinn.swgohmanager.dto.TerritoryBattleView.PlanetRow;
 import fr.xalkinn.swgohmanager.dto.TerritoryBattleView.PlayerRow;
 import fr.xalkinn.swgohmanager.dto.TerritoryBattleView.RoundRow;
 import fr.xalkinn.swgohmanager.dto.TerritoryBattleView.SummaryRow;
@@ -67,6 +69,11 @@ public class TerritoryBattleStatsService {
         detail.setTb(tb);
 
         List<RoundRow> rounds = chargerRounds(id);
+        for (RoundRow round : rounds) {
+            round.setModalId("tbPhase-" + round.getRoundNum());
+            round.setPlanetes(chargerPlanetesPhase(id, round.getRoundNum()));
+        }
+
         List<MissionRow> missions = chargerMissions(id);
         List<PlayerRow> joueurs = chargerJoueurs(id);
 
@@ -200,6 +207,100 @@ public class TerritoryBattleStatsService {
         Map<Integer, RoundRow> ordered = new java.util.LinkedHashMap<>();
         for (int round = 1; round <= 6; round++) ordered.put(round, result.get(round));
         return ordered;
+    }
+
+    /**
+     * Détail des combats classiques d'une phase, regroupés par planète / zone.
+     * Les missions spéciales sont exclues en ne sélectionnant que les statistiques
+     * strike_attempt et strike_encounter.
+     */
+    private List<PlanetRow> chargerPlanetesPhase(long tbId, int phase) {
+        List<PlanetRow> planetes = jdbc.query("""
+                SELECT
+                    a.conflict_num,
+                    a.bonus,
+                    COALESCE(SUM(CASE
+                        WHEN a.stat_type = 'strike_attempt' AND j.player_id IS NOT NULL
+                        THEN COALESCE(s.score, 0) ELSE 0 END), 0) AS combats_tentes,
+                    COALESCE(SUM(CASE
+                        WHEN a.stat_type = 'strike_encounter' AND j.player_id IS NOT NULL
+                        THEN COALESCE(s.score, 0) ELSE 0 END), 0) AS vagues
+                FROM tb_activite a
+                LEFT JOIN tb_score_joueur s
+                  ON s.tb_activite_id = a.id
+                LEFT JOIN joueur j
+                  ON j.player_id = s.player_id
+                 AND j.dans_guilde = 1
+                WHERE a.territory_battle_id = ?
+                  AND a.phase = ?
+                  AND a.conflict_num IS NOT NULL
+                  AND a.stat_type IN ('strike_attempt', 'strike_encounter')
+                GROUP BY a.conflict_num, a.bonus
+                ORDER BY a.conflict_num, a.bonus
+                """,
+                (rs, rowNum) -> {
+                    PlanetRow row = new PlanetRow();
+                    row.setPhase(phase);
+                    row.setConflict(rs.getInt("conflict_num"));
+                    row.setBonus(rs.getBoolean("bonus"));
+                    row.setCombatsTentes(rs.getLong("combats_tentes"));
+                    row.setVagues(rs.getLong("vagues"));
+                    row.setVaguesParCombat(row.getCombatsTentes() > 0
+                            ? row.getVagues() * 1.0 / row.getCombatsTentes()
+                            : 0.0);
+                    row.setLabel(labelPlanete(phase, row.getConflict(), row.isBonus()));
+                    return row;
+                },
+                tbId,
+                phase);
+
+        for (PlanetRow planete : planetes) {
+            planete.setJoueurs(chargerCombatsJoueursPlanete(tbId, phase, planete));
+        }
+        return planetes;
+    }
+
+    private List<CombatPlayerRow> chargerCombatsJoueursPlanete(
+            long tbId,
+            int phase,
+            PlanetRow planete) {
+        return jdbc.query("""
+                SELECT
+                    j.player_id,
+                    COALESCE(j.nom, j.player_id) AS player_name,
+                    COALESCE(SUM(CASE WHEN a.stat_type = 'strike_attempt' THEN COALESCE(s.score, 0) ELSE 0 END), 0) AS combats_tentes,
+                    COALESCE(SUM(CASE WHEN a.stat_type = 'strike_encounter' THEN COALESCE(s.score, 0) ELSE 0 END), 0) AS vagues
+                FROM tb_activite a
+                JOIN tb_score_joueur s
+                  ON s.tb_activite_id = a.id
+                JOIN joueur j
+                  ON j.player_id = s.player_id
+                 AND j.dans_guilde = 1
+                WHERE a.territory_battle_id = ?
+                  AND a.phase = ?
+                  AND a.conflict_num = ?
+                  AND a.bonus = ?
+                  AND a.stat_type IN ('strike_attempt', 'strike_encounter')
+                GROUP BY j.player_id, j.nom
+                HAVING SUM(CASE WHEN a.stat_type = 'strike_attempt' THEN COALESCE(s.score, 0) ELSE 0 END) > 0
+                    OR SUM(CASE WHEN a.stat_type = 'strike_encounter' THEN COALESCE(s.score, 0) ELSE 0 END) > 0
+                ORDER BY vagues DESC, combats_tentes DESC, player_name
+                """,
+                (rs, rowNum) -> {
+                    CombatPlayerRow row = new CombatPlayerRow();
+                    row.setPlayerId(rs.getString("player_id"));
+                    row.setPlayerName(rs.getString("player_name"));
+                    row.setCombatsTentes(rs.getLong("combats_tentes"));
+                    row.setVagues(rs.getLong("vagues"));
+                    row.setVaguesParCombat(row.getCombatsTentes() > 0
+                            ? row.getVagues() * 1.0 / row.getCombatsTentes()
+                            : 0.0);
+                    return row;
+                },
+                tbId,
+                phase,
+                planete.getConflict(),
+                planete.isBonus());
     }
 
     private List<MissionRow> chargerMissions(long tbId) {
@@ -481,6 +582,33 @@ public class TerritoryBattleStatsService {
             default -> "Phase " + phase + " · Zone " + conflict
                     + (bonus ? " · Bonus" : "")
                     + " · Mission spéciale " + covert;
+        };
+    }
+
+    private String labelPlanete(int phase, int conflict, boolean bonus) {
+        String key = phase + "-" + conflict + "-" + bonus;
+        return switch (key) {
+            case "1-1-false" -> "R5 · Coruscant";
+            case "1-2-false" -> "R5 · Mustafar";
+            case "1-3-false" -> "R5 · Corellia";
+            case "2-1-false" -> "R6 · Bracca";
+            case "2-2-false" -> "R6 · Geonosis";
+            case "2-3-false" -> "R6 · Felucia";
+            case "3-1-false" -> "R7 · Kashyyyk";
+            case "3-1-true" -> "Zeffo";
+            case "3-2-false" -> "R7 · Dathomir";
+            case "3-3-false" -> "R7 · Tatooine";
+            case "4-1-false" -> "R8 · Lothal";
+            case "4-2-false" -> "R8 · Station médicale Haven Class";
+            case "4-3-false" -> "R8 · Kessel";
+            case "4-3-true" -> "Mandalore";
+            case "5-1-false" -> "R9 · Anneau de Kafrene";
+            case "5-2-false" -> "R9 · Malachor";
+            case "5-3-false" -> "R9 · Vandor";
+            case "6-1-false" -> "R9 · Scarif";
+            case "6-2-false" -> "R9 · Death Star";
+            case "6-3-false" -> "R9 · Hoth";
+            default -> "Planète / Zone " + conflict + (bonus ? " · Bonus" : "");
         };
     }
 

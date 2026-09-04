@@ -42,7 +42,7 @@
                     <div class="mb-3">
                         <label class="form-label" for="relicCible">Relique cible</label>
                         <select id="relicCible" class="form-select" th:field="*{relicCible}">
-                            <option th:each="i : ${#numbers.sequence(1,9)}" th:value="${i}" th:text="'R' + ${i}"></option>
+                            <option th:each="i : ${#numbers.sequence(1,10)}" th:value="${i}" th:text="'R' + ${i}"></option>
                         </select>
                     </div>
                     <div class="mb-3">
@@ -66,7 +66,7 @@
             <div class="app-card-body">
                 <div class="app-stat-strip" style="grid-template-columns: repeat(2,minmax(0,1fr));">
                     <div class="app-stat"><span>Objectifs actifs</span><strong th:text="${#lists.size(objectifs)}">0</strong></div>
-                    <div class="app-stat"><span>Relique maximale</span><strong>R9</strong></div>
+                    <div class="app-stat"><span>Relique maximale</span><strong>R10</strong></div>
                 </div>
                 <p class="mb-0 text-muted small">Utilise l'icône <i class="bi bi-eye-fill"></i> dans le tableau pour ouvrir le comparatif détaillé de la guilde sur un personnage.</p>
             </div>

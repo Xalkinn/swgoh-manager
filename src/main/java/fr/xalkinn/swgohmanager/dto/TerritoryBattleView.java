@@ -75,6 +75,8 @@ public final class TerritoryBattleView {
         private long msTentees;
         private long puissanceDeployee;
         private long unitesDonnees;
+        private String modalId;
+        private List<PlanetRow> planetes = new ArrayList<>();
 
         public int getRoundNum() { return roundNum; }
         public void setRoundNum(int roundNum) { this.roundNum = roundNum; }
@@ -90,6 +92,63 @@ public final class TerritoryBattleView {
         public void setPuissanceDeployee(long puissanceDeployee) { this.puissanceDeployee = puissanceDeployee; }
         public long getUnitesDonnees() { return unitesDonnees; }
         public void setUnitesDonnees(long unitesDonnees) { this.unitesDonnees = unitesDonnees; }
+        public String getModalId() { return modalId; }
+        public void setModalId(String modalId) { this.modalId = modalId; }
+        public List<PlanetRow> getPlanetes() { return planetes; }
+        public void setPlanetes(List<PlanetRow> planetes) { this.planetes = planetes; }
+    }
+
+    /**
+     * Une planète / zone de combat d'une phase. Les missions spéciales sont
+     * volontairement exclues : seules strike_attempt et strike_encounter sont
+     * utilisées pour cette vue.
+     */
+    public static class PlanetRow {
+        private int phase;
+        private int conflict;
+        private boolean bonus;
+        private String label;
+        private long combatsTentes;
+        private long vagues;
+        private double vaguesParCombat;
+        private List<CombatPlayerRow> joueurs = new ArrayList<>();
+
+        public int getPhase() { return phase; }
+        public void setPhase(int phase) { this.phase = phase; }
+        public int getConflict() { return conflict; }
+        public void setConflict(int conflict) { this.conflict = conflict; }
+        public boolean isBonus() { return bonus; }
+        public void setBonus(boolean bonus) { this.bonus = bonus; }
+        public String getLabel() { return label; }
+        public void setLabel(String label) { this.label = label; }
+        public long getCombatsTentes() { return combatsTentes; }
+        public void setCombatsTentes(long combatsTentes) { this.combatsTentes = combatsTentes; }
+        public long getVagues() { return vagues; }
+        public void setVagues(long vagues) { this.vagues = vagues; }
+        public double getVaguesParCombat() { return vaguesParCombat; }
+        public void setVaguesParCombat(double vaguesParCombat) { this.vaguesParCombat = vaguesParCombat; }
+        public List<CombatPlayerRow> getJoueurs() { return joueurs; }
+        public void setJoueurs(List<CombatPlayerRow> joueurs) { this.joueurs = joueurs; }
+        public int getNombreJoueurs() { return joueurs != null ? joueurs.size() : 0; }
+    }
+
+    public static class CombatPlayerRow {
+        private String playerId;
+        private String playerName;
+        private long combatsTentes;
+        private long vagues;
+        private double vaguesParCombat;
+
+        public String getPlayerId() { return playerId; }
+        public void setPlayerId(String playerId) { this.playerId = playerId; }
+        public String getPlayerName() { return playerName; }
+        public void setPlayerName(String playerName) { this.playerName = playerName; }
+        public long getCombatsTentes() { return combatsTentes; }
+        public void setCombatsTentes(long combatsTentes) { this.combatsTentes = combatsTentes; }
+        public long getVagues() { return vagues; }
+        public void setVagues(long vagues) { this.vagues = vagues; }
+        public double getVaguesParCombat() { return vaguesParCombat; }
+        public void setVaguesParCombat(double vaguesParCombat) { this.vaguesParCombat = vaguesParCombat; }
     }
 
     public static class MissionRow {

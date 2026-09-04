@@ -1,9 +1,13 @@
 package fr.xalkinn.swgohmanager.service;
 
 import java.text.NumberFormat;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -14,12 +18,20 @@ import org.json.JSONObject;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import fr.xalkinn.swgohmanager.client.SwgohGuildClient;
 import fr.xalkinn.swgohmanager.client.SwgohPlayerClient;
 import fr.xalkinn.swgohmanager.dto.AnalyseJoueur;
 import fr.xalkinn.swgohmanager.dto.AnalyseJoueur.ComparaisonGuilde;
 import fr.xalkinn.swgohmanager.dto.AnalyseJoueur.MetricComparison;
 import fr.xalkinn.swgohmanager.dto.AnalyseJoueur.ModStats;
+import fr.xalkinn.swgohmanager.dto.AnalyseJoueur.OmicronPriorityDetail;
+import fr.xalkinn.swgohmanager.dto.AnalyseJoueur.OmicronPrioritySummary;
 import fr.xalkinn.swgohmanager.dto.AnalyseJoueur.RosterCharacter;
+import fr.xalkinn.swgohmanager.dto.AnalyseJoueur.TbMissionPerformance;
+import fr.xalkinn.swgohmanager.dto.AnalyseJoueur.TbPerformance;
+import fr.xalkinn.swgohmanager.dto.AnalyseJoueur.TbPhasePerformance;
+import fr.xalkinn.swgohmanager.util.MapStatIdParser;
+import fr.xalkinn.swgohmanager.util.MapStatIdParser.ParsedMapStat;
 
 @Service
 public class AnalyseJoueurService {
@@ -29,14 +41,17 @@ public class AnalyseJoueurService {
     private static final String STAT_PG_VAISSEAUX = "STAT_SHIP_GALACTIC_POWER_ACQUIRED_NAME";
 
     private final SwgohPlayerClient playerClient;
+    private final SwgohGuildClient guildClient;
     private final PersonnageDefinitionService personnageDefinitionService;
     private final JdbcTemplate jdbc;
 
     public AnalyseJoueurService(
             SwgohPlayerClient playerClient,
+            SwgohGuildClient guildClient,
             PersonnageDefinitionService personnageDefinitionService,
             JdbcTemplate jdbc) {
         this.playerClient = playerClient;
+        this.guildClient = guildClient;
         this.personnageDefinitionService = personnageDefinitionService;
         this.jdbc = jdbc;
     }
@@ -51,7 +66,9 @@ public class AnalyseJoueurService {
         AnalyseJoueur analyse = new AnalyseJoueur();
         remplirProfil(analyse, player);
         remplirRosterEtMods(analyse, player);
+        remplirPlanOmicron(analyse, player);
         analyse.setComparaisonGuilde(construireComparaisonGuilde(analyse));
+        remplirPerformancesTb(analyse);
 
         return analyse;
     }
@@ -232,6 +249,420 @@ public class AnalyseJoueurService {
         analyse.setPersonnagesR9Plus(r9Plus);
         analyse.setPersonnagesR10(r10);
         analyse.setModStats(modStats);
+    }
+
+
+    /**
+     * Compare le roster /player du candidat au plan P1-P4 configuré dans la
+     * guilde, sans écrire le candidat dans la table omicron.
+     */
+    private void remplirPlanOmicron(AnalyseJoueur analyse, JSONObject player) {
+        List<Map<String, Object>> planRows = jdbc.queryForList("""
+                SELECT
+                    p.priorite,
+                    d.base_id,
+                    d.skill_id,
+                    d.type_capacite,
+                    d.numero_capacite,
+                    d.categorie,
+                    d.tier_requis
+                FROM omicron_priorite p
+                JOIN omicron_definition d ON d.id = p.omicron_definition_id
+                WHERE p.actif = 1
+                  AND d.actif = 1
+                ORDER BY p.priorite, d.categorie, d.base_id, d.type_capacite, d.numero_capacite
+                """);
+
+        Map<Integer, OmicronPrioritySummary> priorites = new LinkedHashMap<>();
+        for (int priorite = 1; priorite <= 4; priorite++) {
+            OmicronPrioritySummary summary = new OmicronPrioritySummary();
+            summary.setPriorite(priorite);
+            priorites.put(priorite, summary);
+        }
+
+        if (planRows.isEmpty()) {
+            analyse.setOmicronPriorities(new ArrayList<>(priorites.values()));
+            return;
+        }
+
+        Map<String, Map<String, Integer>> skillsRoster = lireSkillsRoster(player);
+        Map<String, String> nomsFrancais = personnageDefinitionService.chargerIndexNomsFrancais();
+
+        int planAtteint = 0;
+        int planTotal = 0;
+
+        for (Map<String, Object> row : planRows) {
+            int priorite = number(row.get("priorite"));
+            OmicronPrioritySummary summary = priorites.get(priorite);
+            if (summary == null) continue;
+
+            summary.setTotal(summary.getTotal() + 1);
+            planTotal++;
+
+            String baseId = normaliserBaseId(row.get("base_id") == null ? "" : String.valueOf(row.get("base_id")));
+            String skillId = row.get("skill_id") == null ? "" : String.valueOf(row.get("skill_id"));
+            Integer tierRequis = nullableInt(row.get("tier_requis"));
+
+            Map<String, Integer> skills = skillsRoster.get(baseId);
+            Integer tier = skills == null ? null : skills.get(skillId);
+            int tierRosterRequis = tierRequis == null ? Integer.MAX_VALUE : Math.max(0, tierRequis - 1);
+            boolean possede = tier != null && tier >= tierRosterRequis;
+
+            if (possede) {
+                summary.setAtteint(summary.getAtteint() + 1);
+                planAtteint++;
+                continue;
+            }
+
+            String type = row.get("type_capacite") == null ? "AUTRE" : String.valueOf(row.get("type_capacite"));
+            Integer numero = nullableInt(row.get("numero_capacite"));
+            String categorie = row.get("categorie") == null ? null : String.valueOf(row.get("categorie"));
+            String nomPersonnage = personnageDefinitionService.nomAffiche(nomsFrancais, baseId, baseId);
+
+            summary.getManquantsDetails().add(new OmicronPriorityDetail(
+                    nomPersonnage,
+                    OmicronCatalogueService.libelleType(type, numero),
+                    categorie,
+                    OmicronCatalogueService.categorieLabel(categorie)));
+        }
+
+        List<OmicronPrioritySummary> result = new ArrayList<>();
+        for (OmicronPrioritySummary summary : priorites.values()) {
+            summary.setManquants(Math.max(0, summary.getTotal() - summary.getAtteint()));
+            summary.setPourcentage(summary.getTotal() > 0
+                    ? summary.getAtteint() * 100.0 / summary.getTotal()
+                    : 0.0);
+            result.add(summary);
+        }
+
+        analyse.setOmicronPriorities(result);
+        analyse.setOmicronPlanAtteint(planAtteint);
+        analyse.setOmicronPlanTotal(planTotal);
+        analyse.setOmicronPlanPourcentage(planTotal > 0
+                ? planAtteint * 100.0 / planTotal
+                : 0.0);
+    }
+
+    private Map<String, Map<String, Integer>> lireSkillsRoster(JSONObject player) {
+        Map<String, Map<String, Integer>> result = new HashMap<>();
+        JSONArray roster = player.optJSONArray("rosterUnit");
+        if (roster == null) return result;
+
+        for (int i = 0; i < roster.length(); i++) {
+            JSONObject unit = roster.optJSONObject(i);
+            if (unit == null) continue;
+
+            String baseId = normaliserBaseId(unit.optString("definitionId", ""));
+            if (baseId.isBlank()) continue;
+
+            JSONArray skills = unit.optJSONArray("skill");
+            if (skills == null) continue;
+
+            Map<String, Integer> bySkill = result.computeIfAbsent(baseId, ignored -> new HashMap<>());
+            for (int j = 0; j < skills.length(); j++) {
+                JSONObject skill = skills.optJSONObject(j);
+                if (skill == null) continue;
+
+                String skillId = skill.optString("id", "").trim();
+                if (skillId.isBlank()) continue;
+                bySkill.put(skillId, skill.optInt("tier", -1));
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Charge les résultats TB récents de la guilde ACTUELLE du candidat et
+     * extrait uniquement les lignes de son playerId. Les données restent en
+     * mémoire et ne sont pas importées dans l'historique TB de notre guilde.
+     */
+    private void remplirPerformancesTb(AnalyseJoueur analyse) {
+        if (analyse.getGuildId() == null || analyse.getGuildId().isBlank()) {
+            analyse.setTbMessage("Le joueur n'appartient actuellement à aucune guilde : aucune performance TB récente n'est disponible.");
+            return;
+        }
+        if (analyse.getPlayerId() == null || analyse.getPlayerId().isBlank()) {
+            analyse.setTbMessage("Player ID absent : impossible de retrouver les performances TB individuelles.");
+            return;
+        }
+
+        try {
+            JSONObject root = guildClient.recupererGuildeComplete(analyse.getGuildId());
+            JSONObject guild = root.optJSONObject("guild");
+            if (guild == null) guild = root;
+
+            JSONArray results = guild.optJSONArray("recentTerritoryBattleResult");
+            if (results == null) results = root.optJSONArray("recentTerritoryBattleResult");
+
+            if (results == null || results.length() == 0) {
+                analyse.setTbMessage("La guilde actuelle du candidat n'expose aucun résultat TB récent via Comlink.");
+                return;
+            }
+
+            Map<String, String> nomsFrancais = personnageDefinitionService.chargerIndexNomsFrancais();
+            List<TbPerformance> performances = new ArrayList<>();
+            for (int i = 0; i < results.length(); i++) {
+                JSONObject tb = results.optJSONObject(i);
+                if (tb == null) continue;
+
+                TbPerformance performance = extrairePerformanceTb(tb, analyse.getPlayerId(), nomsFrancais);
+                if (performance != null) performances.add(performance);
+            }
+
+            performances.sort(Comparator.comparingLong(TbPerformance::getEndTimeEpoch).reversed());
+            if (performances.size() > 3) {
+                performances = new ArrayList<>(performances.subList(0, 3));
+            }
+
+            analyse.setTbPerformances(performances);
+            if (performances.isEmpty()) {
+                analyse.setTbMessage("Aucune statistique individuelle n'a été trouvée pour ce joueur dans les TB récentes exposées par sa guilde.");
+            } else if (performances.size() == 1) {
+                analyse.setTbMessage("Comlink expose actuellement 1 TB récente exploitable pour ce joueur.");
+            } else {
+                analyse.setTbMessage("Les " + performances.size() + " dernières TB exposées par Comlink sont affichées.");
+            }
+        } catch (Exception e) {
+            String detail = e.getMessage() == null || e.getMessage().isBlank()
+                    ? "service Comlink indisponible"
+                    : e.getMessage();
+            analyse.setTbMessage("Performances TB indisponibles pour le moment : " + detail);
+        }
+    }
+
+    private TbPerformance extrairePerformanceTb(
+            JSONObject tb,
+            String playerId,
+            Map<String, String> nomsFrancais) {
+        JSONArray finalStats = tb.optJSONArray("finalStat");
+        if (finalStats == null || finalStats.length() == 0) return null;
+
+        TbPerformance result = new TbPerformance();
+        result.setInstanceId(tb.optString("instanceId", ""));
+        result.setDefinitionId(tb.optString("definitionId", ""));
+        result.setTotalStars(parseInt(tb.optString("totalStars", "0")));
+
+        long endEpoch = parseEpoch(tb.optString("endTime", "0"));
+        result.setEndTimeEpoch(endEpoch);
+        result.setDateFin(formaterDateEpoch(endEpoch));
+
+        Map<Integer, TbPhasePerformance> phases = new LinkedHashMap<>();
+        Map<String, TbMissionPerformance> missionsSpeciales = new LinkedHashMap<>();
+        boolean participe = false;
+        long puissanceZones = 0L;
+        long donsZones = 0L;
+
+        for (int i = 0; i < finalStats.length(); i++) {
+            JSONObject finalStat = finalStats.optJSONObject(i);
+            if (finalStat == null) continue;
+
+            JSONObject playerStat = trouverPlayerStat(finalStat.optJSONArray("playerStat"), playerId);
+            if (playerStat == null) continue;
+            participe = true;
+
+            long score = parseLong(playerStat.optString("score", "0"));
+            ParsedMapStat parsed = MapStatIdParser.parse(finalStat.optString("mapStatId", ""));
+            String type = parsed.statType();
+
+            if (parsed.phase() != null
+                    && parsed.conflict() != null
+                    && parsed.covertNum() != null
+                    && ("covert_round_attempted".equals(type) || "covert_complete".equals(type))
+                    && score > 0) {
+                String missionKey = parsed.phase() + "-" + parsed.conflict() + "-"
+                        + parsed.bonus() + "-" + parsed.covertNum();
+                TbMissionPerformance mission = missionsSpeciales.computeIfAbsent(missionKey, ignored -> {
+                    TbMissionPerformance m = new TbMissionPerformance();
+                    m.setPhase(parsed.phase());
+                    m.setConflict(parsed.conflict());
+                    m.setBonus(parsed.bonus());
+                    m.setCovertNum(parsed.covertNum());
+                    m.setLabel(labelMission(parsed.phase(), parsed.conflict(), parsed.bonus(), parsed.covertNum(), nomsFrancais));
+                    return m;
+                });
+
+                if ("covert_round_attempted".equals(type)) {
+                    mission.setTentee(true);
+                } else if ("covert_complete".equals(type)) {
+                    // Une réussite implique nécessairement que la mission a été tentée.
+                    mission.setTentee(true);
+                    mission.setReussie(true);
+                }
+            }
+
+            if (parsed.roundNum() != null) {
+                switch (type) {
+                    case "strike_attempt" -> result.setCombatsTentes(result.getCombatsTentes() + score);
+                    case "strike_encounter" -> result.setVagues(result.getVagues() + score);
+                    case "power" -> result.setPuissanceDeployee(result.getPuissanceDeployee() + score);
+                    case "unit_donated" -> result.setUnitesDonnees(result.getUnitesDonnees() + score);
+                    default -> { }
+                }
+            }
+
+            if (parsed.phase() != null) {
+                TbPhasePerformance phase = phases.computeIfAbsent(parsed.phase(), phaseNum -> {
+                    TbPhasePerformance p = new TbPhasePerformance();
+                    p.setPhase(phaseNum);
+                    return p;
+                });
+
+                switch (type) {
+                    case "strike_attempt" -> phase.setCombatsTentes(phase.getCombatsTentes() + score);
+                    case "strike_encounter" -> phase.setVagues(phase.getVagues() + score);
+                    case "power" -> puissanceZones += score;
+                    case "unit_donated" -> donsZones += score;
+                    default -> { }
+                }
+            }
+        }
+
+        if (!participe) return null;
+
+        List<TbMissionPerformance> missionList = new ArrayList<>(missionsSpeciales.values());
+        missionList.sort(Comparator
+                .comparingInt(TbMissionPerformance::getPhase)
+                .thenComparingInt(TbMissionPerformance::getConflict)
+                .thenComparing(TbMissionPerformance::isBonus)
+                .thenComparingInt(TbMissionPerformance::getCovertNum));
+
+        long totalMsTentees = 0L;
+        long totalMsReussies = 0L;
+        for (TbMissionPerformance mission : missionList) {
+            TbPhasePerformance phase = phases.computeIfAbsent(mission.getPhase(), phaseNum -> {
+                TbPhasePerformance p = new TbPhasePerformance();
+                p.setPhase(phaseNum);
+                return p;
+            });
+            if (mission.isTentee()) {
+                totalMsTentees++;
+                phase.setMsTentees(phase.getMsTentees() + 1);
+            }
+            if (mission.isReussie()) {
+                totalMsReussies++;
+                phase.setMsReussies(phase.getMsReussies() + 1);
+            }
+        }
+
+        long combatsPhases = 0L;
+        long vaguesPhases = 0L;
+        List<TbPhasePerformance> phaseList = new ArrayList<>(phases.values());
+        phaseList.sort(Comparator.comparingInt(TbPhasePerformance::getPhase));
+
+        for (TbPhasePerformance phase : phaseList) {
+            phase.setVaguesParCombat(phase.getCombatsTentes() > 0
+                    ? phase.getVagues() * 1.0 / phase.getCombatsTentes()
+                    : 0.0);
+            combatsPhases += phase.getCombatsTentes();
+            vaguesPhases += phase.getVagues();
+        }
+
+        // Les totaux ROUND sont la référence afin d'éviter de recompter les
+        // mêmes points dans les différentes zones. Fallback sur les zones si
+        // une future réponse Comlink ne fournit plus ces agrégats ROUND.
+        if (result.getCombatsTentes() == 0 && combatsPhases > 0) {
+            result.setCombatsTentes(combatsPhases);
+        }
+        if (result.getVagues() == 0 && vaguesPhases > 0) {
+            result.setVagues(vaguesPhases);
+        }
+        if (result.getPuissanceDeployee() == 0 && puissanceZones > 0) {
+            result.setPuissanceDeployee(puissanceZones);
+        }
+        if (result.getUnitesDonnees() == 0 && donsZones > 0) {
+            result.setUnitesDonnees(donsZones);
+        }
+
+        result.setMsTentees(totalMsTentees);
+        result.setMsReussies(totalMsReussies);
+        result.setVaguesParCombat(result.getCombatsTentes() > 0
+                ? result.getVagues() * 1.0 / result.getCombatsTentes()
+                : 0.0);
+        result.setTauxMs(totalMsTentees > 0
+                ? totalMsReussies * 100.0 / totalMsTentees
+                : 0.0);
+        result.setPhases(phaseList);
+        result.setMissionsSpeciales(missionList);
+        return result;
+    }
+
+    private String labelMission(
+            int phase,
+            int conflict,
+            boolean bonus,
+            int covert,
+            Map<String, String> nomsFrancais) {
+        String key = phase + "-" + conflict + "-" + bonus + "-" + covert;
+        return switch (key) {
+            case "1-3-false-1" -> nomMissionPersonnage(nomsFrancais, "QIRA", "Qi'ra");
+            case "2-1-false-1" -> nomMissionPersonnage(nomsFrancais, "JEDIKNIGHTCAL", "Cal Kestis (chevalier Jedi)");
+            case "3-1-false-1" -> nomMissionPersonnage(nomsFrancais, "SAWGERRERA", "Saw Gerrera");
+            case "3-3-false-1" -> nomMissionPersonnage(nomsFrancais, "THIRDSISTER", "Troisième Sœur (Reva)");
+            case "3-3-false-2" -> nomMissionPersonnage(nomsFrancais, "MANDALORBOKATAN", "Bo-Katan (Mandalore)");
+            case "3-2-false-1" -> nomMissionPersonnage(nomsFrancais, "MERRIN", "Merrin");
+            case "3-1-true-1" -> "Clones";
+            case "4-2-false-1" -> "Inquisiteurs";
+            case "4-3-false-1" -> nomMissionPersonnage(nomsFrancais, "L3_37", "L3-37");
+            case "5-3-false-1" -> nomMissionPersonnage(nomsFrancais, "YOUNGHAN", "Jeune Han Solo");
+            default -> "Phase " + phase + " · Zone " + conflict
+                    + (bonus ? " · Bonus" : "")
+                    + " · Mission spéciale " + covert;
+        };
+    }
+
+    private String nomMissionPersonnage(
+            Map<String, String> nomsFrancais,
+            String baseId,
+            String fallbackFrancais) {
+        String nom = personnageDefinitionService.nomAffiche(nomsFrancais, baseId, fallbackFrancais);
+        return nom == null || nom.isBlank() ? fallbackFrancais : nom;
+    }
+
+    private JSONObject trouverPlayerStat(JSONArray playerStats, String playerId) {
+        if (playerStats == null) return null;
+        for (int i = 0; i < playerStats.length(); i++) {
+            JSONObject stat = playerStats.optJSONObject(i);
+            if (stat != null && playerId.equals(stat.optString("memberId", ""))) {
+                return stat;
+            }
+        }
+        return null;
+    }
+
+    private long parseEpoch(String raw) {
+        long value = parseLong(raw);
+        if (value <= 0) return 0L;
+        return value > 100_000_000_000L ? value : value * 1000L;
+    }
+
+    private String formaterDateEpoch(long epochMillis) {
+        if (epochMillis <= 0) return "Date inconnue";
+        return Instant.ofEpochMilli(epochMillis)
+                .atZone(ZoneId.systemDefault())
+                .format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+    }
+
+    private long parseLong(String raw) {
+        if (raw == null || raw.isBlank()) return 0L;
+        try {
+            return Long.parseLong(raw);
+        } catch (NumberFormatException e) {
+            return 0L;
+        }
+    }
+
+    private int parseInt(String raw) {
+        if (raw == null || raw.isBlank()) return 0;
+        try {
+            return Integer.parseInt(raw);
+        } catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    private Integer nullableInt(Object value) {
+        return value instanceof Number n ? n.intValue() : null;
     }
 
     private ComparaisonGuilde construireComparaisonGuilde(AnalyseJoueur analyse) {
@@ -470,7 +901,7 @@ public class AnalyseJoueurService {
         if (separator >= 0) {
             baseId = baseId.substring(0, separator);
         }
-        return baseId;
+        return baseId.replace(",", "").trim();
     }
 
     private int number(Object value) {

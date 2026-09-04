@@ -1,12 +1,12 @@
 (function () {
     "use strict";
 
-    function initMissionKeyboard() {
-        document.querySelectorAll(".tb-mission-clickable").forEach((card) => {
-            card.addEventListener("keydown", (event) => {
+    function initClickableKeyboard() {
+        document.querySelectorAll(".tb-mission-clickable, .tb-phase-clickable").forEach((element) => {
+            element.addEventListener("keydown", (event) => {
                 if (event.key !== "Enter" && event.key !== " ") return;
                 event.preventDefault();
-                card.click();
+                element.click();
             });
         });
     }
@@ -26,7 +26,7 @@
     }
 
     function init() {
-        initMissionKeyboard();
+        initClickableKeyboard();
         initPlayerSearch();
     }
 

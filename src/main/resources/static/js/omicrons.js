@@ -9,7 +9,6 @@
             baseId: el.dataset.baseId,
             character: el.dataset.character,
             skill: el.dataset.skill,
-            skillDetail: el.dataset.skillDetail,
             skillId: el.dataset.skillId,
             type: el.dataset.type,
             tier: el.dataset.tier
@@ -77,7 +76,7 @@
             skills.forEach((x) => {
                 const option = document.createElement("option");
                 option.value = x.id;
-                option.textContent = x.skillDetail ? `${x.skill} — ${x.skillDetail}` : x.skill;
+                option.textContent = x.skill;
                 option.title = x.skillId;
                 definition.appendChild(option);
             });

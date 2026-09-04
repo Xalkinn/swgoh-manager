@@ -3,6 +3,9 @@ package fr.xalkinn.swgohmanager.controleur;
 import java.util.List;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +16,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import fr.xalkinn.swgohmanager.dto.OmicronGestionView.DefinitionOption;
 import fr.xalkinn.swgohmanager.service.BatchOmicronService;
 import fr.xalkinn.swgohmanager.service.OmicronCatalogueService;
+import fr.xalkinn.swgohmanager.service.OmicronExportService;
 import fr.xalkinn.swgohmanager.service.OmicronPrioriteService;
 
 @Controller
@@ -21,14 +25,17 @@ public class OmicronControleur {
     private final OmicronCatalogueService catalogueService;
     private final OmicronPrioriteService prioriteService;
     private final BatchOmicronService batchOmicronService;
+    private final OmicronExportService exportService;
 
     public OmicronControleur(
             OmicronCatalogueService catalogueService,
             OmicronPrioriteService prioriteService,
-            BatchOmicronService batchOmicronService) {
+            BatchOmicronService batchOmicronService,
+            OmicronExportService exportService) {
         this.catalogueService = catalogueService;
         this.prioriteService = prioriteService;
         this.batchOmicronService = batchOmicronService;
+        this.exportService = exportService;
     }
 
     @GetMapping("/omicrons")
@@ -38,7 +45,7 @@ public class OmicronControleur {
         model.addAttribute("omicronCategories", prioriteService.getCategoriesDisponibles(options));
         model.addAttribute("omicronPriorites", prioriteService.getPriorites());
         model.addAttribute("catalogueCount", catalogueService.compterDefinitionsActives());
-        model.addAttribute("catalogueGestionCount", catalogueService.compterDefinitionsGestion());
+        model.addAttribute("catalogueGestionCount", options.size());
         model.addAttribute("catalogueVersion", catalogueService.getVersionCatalogue());
         model.addAttribute("prioritesCount", prioriteService.compterPriorites());
         return "omicrons";
@@ -98,6 +105,17 @@ public class OmicronControleur {
         prioriteService.supprimer(id);
         redirect.addFlashAttribute("omicronMessage", "Omicron retiré du plan de guilde.");
         return "redirect:/omicrons";
+    }
+
+    @GetMapping("/omicrons/export")
+    public ResponseEntity<byte[]> exporterOmicrons(
+            @RequestParam(name = "format", defaultValue = "excel") String format) throws Exception {
+        OmicronExportService.ExportResult export = exportService.genererExport(format);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + export.filename() + "\"")
+                .contentType(MediaType.parseMediaType(export.contentType()))
+                .body(export.content());
     }
 
     private String message(Exception e) {

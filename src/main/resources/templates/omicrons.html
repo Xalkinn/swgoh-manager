@@ -12,6 +12,13 @@
             <p>Catalogue autonome construit depuis les Game Data SWGOH, sans classe personnage codée en dur.</p>
         </div>
         <div class="app-header-actions omicron-header-actions">
+            <button class="btn btn-outline-success btn-sm omicron-export-btn"
+                    th:if="${prioritesCount > 0}"
+                    type="button"
+                    data-bs-toggle="modal"
+                    data-bs-target="#omicronExportModal">
+                <i class="bi bi-box-arrow-down"></i> Exporter
+            </button>
             <span class="app-badge purple" th:text="${catalogueGestionCount} + ' Omicron(s) gérable(s)'">0 Omicron</span>
             <span class="app-badge neutral" th:if="${catalogueVersion != null}" th:text="|'Game Data ' + ${catalogueVersion}|">Game Data</span>
             <button id="themeToggle" class="app-theme-toggle" type="button"><i class="bi bi-moon-stars-fill"></i><span>Mode sombre</span></button>
@@ -126,7 +133,6 @@
                            data-base-id=${o.baseId},
                            data-character=${o.nomPersonnage},
                            data-skill=${o.nomCapacite},
-                           data-skill-detail=${o.nomCapaciteDetail},
                            data-skill-id=${o.skillId},
                            data-type=${o.typeCapacite},
                            data-tier=${o.tierRequis}"></span>
@@ -182,7 +188,6 @@
                     </td>
                     <td>
                         <strong th:text="${o.nomCapacite}">Unique</strong>
-                        <small class="omicron-tech" th:if="${o.nomCapaciteDetail != null}" th:text="${o.nomCapaciteDetail}">Bonus de défense</small>
                         <small class="omicron-tech omicron-tech-fade" th:text="${o.skillId}">skillId</small>
                     </td>
                     <td>
@@ -249,7 +254,6 @@
                             <span class="omicron-priority-badge" th:classappend="|' p' + ${o.priorite}|" th:text="|'P' + ${o.priorite}|">P1</span>
                             <span class="omicron-modal-capacity" th:text="${o.nomCapacite}">Unique</span>
                         </div>
-                        <small class="omicron-tech" th:if="${o.nomCapaciteDetail != null}" th:text="${o.nomCapaciteDetail}">Bonus de défense</small>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                 </div>
@@ -311,7 +315,7 @@
             <i class="bi bi-database-check"></i>
             <div>
                 <strong>Catalogue automatique</strong>
-                <span th:text="${catalogueCount} + ' Omicron(s) détecté(s) au total dans Game Data.'">0 Omicron</span>
+                <span th:text="${catalogueCount} + ' définition(s) Game Data détectée(s), dont ' + ${catalogueGestionCount} + ' proposée(s) dans la configuration.'">0 définition</span>
             </div>
         </article>
         <article class="app-card omicron-info-card">
@@ -323,6 +327,49 @@
         </article>
     </section>
 </main>
+
+
+<div class="modal fade omicron-export-modal" id="omicronExportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title"><i class="bi bi-file-earmark-arrow-down me-2"></i>Exporter les Omicrons</h5>
+                    <p class="omicron-export-modal-subtitle">Choisis le format le plus pratique pour les officiers de la guilde.</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <div class="omicron-export-choice-grid">
+                    <a class="omicron-export-choice" th:href="@{/omicrons/export(format='excel')}">
+                        <span class="omicron-export-choice-icon excel"><i class="bi bi-file-earmark-excel-fill"></i></span>
+                        <span>
+                            <strong>Excel</strong>
+                            <small>.xlsx · 4 onglets P1 / P2 / P3 / P4 avec couleurs OUI/NON</small>
+                        </span>
+                        <i class="bi bi-download"></i>
+                    </a>
+                    <a class="omicron-export-choice" th:href="@{/omicrons/export(format='libreoffice')}">
+                        <span class="omicron-export-choice-icon libreoffice"><i class="bi bi-file-earmark-spreadsheet-fill"></i></span>
+                        <span>
+                            <strong>LibreOffice</strong>
+                            <small>.ods · 4 onglets P1 / P2 / P3 / P4 avec couleurs OUI/NON</small>
+                        </span>
+                        <i class="bi bi-download"></i>
+                    </a>
+                    <a class="omicron-export-choice" th:href="@{/omicrons/export(format='csv')}">
+                        <span class="omicron-export-choice-icon csv"><i class="bi bi-filetype-csv"></i></span>
+                        <span>
+                            <strong>CSV</strong>
+                            <small>.csv · compatible partout, sans couleurs ni mise en forme</small>
+                        </span>
+                        <i class="bi bi-download"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 </body>

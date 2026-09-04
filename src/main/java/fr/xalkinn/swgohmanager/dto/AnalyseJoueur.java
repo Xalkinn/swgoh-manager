@@ -42,6 +42,14 @@ public class AnalyseJoueur {
     private List<RosterCharacter> roster = new ArrayList<>();
     private ComparaisonGuilde comparaisonGuilde = new ComparaisonGuilde();
 
+    private List<OmicronPrioritySummary> omicronPriorities = new ArrayList<>();
+    private int omicronPlanAtteint;
+    private int omicronPlanTotal;
+    private double omicronPlanPourcentage;
+
+    private List<TbPerformance> tbPerformances = new ArrayList<>();
+    private String tbMessage;
+
     public String getNom() { return nom; }
     public void setNom(String nom) { this.nom = nom; }
     public String getAllyCode() { return allyCode; }
@@ -94,6 +102,18 @@ public class AnalyseJoueur {
     public void setRoster(List<RosterCharacter> roster) { this.roster = roster; }
     public ComparaisonGuilde getComparaisonGuilde() { return comparaisonGuilde; }
     public void setComparaisonGuilde(ComparaisonGuilde comparaisonGuilde) { this.comparaisonGuilde = comparaisonGuilde; }
+    public List<OmicronPrioritySummary> getOmicronPriorities() { return omicronPriorities; }
+    public void setOmicronPriorities(List<OmicronPrioritySummary> omicronPriorities) { this.omicronPriorities = omicronPriorities; }
+    public int getOmicronPlanAtteint() { return omicronPlanAtteint; }
+    public void setOmicronPlanAtteint(int omicronPlanAtteint) { this.omicronPlanAtteint = omicronPlanAtteint; }
+    public int getOmicronPlanTotal() { return omicronPlanTotal; }
+    public void setOmicronPlanTotal(int omicronPlanTotal) { this.omicronPlanTotal = omicronPlanTotal; }
+    public double getOmicronPlanPourcentage() { return omicronPlanPourcentage; }
+    public void setOmicronPlanPourcentage(double omicronPlanPourcentage) { this.omicronPlanPourcentage = omicronPlanPourcentage; }
+    public List<TbPerformance> getTbPerformances() { return tbPerformances; }
+    public void setTbPerformances(List<TbPerformance> tbPerformances) { this.tbPerformances = tbPerformances; }
+    public String getTbMessage() { return tbMessage; }
+    public void setTbMessage(String tbMessage) { this.tbMessage = tbMessage; }
 
     public static class ModStats {
         private int total;
@@ -170,6 +190,158 @@ public class AnalyseJoueur {
         public int getNiveau() { return niveau; }
         public int getGear() { return gear; }
         public int getRelic() { return relic; }
+    }
+
+
+    public static class OmicronPrioritySummary {
+        private int priorite;
+        private int atteint;
+        private int total;
+        private int manquants;
+        private double pourcentage;
+        private List<OmicronPriorityDetail> manquantsDetails = new ArrayList<>();
+
+        public int getPriorite() { return priorite; }
+        public void setPriorite(int priorite) { this.priorite = priorite; }
+        public int getAtteint() { return atteint; }
+        public void setAtteint(int atteint) { this.atteint = atteint; }
+        public int getTotal() { return total; }
+        public void setTotal(int total) { this.total = total; }
+        public int getManquants() { return manquants; }
+        public void setManquants(int manquants) { this.manquants = manquants; }
+        public double getPourcentage() { return pourcentage; }
+        public void setPourcentage(double pourcentage) { this.pourcentage = pourcentage; }
+        public List<OmicronPriorityDetail> getManquantsDetails() { return manquantsDetails; }
+        public void setManquantsDetails(List<OmicronPriorityDetail> manquantsDetails) { this.manquantsDetails = manquantsDetails; }
+    }
+
+    public static class OmicronPriorityDetail {
+        private final String nomPersonnage;
+        private final String typeCapacite;
+        private final String categorie;
+        private final String categorieLabel;
+
+        public OmicronPriorityDetail(String nomPersonnage, String typeCapacite, String categorie, String categorieLabel) {
+            this.nomPersonnage = nomPersonnage;
+            this.typeCapacite = typeCapacite;
+            this.categorie = categorie;
+            this.categorieLabel = categorieLabel;
+        }
+
+        public String getNomPersonnage() { return nomPersonnage; }
+        public String getTypeCapacite() { return typeCapacite; }
+        public String getCategorie() { return categorie; }
+        public String getCategorieLabel() { return categorieLabel; }
+    }
+
+    public static class TbPerformance {
+        private String instanceId;
+        private String definitionId;
+        private String dateFin;
+        private long endTimeEpoch;
+        private int totalStars;
+        private long combatsTentes;
+        private long vagues;
+        private double vaguesParCombat;
+        private long msTentees;
+        private long msReussies;
+        private double tauxMs;
+        private long puissanceDeployee;
+        private long unitesDonnees;
+        private List<TbPhasePerformance> phases = new ArrayList<>();
+        private List<TbMissionPerformance> missionsSpeciales = new ArrayList<>();
+
+        public String getInstanceId() { return instanceId; }
+        public void setInstanceId(String instanceId) { this.instanceId = instanceId; }
+        public String getDefinitionId() { return definitionId; }
+        public void setDefinitionId(String definitionId) { this.definitionId = definitionId; }
+        public String getDateFin() { return dateFin; }
+        public void setDateFin(String dateFin) { this.dateFin = dateFin; }
+        public long getEndTimeEpoch() { return endTimeEpoch; }
+        public void setEndTimeEpoch(long endTimeEpoch) { this.endTimeEpoch = endTimeEpoch; }
+        public int getTotalStars() { return totalStars; }
+        public void setTotalStars(int totalStars) { this.totalStars = totalStars; }
+        public long getCombatsTentes() { return combatsTentes; }
+        public void setCombatsTentes(long combatsTentes) { this.combatsTentes = combatsTentes; }
+        public long getVagues() { return vagues; }
+        public void setVagues(long vagues) { this.vagues = vagues; }
+        public double getVaguesParCombat() { return vaguesParCombat; }
+        public void setVaguesParCombat(double vaguesParCombat) { this.vaguesParCombat = vaguesParCombat; }
+        public long getMsTentees() { return msTentees; }
+        public void setMsTentees(long msTentees) { this.msTentees = msTentees; }
+        public long getMsReussies() { return msReussies; }
+        public void setMsReussies(long msReussies) { this.msReussies = msReussies; }
+        public double getTauxMs() { return tauxMs; }
+        public void setTauxMs(double tauxMs) { this.tauxMs = tauxMs; }
+        public long getPuissanceDeployee() { return puissanceDeployee; }
+        public void setPuissanceDeployee(long puissanceDeployee) { this.puissanceDeployee = puissanceDeployee; }
+        public long getUnitesDonnees() { return unitesDonnees; }
+        public void setUnitesDonnees(long unitesDonnees) { this.unitesDonnees = unitesDonnees; }
+        public List<TbPhasePerformance> getPhases() { return phases; }
+        public void setPhases(List<TbPhasePerformance> phases) { this.phases = phases; }
+        public List<TbMissionPerformance> getMissionsSpeciales() { return missionsSpeciales; }
+        public void setMissionsSpeciales(List<TbMissionPerformance> missionsSpeciales) { this.missionsSpeciales = missionsSpeciales; }
+
+        public long getMsEchecs() {
+            return Math.max(0L, msTentees - msReussies);
+        }
+    }
+
+    public static class TbMissionPerformance {
+        private int phase;
+        private int conflict;
+        private boolean bonus;
+        private int covertNum;
+        private String label;
+        private boolean tentee;
+        private boolean reussie;
+
+        public int getPhase() { return phase; }
+        public void setPhase(int phase) { this.phase = phase; }
+        public int getConflict() { return conflict; }
+        public void setConflict(int conflict) { this.conflict = conflict; }
+        public boolean isBonus() { return bonus; }
+        public void setBonus(boolean bonus) { this.bonus = bonus; }
+        public int getCovertNum() { return covertNum; }
+        public void setCovertNum(int covertNum) { this.covertNum = covertNum; }
+        public String getLabel() { return label; }
+        public void setLabel(String label) { this.label = label; }
+        public boolean isTentee() { return tentee; }
+        public void setTentee(boolean tentee) { this.tentee = tentee; }
+        public boolean isReussie() { return reussie; }
+        public void setReussie(boolean reussie) { this.reussie = reussie; }
+
+        public boolean isEchec() {
+            return tentee && !reussie;
+        }
+
+        public String getStatut() {
+            if (reussie) return "Réussie";
+            if (tentee) return "Échec";
+            return "Non tentée";
+        }
+    }
+
+    public static class TbPhasePerformance {
+        private int phase;
+        private long combatsTentes;
+        private long vagues;
+        private double vaguesParCombat;
+        private long msTentees;
+        private long msReussies;
+
+        public int getPhase() { return phase; }
+        public void setPhase(int phase) { this.phase = phase; }
+        public long getCombatsTentes() { return combatsTentes; }
+        public void setCombatsTentes(long combatsTentes) { this.combatsTentes = combatsTentes; }
+        public long getVagues() { return vagues; }
+        public void setVagues(long vagues) { this.vagues = vagues; }
+        public double getVaguesParCombat() { return vaguesParCombat; }
+        public void setVaguesParCombat(double vaguesParCombat) { this.vaguesParCombat = vaguesParCombat; }
+        public long getMsTentees() { return msTentees; }
+        public void setMsTentees(long msTentees) { this.msTentees = msTentees; }
+        public long getMsReussies() { return msReussies; }
+        public void setMsReussies(long msReussies) { this.msReussies = msReussies; }
     }
 
     public static class ComparaisonGuilde {

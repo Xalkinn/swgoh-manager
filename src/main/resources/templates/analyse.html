@@ -11,7 +11,7 @@
         <div class="app-page-heading">
             <span class="app-kicker">Recrutement</span>
             <h1><i class="bi bi-person-plus-fill me-2"></i>Analyse joueur</h1>
-            <p>Analyse ponctuellement un candidat depuis Comlink et compare ses indicateurs à ceux de ta guilde.</p>
+            <p>Analyse un candidat depuis Comlink : roster, mods, priorités Omicron et dernières performances TB.</p>
         </div>
         <div class="app-header-actions">
             <button id="themeToggle" class="app-theme-toggle" type="button">
@@ -77,6 +77,8 @@
                 <span><i class="bi bi-collection-fill"></i> Roster</span>
                 <span><i class="bi bi-speedometer2"></i> Mods / ModQ</span>
                 <span><i class="bi bi-bar-chart-line-fill"></i> Comparaison guilde</span>
+                <span><i class="bi bi-lightning-charge-fill"></i> Priorités Omicron</span>
+                <span><i class="bi bi-map-fill"></i> Performances TB</span>
             </div>
         </div>
     </section>
@@ -255,6 +257,278 @@
             </div>
         </section>
 
+        <!-- PLAN OMICRON -->
+        <section class="app-card analyse-omicron-card">
+            <div class="app-card-header analyse-section-heading">
+                <div class="app-card-title">
+                    <span class="app-card-icon purple"><i class="bi bi-lightning-charge-fill"></i></span>
+                    <div>
+                        <h2>Priorités Omicron de la guilde</h2>
+                        <p>Le roster du candidat est comparé en direct au plan P1–P4 configuré dans <code>/omicrons</code>.</p>
+                    </div>
+                </div>
+                <div th:if="${analyse.omicronPlanTotal > 0}" class="analyse-plan-total">
+                    <strong th:text="|${analyse.omicronPlanAtteint}/${analyse.omicronPlanTotal}|">0/0</strong>
+                    <span th:text="|${#numbers.formatDecimal(analyse.omicronPlanPourcentage, 1, 1)} %|">0 %</span>
+                </div>
+            </div>
+
+            <div th:if="${analyse.omicronPlanTotal > 0}" class="app-card-body">
+                <div class="analyse-omicron-priority-grid">
+                    <button
+                        th:each="p : ${analyse.omicronPriorities}"
+                        th:if="${p.total > 0}"
+                        type="button"
+                        class="analyse-omicron-priority"
+                        th:classappend="| priority-${p.priorite}|"
+                        data-bs-toggle="modal"
+                        th:attr="data-bs-target=|#analyseOmicronModalP${p.priorite}|">
+                        <div class="analyse-priority-topline">
+                            <span class="analyse-priority-badge" th:text="|P${p.priorite}|">P1</span>
+                            <span class="analyse-priority-label"
+                                  th:text="${p.priorite == 1 ? 'Obligatoire' : (p.priorite == 2 ? 'Très prioritaire' : (p.priorite == 3 ? 'Recommandé' : 'Secondaire'))}">Obligatoire</span>
+                            <strong th:text="|${p.atteint}/${p.total}|">0/0</strong>
+                        </div>
+
+                        <div class="analyse-priority-progress" aria-hidden="true">
+                            <span th:style="|width:${p.pourcentage}%|"></span>
+                        </div>
+
+                        <div class="analyse-priority-footer">
+                            <span th:text="|${#numbers.formatDecimal(p.pourcentage, 1, 0)} % acquis|">0 % acquis</span>
+                            <span th:if="${p.manquants > 0}" class="analyse-priority-missing">
+                                <i class="bi bi-exclamation-triangle-fill"></i>
+                                <strong th:text="${p.manquants}">0</strong> manquant(s)
+                            </span>
+                            <span th:if="${p.manquants == 0}" class="analyse-priority-complete">
+                                <i class="bi bi-check-circle-fill"></i> Complet
+                            </span>
+                        </div>
+                        <small><i class="bi bi-hand-index-thumb"></i> Cliquer pour voir le détail</small>
+                    </button>
+                </div>
+            </div>
+
+            <div th:if="${analyse.omicronPlanTotal == 0}" class="app-empty compact-empty">
+                <div class="app-empty-icon"><i class="bi bi-lightning-charge"></i></div>
+                <h3>Aucune priorité Omicron configurée</h3>
+                <p>Ajoute d'abord des Omicrons P1–P4 dans la page Omicrons pour les intégrer automatiquement à l'analyse candidat.</p>
+            </div>
+        </section>
+
+        <!-- POPINS OMICRON -->
+        <div
+            th:each="p : ${analyse.omicronPriorities}"
+            th:if="${p.total > 0}"
+            class="modal fade analyse-omicron-modal"
+            th:id="|analyseOmicronModalP${p.priorite}|"
+            tabindex="-1"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div>
+                            <span class="app-kicker" th:text="|Priorité P${p.priorite}|">Priorité P1</span>
+                            <h2 class="modal-title">Omicrons manquants</h2>
+                            <p th:text="|${analyse.nom} · ${p.atteint}/${p.total} acquis|">Joueur · 0/0 acquis</p>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="analyse-modal-summary">
+                            <div><span>Acquis</span><strong th:text="${p.atteint}">0</strong></div>
+                            <div><span>Demandés</span><strong th:text="${p.total}">0</strong></div>
+                            <div><span>Manquants</span><strong th:text="${p.manquants}">0</strong></div>
+                        </div>
+
+                        <div th:if="${p.manquants > 0}" class="analyse-missing-list">
+                            <article th:each="m : ${p.manquantsDetails}" class="analyse-missing-item">
+                                <span class="analyse-missing-icon"><i class="bi bi-x-lg"></i></span>
+                                <div>
+                                    <strong th:text="${m.nomPersonnage}">Personnage</strong>
+                                    <span>
+                                        <b th:text="${m.typeCapacite}">Unique</b>
+                                        <small th:text="${m.categorieLabel}">Guerre de territoires</small>
+                                    </span>
+                                </div>
+                            </article>
+                        </div>
+
+                        <div th:if="${p.manquants == 0}" class="analyse-priority-complete-state">
+                            <i class="bi bi-check-circle-fill"></i>
+                            <h3>Priorité complète</h3>
+                            <p th:text="|${analyse.nom} possède tous les Omicrons demandés en P${p.priorite}.|">Priorité complète.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PERFORMANCES TB -->
+        <section class="app-card analyse-tb-card">
+            <div class="app-card-header analyse-section-heading">
+                <div class="app-card-title">
+                    <span class="app-card-icon blue"><i class="bi bi-map-fill"></i></span>
+                    <div>
+                        <h2>Dernières performances en Bataille de territoire</h2>
+                        <p>Statistiques individuelles lues dans les résultats récents de la guilde actuelle du candidat.</p>
+                    </div>
+                </div>
+                <span class="analyse-live-source"><i class="bi bi-broadcast"></i> Lecture directe Comlink</span>
+            </div>
+
+            <div class="app-card-body">
+                <div th:if="${analyse.tbMessage != null and !#strings.isEmpty(analyse.tbMessage)}" class="analyse-tb-info">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <span th:text="${analyse.tbMessage}">Information TB</span>
+                </div>
+
+                <div th:if="${analyse.tbPerformances != null and !analyse.tbPerformances.isEmpty()}" class="analyse-tb-performance-list">
+                    <th:block th:each="tb, tbStat : ${analyse.tbPerformances}">
+                    <article class="analyse-tb-performance">
+                        <header class="analyse-tb-performance-header">
+                            <div>
+                                <span class="app-kicker" th:text="${tbStat.index == 0 ? 'Dernière TB disponible' : 'TB précédente'}">Dernière TB</span>
+                                <h3>
+                                    <i class="bi bi-calendar3"></i>
+                                    <span th:text="${tb.dateFin}">01/01/2026</span>
+                                </h3>
+                                <small th:if="${tb.definitionId != null and !#strings.isEmpty(tb.definitionId)}" th:text="${tb.definitionId}">t05D</small>
+                            </div>
+                            <div class="analyse-tb-stars">
+                                <i class="bi bi-star-fill"></i>
+                                <strong th:text="${tb.totalStars}">0</strong>
+                                <span>étoiles guilde</span>
+                            </div>
+                        </header>
+
+                        <div class="analyse-tb-kpis">
+                            <div><span>Combats tentés</span><strong th:text="${tb.combatsTentes}">0</strong></div>
+                            <div><span>Vagues</span><strong th:text="${tb.vagues}">0</strong></div>
+                            <div><span>Vagues / combat</span><strong th:text="${#numbers.formatDecimal(tb.vaguesParCombat, 1, 2)}">0,00</strong></div>
+                            <button
+                                type="button"
+                                class="analyse-tb-ms-trigger"
+                                data-bs-toggle="modal"
+                                th:data-bs-target="|#analyseTbMsModal${tbStat.index}|"
+                                th:aria-label="|Voir le détail des missions spéciales de la TB du ${tb.dateFin}|">
+                                <span>Missions spéciales</span>
+                                <strong th:text="|${tb.msReussies}/${tb.msTentees}|">0/0</strong>
+                                <small th:if="${tb.msTentees > 0}" th:text="|${#numbers.formatDecimal(tb.tauxMs, 1, 1)} % de réussite|">0 %</small>
+                                <small class="analyse-tb-ms-hint"><i class="bi bi-hand-index-thumb"></i> Voir les missions</small>
+                            </button>
+                            <div><span>Puissance déployée</span><strong th:text="${#numbers.formatInteger(tb.puissanceDeployee, 1, 'POINT')}">0</strong></div>
+                            <div><span>Unités données</span><strong th:text="${tb.unitesDonnees}">0</strong></div>
+                        </div>
+
+                        <details th:if="${tb.phases != null and !tb.phases.isEmpty()}" class="analyse-tb-phases">
+                            <summary><i class="bi bi-list-columns-reverse"></i> Voir le détail par phase</summary>
+                            <div class="table-responsive">
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <th>Phase</th>
+                                        <th>Combats</th>
+                                        <th>Vagues</th>
+                                        <th>Vagues / combat</th>
+                                        <th>MS</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="phase : ${tb.phases}">
+                                        <td><strong th:text="|'P' + ${phase.phase}|">P1</strong></td>
+                                        <td th:text="${phase.combatsTentes}">0</td>
+                                        <td th:text="${phase.vagues}">0</td>
+                                        <td th:text="${#numbers.formatDecimal(phase.vaguesParCombat, 1, 2)}">0,00</td>
+                                        <td>
+                                            <span th:text="|${phase.msReussies}/${phase.msTentees}|">0/0</span>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </details>
+                    </article>
+
+                    <div
+                        class="modal fade analyse-tb-ms-modal"
+                        th:id="|analyseTbMsModal${tbStat.index}|"
+                        tabindex="-1"
+                        aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <div>
+                                        <span class="app-kicker">Missions spéciales</span>
+                                        <h2 class="modal-title" th:text="|TB du ${tb.dateFin}|">TB du 01/01/2026</h2>
+                                        <p th:text="|${analyse.nom} · détail des missions tentées|">Joueur · détail des missions tentées</p>
+                                    </div>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="analyse-tb-ms-summary">
+                                        <div class="is-attempted">
+                                            <span>Tentées</span>
+                                            <strong th:text="${tb.msTentees}">0</strong>
+                                        </div>
+                                        <div class="is-success">
+                                            <span>Réussies</span>
+                                            <strong th:text="${tb.msReussies}">0</strong>
+                                        </div>
+                                        <div class="is-failure">
+                                            <span>Échecs</span>
+                                            <strong th:text="${tb.msEchecs}">0</strong>
+                                        </div>
+                                    </div>
+
+                                    <div th:if="${tb.missionsSpeciales != null and !tb.missionsSpeciales.isEmpty()}" class="analyse-tb-ms-list">
+                                        <article
+                                            th:each="mission : ${tb.missionsSpeciales}"
+                                            class="analyse-tb-ms-item"
+                                            th:classappend="${mission.reussie ? ' is-success' : ' is-failure'}">
+                                            <span class="analyse-tb-ms-status-icon">
+                                                <i th:class="${mission.reussie ? 'bi bi-check-lg' : 'bi bi-x-lg'}"></i>
+                                            </span>
+                                            <div class="analyse-tb-ms-copy">
+                                                <div class="analyse-tb-ms-title-row">
+                                                    <strong th:text="${mission.label}">Mission spéciale</strong>
+                                                    <div class="analyse-tb-ms-badges">
+                                                        <span class="attempted">Tentée</span>
+                                                        <span th:classappend="${mission.reussie ? ' success' : ' failure'}" th:text="${mission.statut}">Réussie</span>
+                                                    </div>
+                                                </div>
+                                                <small>
+                                                    <span th:text="|'P' + ${mission.phase}|">P1</span>
+                                                    <span>·</span>
+                                                    <span th:text="|'Zone ' + ${mission.conflict}|">Zone 1</span>
+                                                    <span th:if="${mission.bonus}">· Bonus</span>
+                                                    <span>·</span>
+                                                    <span th:text="|'Mission ' + ${mission.covertNum}|">Mission 1</span>
+                                                </small>
+                                            </div>
+                                        </article>
+                                    </div>
+
+                                    <div th:if="${tb.missionsSpeciales == null or tb.missionsSpeciales.isEmpty()}" class="app-empty compact-empty analyse-tb-ms-empty">
+                                        <div class="app-empty-icon"><i class="bi bi-flag"></i></div>
+                                        <h3>Aucune mission spéciale tentée</h3>
+                                        <p>Aucune tentative de mission spéciale n'a été trouvée pour ce joueur sur cette TB.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </th:block>
+                </div>
+
+                <div th:if="${analyse.tbPerformances == null or analyse.tbPerformances.isEmpty()}" class="app-empty compact-empty analyse-tb-empty">
+                    <div class="app-empty-icon"><i class="bi bi-map"></i></div>
+                    <h3>Aucune performance TB exploitable</h3>
+                    <p>Le profil reste analysable normalement ; la partie TB dépend des résultats récents exposés par la guilde actuelle du candidat.</p>
+                </div>
+            </div>
+        </section>
+
         <!-- ROSTER COMPLET -->
         <section class="app-card candidate-roster-card">
             <div class="candidate-roster-header">
@@ -306,17 +580,7 @@
             </div>
         </section>
 
-        <!-- NOTE V1 -->
-        <section class="analyse-v1-note">
-            <i class="bi bi-lightning-charge"></i>
-            <div>
-                <strong>Omicrons</strong>
-                <p>
-                    L'analyse générique des Omicrons n'est volontairement pas incluse dans cette V1.
-                    Elle sera ajoutée lorsque la détection ne dépendra plus d'une liste de personnages codée en dur.
-                </p>
-            </div>
-        </section>
+
 
     </div>
 

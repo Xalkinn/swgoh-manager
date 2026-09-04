@@ -36,3 +36,15 @@
         initRosterSearch();
     }
 })();
+
+// Ouvre la popin Omicron au clavier sur une ligne de priorité.
+document.querySelectorAll('.player-priority-clickable').forEach((row) => {
+    row.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        const target = row.getAttribute('data-bs-target');
+        if (!target || typeof bootstrap === 'undefined') return;
+        const modalElement = document.querySelector(target);
+        if (modalElement) bootstrap.Modal.getOrCreateInstance(modalElement).show();
+    });
+});

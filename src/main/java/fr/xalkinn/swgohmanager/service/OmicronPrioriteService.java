@@ -34,11 +34,49 @@ public class OmicronPrioriteService {
     }
 
     public List<DefinitionOption> getOptionsGestion() {
-        List<DefinitionOption> result = new ArrayList<>();
+        java.util.Set<String> baseIdsJouables = chargerBaseIdsJouables();
+        List<DefinitionOption> candidats = new ArrayList<>();
+
         for (Definition d : catalogueService.trouverDefinitionsActives()) {
             if (!OmicronCatalogueService.CATEGORIES_GESTION.contains(d.categorie())) continue;
-            result.add(toOption(d));
+            candidats.add(toOption(d));
         }
+
+        // Certains personnages apparaissent plusieurs fois dans Game Data sous
+        // des baseId techniques différents mais avec exactement le même nom
+        // localisé (variantes PNJ / combat). On ne filtre que ces groupes
+        // ambigus : si l'un des baseId existe dans un roster réel de la guilde,
+        // c'est lui qui est considéré comme jouable. Les personnages uniques
+        // dans Game Data restent donc visibles même si personne ne les a encore.
+        Map<String, java.util.Set<String>> baseIdsParNom = new LinkedHashMap<>();
+        for (DefinitionOption o : candidats) {
+            String cle = o.getCategorie() + "|" + normaliserNomPersonnage(o.getNomPersonnage());
+            baseIdsParNom.computeIfAbsent(cle, ignored -> new java.util.LinkedHashSet<>())
+                    .add(normaliserBaseId(o.getBaseId()));
+        }
+
+        List<DefinitionOption> result = new ArrayList<>();
+        for (DefinitionOption o : candidats) {
+            String cle = o.getCategorie() + "|" + normaliserNomPersonnage(o.getNomPersonnage());
+            java.util.Set<String> ids = baseIdsParNom.getOrDefault(cle, java.util.Set.of());
+
+            if (ids.size() <= 1) {
+                result.add(o);
+                continue;
+            }
+
+            java.util.Set<String> idsJouablesDuGroupe = new java.util.HashSet<>(ids);
+            idsJouablesDuGroupe.retainAll(baseIdsJouables);
+
+            // Sans preuve côté roster, on ne supprime rien automatiquement.
+            // Dès qu'un baseId réel est connu, les variantes techniques sont
+            // masquées de la liste d'ajout.
+            if (idsJouablesDuGroupe.isEmpty()
+                    || idsJouablesDuGroupe.contains(normaliserBaseId(o.getBaseId()))) {
+                result.add(o);
+            }
+        }
+
         result.sort(Comparator
                 .comparing(DefinitionOption::getCategorie)
                 .thenComparing(DefinitionOption::getNomPersonnage, String.CASE_INSENSITIVE_ORDER)
@@ -79,7 +117,7 @@ public class OmicronPrioriteService {
                 JOIN omicron_definition d ON d.id = p.omicron_definition_id
                 WHERE p.actif = 1
                   AND d.actif = 1
-                  AND d.categorie IN ('TW','TB','RAID','CONQUETE')
+                  AND d.categorie IN ('TW','TB','GAC','RAID','CONQUETE')
                 ORDER BY p.priorite, d.categorie, d.base_id, d.type_capacite, d.numero_capacite
                 """,
                 (rs, rowNum) -> {
@@ -126,7 +164,7 @@ public class OmicronPrioriteService {
                 SELECT COUNT(*)
                 FROM omicron_definition
                 WHERE id = ? AND actif = 1
-                  AND categorie IN ('TW','TB','RAID','CONQUETE')
+                  AND categorie IN ('TW','TB','GAC','RAID','CONQUETE')
                 """, Integer.class, definitionId);
         if (count == null || count == 0) {
             throw new IllegalArgumentException("Omicron introuvable ou non gérable dans cette catégorie.");
@@ -264,6 +302,33 @@ public class OmicronPrioriteService {
                     map.put(rs.getString("skill_id"), rs.getInt("nb"));
                 });
         return map;
+    }
+
+    private java.util.Set<String> chargerBaseIdsJouables() {
+        java.util.Set<String> result = new java.util.HashSet<>();
+        jdbc.query("""
+                SELECT DISTINCT SUBSTRING_INDEX(p.base_id, ':', 1) AS base_id
+                FROM personnage p
+                JOIN joueur j ON j.id = p.joueur_id
+                WHERE j.dans_guilde = 1
+                  AND p.base_id IS NOT NULL
+                  AND p.base_id <> ''
+                """, rs -> {
+                    result.add(normaliserBaseId(rs.getString("base_id")));
+                });
+        return result;
+    }
+
+    private String normaliserBaseId(String baseId) {
+        if (baseId == null) return "";
+        String value = baseId.trim();
+        int colon = value.indexOf(':');
+        if (colon >= 0) value = value.substring(0, colon);
+        return value.toUpperCase(java.util.Locale.ROOT);
+    }
+
+    private String normaliserNomPersonnage(String nom) {
+        return nom == null ? "" : nom.trim().toLowerCase(java.util.Locale.ROOT);
     }
 
     private int nombreJoueursActifs() {

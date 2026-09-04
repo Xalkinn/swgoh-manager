@@ -442,3 +442,75 @@ html.dark-mode .omicron-config-grid {
     .omicron-player-row { align-items:flex-start; }
     .omicron-player-status { margin-left:0; }
 }
+
+
+.omicron-export-btn {
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    border-radius:12px;
+    font-weight:700;
+    white-space:nowrap;
+}
+
+/* V2.9 - Choix du format d'export */
+.omicron-export-modal .modal-content {
+    border:1px solid var(--dash-border);
+    border-radius:22px;
+    background:var(--dash-card);
+    color:var(--dash-text);
+    box-shadow:0 28px 80px rgba(15,23,42,.24);
+}
+.omicron-export-modal .modal-header {
+    align-items:flex-start;
+    padding:20px 22px 14px;
+    border-bottom:1px solid var(--dash-border);
+}
+.omicron-export-modal .modal-body { padding:18px 22px 22px; }
+.omicron-export-modal-subtitle {
+    margin:5px 0 0;
+    color:var(--dash-muted);
+    font-size:.8rem;
+}
+.omicron-export-choice-grid {
+    display:grid;
+    gap:11px;
+}
+.omicron-export-choice {
+    display:grid;
+    grid-template-columns:46px minmax(0,1fr) auto;
+    align-items:center;
+    gap:13px;
+    padding:14px;
+    border:1px solid var(--dash-border);
+    border-radius:16px;
+    background:var(--dash-card);
+    color:var(--dash-text);
+    text-decoration:none;
+    transition:transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.omicron-export-choice:hover {
+    transform:translateY(-1px);
+    border-color:rgba(124,58,237,.38);
+    box-shadow:0 8px 24px rgba(15,23,42,.08);
+    color:var(--dash-text);
+}
+.omicron-export-choice > span:nth-child(2) strong,
+.omicron-export-choice > span:nth-child(2) small { display:block; }
+.omicron-export-choice > span:nth-child(2) small {
+    margin-top:2px;
+    color:var(--dash-muted);
+    font-size:.73rem;
+}
+.omicron-export-choice-icon {
+    display:inline-flex;
+    width:46px;
+    height:46px;
+    align-items:center;
+    justify-content:center;
+    border-radius:14px;
+    font-size:1.35rem;
+}
+.omicron-export-choice-icon.excel { background:rgba(22,163,74,.11); color:#15803d; }
+.omicron-export-choice-icon.libreoffice { background:rgba(37,99,235,.10); color:#2563eb; }
+.omicron-export-choice-icon.csv { background:rgba(124,58,237,.10); color:#7c3aed; }

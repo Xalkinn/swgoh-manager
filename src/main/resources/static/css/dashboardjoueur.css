@@ -847,3 +847,161 @@ html.dark-mode .player-priority-row {
     .player-omicron-manage-link { display:none; }
     .player-priority-missing-item { align-items:flex-start; }
 }
+
+/* ---------- Popin Omicrons manquants par priorité ---------- */
+.player-priority-clickable {
+    cursor:pointer;
+    transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+.player-priority-clickable:hover {
+    transform:translateY(-1px);
+    box-shadow:0 8px 22px rgba(15,23,42,.08);
+}
+.player-priority-clickable:focus-visible {
+    outline:3px solid rgba(124,58,237,.20);
+    outline-offset:2px;
+}
+.player-priority-right {
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+.player-priority-chevron {
+    color:var(--dash-muted);
+    font-size:.72rem;
+    transition:transform .16s ease;
+}
+.player-priority-clickable:hover .player-priority-chevron {
+    transform:translateX(2px);
+    color:var(--purple);
+}
+.player-priority-missing-trigger {
+    display:flex;
+    align-items:center;
+    gap:7px;
+    margin-top:9px;
+    color:#dc2626;
+    font-size:.68rem;
+    font-weight:800;
+}
+
+.player-priority-modal .modal-content {
+    border:1px solid var(--dash-border);
+    border-radius:20px;
+    background:var(--dash-card,#fff);
+    color:var(--dash-text);
+    overflow:hidden;
+}
+.player-priority-modal .modal-header {
+    border-bottom:1px solid var(--dash-border);
+    padding:15px 18px;
+}
+.player-priority-modal .modal-body {
+    padding:18px;
+}
+.player-priority-modal-title {
+    display:flex;
+    align-items:center;
+    gap:11px;
+}
+.player-priority-modal-title h5 {
+    margin:0;
+    color:var(--dash-text);
+    font-size:.95rem;
+    font-weight:900;
+}
+.player-priority-modal-title small {
+    display:block;
+    margin-top:2px;
+    color:var(--dash-muted);
+    font-size:.66rem;
+}
+.player-priority-modal-title .priority-modal-p1 { background:rgba(220,38,38,.10); color:#dc2626; }
+.player-priority-modal-title .priority-modal-p2 { background:rgba(234,88,12,.10); color:#ea580c; }
+.player-priority-modal-title .priority-modal-p3 { background:rgba(202,138,4,.10); color:#ca8a04; }
+.player-priority-modal-title .priority-modal-p4 { background:rgba(37,99,235,.10); color:#2563eb; }
+
+.player-priority-modal-summary {
+    display:flex;
+    align-items:baseline;
+    gap:7px;
+    margin-bottom:12px;
+    padding:11px 13px;
+    border-radius:13px;
+    background:rgba(220,38,38,.055);
+    color:#b91c1c;
+}
+.player-priority-modal-summary strong {
+    font-size:1.25rem;
+    font-weight:950;
+}
+.player-priority-modal-summary span {
+    font-size:.72rem;
+    font-weight:800;
+}
+.player-priority-modal-list {
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+}
+.player-priority-modal-item {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 11px;
+    border:1px solid var(--dash-border);
+    border-radius:13px;
+    background:var(--dash-soft,#f8f9fc);
+}
+.player-priority-modal-icon {
+    display:grid;
+    place-items:center;
+    flex:0 0 28px;
+    width:28px;
+    height:28px;
+    border-radius:9px;
+    background:rgba(220,38,38,.09);
+    color:#dc2626;
+    font-size:.68rem;
+    font-weight:900;
+}
+.player-priority-modal-copy {
+    min-width:0;
+    flex:1;
+}
+.player-priority-modal-copy strong,
+.player-priority-modal-copy small { display:block; }
+.player-priority-modal-copy strong {
+    color:var(--dash-text);
+    font-size:.73rem;
+    font-weight:850;
+}
+.player-priority-modal-copy small {
+    margin-top:2px;
+    color:var(--dash-muted);
+    font-size:.62rem;
+}
+.player-priority-modal-complete {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+    gap:7px;
+    padding:24px 14px;
+    color:#059669;
+}
+.player-priority-modal-complete i { font-size:2rem; }
+.player-priority-modal-complete strong { font-size:.92rem; }
+.player-priority-modal-complete span {
+    color:var(--dash-muted);
+    font-size:.70rem;
+}
+html.dark-mode .player-priority-modal .modal-content {
+    background:#121826;
+}
+html.dark-mode .player-priority-modal-item {
+    background:rgba(255,255,255,.025);
+}
+html.dark-mode .player-priority-modal .btn-close {
+    filter:invert(1) grayscale(1) brightness(1.6);
+}

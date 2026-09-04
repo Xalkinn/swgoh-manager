@@ -27,7 +27,7 @@ import jakarta.annotation.PostConstruct;
 public class OmicronCatalogueService {
 
     public static final List<String> CATEGORIES_GESTION =
-            List.of("TW", "TB", "RAID", "CONQUETE");
+            List.of("TW", "TB", "GAC", "RAID", "CONQUETE");
 
     private final JdbcTemplate jdbc;
     private final SwgohGameDataClient gameDataClient;
@@ -239,7 +239,7 @@ public class OmicronCatalogueService {
         int gerables = compterDefinitionsGestion();
         return "Catalogue Omicron synchronisé : " + detections.size()
                 + " définition(s) détectée(s), dont " + gerables
-                + " pour TW / TB / Raid / Conquête (Game Data " + version + ").";
+                + " pour TW / TB / Grande Arène / Raid / Conquête (Game Data " + version + ").";
     }
 
     public List<Definition> trouverDefinitionsActives() {
@@ -277,7 +277,7 @@ public class OmicronCatalogueService {
         Integer n = jdbc.queryForObject("""
                 SELECT COUNT(*)
                 FROM omicron_definition
-                WHERE actif = 1 AND categorie IN ('TW','TB','RAID','CONQUETE')
+                WHERE actif = 1 AND categorie IN ('TW','TB','GAC','RAID','CONQUETE')
                 """, Integer.class);
         return n == null ? 0 : n;
     }
