@@ -98,12 +98,12 @@
             </article>
         </section>
 
-        <!-- PHASES -->
+        <!-- JOURS / ROUNDS -->
         <section class="dash-card tb-section-card">
             <div class="tb-section-heading">
                 <div>
-                    <span class="tb-kicker">Performance collective</span>
-                    <h2>Phases 1 → 6</h2>
+                    <span class="tb-kicker">Performance collective par journée</span>
+                    <h2>Jours / Rounds 1 → 6</h2>
                 </div>
                 <div class="tb-heading-chips">
                     <span class="tb-info-chip">
@@ -117,11 +117,19 @@
                 </div>
             </div>
 
+            <div class="tb-round-note">
+                <i class="bi bi-clock-history"></i>
+                <div>
+                    <strong>Vue quotidienne fiable</strong>
+                    <span>Ces chiffres utilisent les compteurs <code>*_round_X</code> de Comlink. Un round correspond à une journée de la TB, même si la guilde reste plusieurs jours sur la même planète.</span>
+                </div>
+            </div>
+
             <div class="table-responsive tb-table-shell">
                 <table class="tb-table">
                     <thead>
                     <tr>
-                        <th>Phase</th>
+                        <th>Jour / Round</th>
                         <th>Combats tentés</th>
                         <th>Vagues</th>
                         <th>Vagues / combat</th>
@@ -132,15 +140,15 @@
                     </thead>
                     <tbody>
                     <tr th:each="r : ${tbDetail.rounds}"
-                        class="tb-phase-clickable"
+                        class="tb-round-clickable"
                         role="button"
                         tabindex="0"
                         data-bs-toggle="modal"
-                        th:attr="data-bs-target=|#${r.modalId}|,aria-label=|Voir les combats de la phase ${r.roundNum}|">
+                        th:attr="data-bs-target=|#${r.modalId}|,aria-label=|Voir l'activité du jour ${r.roundNum}|">
                         <td>
                             <div class="tb-phase-cell">
-                                <span class="phase-chip" th:text="|Phase ${r.roundNum}|">Phase 1</span>
-                                <small><i class="bi bi-map"></i> Voir les planètes</small>
+                                <span class="phase-chip" th:text="|Jour ${r.roundNum}|">Jour 1</span>
+                                <small><i class="bi bi-clock"></i> <span th:text="|Round ${r.roundNum} · Voir les joueurs|">Round 1 · Voir les joueurs</span></small>
                             </div>
                         </td>
                         <td th:text="${r.combatsTentes}">0</td>
@@ -154,9 +162,9 @@
                 </table>
             </div>
 
-            <!-- DÉTAIL DES COMBATS PAR PHASE / PLANÈTE -->
+            <!-- DÉTAIL DES COMBATS PAR JOUR / ROUND -->
             <div th:each="r : ${tbDetail.rounds}"
-                 class="modal fade tb-phase-modal"
+                 class="modal fade tb-round-modal"
                  th:id="${r.modalId}"
                  tabindex="-1"
                  aria-hidden="true">
@@ -164,14 +172,14 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <div>
-                                <span class="tb-kicker">Combats classiques · Missions spéciales exclues</span>
-                                <h5 class="modal-title" th:text="|Phase ${r.roundNum} · Détail par planète|">Phase 1 · Détail par planète</h5>
-                                <small>Uniquement les participants de cette TB encore marqués dans la guilde.</small>
+                                <span class="tb-kicker">Activité réelle de la journée · compteurs round</span>
+                                <h5 class="modal-title" th:text="|Jour ${r.roundNum} · Round ${r.roundNum}|">Jour 1 · Round 1</h5>
+                                <small>Combats, vagues et activité des participants encore marqués dans la guilde.</small>
                             </div>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
                         </div>
                         <div class="modal-body">
-                            <div class="tb-phase-modal-summary">
+                            <div class="tb-round-modal-summary">
                                 <div>
                                     <span>Combats tentés</span>
                                     <strong th:text="${#numbers.formatInteger(r.combatsTentes, 1, 'POINT')}">0</strong>
@@ -185,16 +193,133 @@
                                     <strong th:text="${#numbers.formatDecimal(r.vaguesParCombat, 1, 2)}">0,00</strong>
                                 </div>
                                 <div>
-                                    <span>Planètes / zones</span>
-                                    <strong th:text="${r.planetes.size()}">0</strong>
+                                    <span>Joueurs avec activité</span>
+                                    <strong th:text="${r.nombreJoueurs}">0</strong>
                                 </div>
                             </div>
 
-                            <div th:if="${r.planetes != null and !r.planetes.isEmpty()}" class="tb-phase-planet-grid">
-                                <article th:each="planete : ${r.planetes}" class="tb-planet-card">
+                            <div th:if="${r.joueurs != null and !r.joueurs.isEmpty()}" class="table-responsive tb-round-player-table-shell">
+                                <table class="tb-round-player-table">
+                                    <thead>
+                                    <tr>
+                                        <th>Joueur</th>
+                                        <th>Combats</th>
+                                        <th>Vagues</th>
+                                        <th>V/C</th>
+                                        <th>MS tentées</th>
+                                        <th>Puissance</th>
+                                        <th>Dons</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="joueur : ${r.joueurs}">
+                                        <td>
+                                            <strong th:text="${joueur.playerName}">Joueur</strong>
+                                            <small th:text="${joueur.playerId}">ID</small>
+                                        </td>
+                                        <td th:text="${joueur.combatsTentes}">0</td>
+                                        <td><strong th:text="${joueur.vagues}">0</strong></td>
+                                        <td th:text="${#numbers.formatDecimal(joueur.vaguesParCombat, 1, 2)}">0,00</td>
+                                        <td th:text="${joueur.msTentees}">0</td>
+                                        <td th:text="${#numbers.formatInteger(joueur.puissanceDeployee, 1, 'POINT')}">0</td>
+                                        <td th:text="${joueur.unitesDonnees}">0</td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div th:if="${r.joueurs == null or r.joueurs.isEmpty()}" class="tb-inline-empty">
+                                <i class="bi bi-clock"></i> Aucune activité round détectée pour cette journée.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PLANÈTES : CUMUL SUR L'ENSEMBLE DE LA TB -->
+        <section class="dash-card tb-section-card">
+            <div class="tb-section-heading">
+                <div>
+                    <span class="tb-kicker">Vue stratégique par zone</span>
+                    <h2>Planètes · cumul sur l'ensemble de la TB</h2>
+                </div>
+                <span class="tb-info-chip"><i class="bi bi-map-fill"></i> Données par phase / planète</span>
+            </div>
+
+            <div class="tb-planet-cumulative-note">
+                <i class="bi bi-info-circle-fill"></i>
+                <div>
+                    <strong>À ne pas confondre avec les jours</strong>
+                    <span>Une planète peut rester active plusieurs rounds. Les chiffres ci-dessous cumulent donc toute l'activité enregistrée sur la planète pendant la TB.</span>
+                </div>
+            </div>
+
+            <div th:if="${tbDetail.phasesPlanetes != null and !tbDetail.phasesPlanetes.isEmpty()}" class="tb-phase-summary-grid">
+                <article th:each="phase : ${tbDetail.phasesPlanetes}"
+                         class="tb-phase-summary-card tb-planet-phase-clickable"
+                         role="button"
+                         tabindex="0"
+                         data-bs-toggle="modal"
+                         th:attr="data-bs-target=|#${phase.modalId}|,aria-label=|Voir les planètes de la phase ${phase.phaseNum}|">
+                    <div class="tb-phase-summary-header">
+                        <span class="phase-chip" th:text="|Phase ${phase.phaseNum}|">Phase 1</span>
+                        <small><i class="bi bi-map"></i> <span th:text="|${phase.nombrePlanetes} planète(s)|">3 planètes</span></small>
+                    </div>
+                    <div class="tb-phase-summary-kpis">
+                        <div><span>Combats</span><strong th:text="${phase.combatsTentes}">0</strong></div>
+                        <div><span>Vagues</span><strong th:text="${phase.vagues}">0</strong></div>
+                        <div><span>V/C</span><strong th:text="${#numbers.formatDecimal(phase.vaguesParCombat, 1, 2)}">0,00</strong></div>
+                    </div>
+                    <span class="tb-phase-summary-link">Voir les planètes <i class="bi bi-arrow-right"></i></span>
+                </article>
+            </div>
+
+            <div th:if="${tbDetail.phasesPlanetes == null or tbDetail.phasesPlanetes.isEmpty()}" class="tb-inline-empty">
+                <i class="bi bi-map"></i> Aucune donnée de planète détectée pour cette bataille.
+            </div>
+
+            <!-- DÉTAIL CUMULÉ DES PLANÈTES PAR PHASE -->
+            <div th:each="phase : ${tbDetail.phasesPlanetes}"
+                 class="modal fade tb-phase-modal"
+                 th:id="${phase.modalId}"
+                 tabindex="-1"
+                 aria-hidden="true">
+                <div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div>
+                                <span class="tb-kicker">Cumul planète · Missions spéciales exclues</span>
+                                <h5 class="modal-title" th:text="|Phase ${phase.phaseNum} · Détail par planète|">Phase 1 · Détail par planète</h5>
+                                <small>Cette vue cumule toute la TB et ne correspond pas forcément à un seul jour.</small>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="tb-phase-modal-summary">
+                                <div>
+                                    <span>Combats cumulés</span>
+                                    <strong th:text="${#numbers.formatInteger(phase.combatsTentes, 1, 'POINT')}">0</strong>
+                                </div>
+                                <div>
+                                    <span>Vagues cumulées</span>
+                                    <strong th:text="${#numbers.formatInteger(phase.vagues, 1, 'POINT')}">0</strong>
+                                </div>
+                                <div>
+                                    <span>Vagues / combat</span>
+                                    <strong th:text="${#numbers.formatDecimal(phase.vaguesParCombat, 1, 2)}">0,00</strong>
+                                </div>
+                                <div>
+                                    <span>Planètes / zones</span>
+                                    <strong th:text="${phase.nombrePlanetes}">0</strong>
+                                </div>
+                            </div>
+
+                            <div th:if="${phase.planetes != null and !phase.planetes.isEmpty()}" class="tb-phase-planet-grid">
+                                <article th:each="planete : ${phase.planetes}" class="tb-planet-card">
                                     <header class="tb-planet-header">
                                         <div>
-                                            <small th:text="|Phase ${r.roundNum}|">Phase 1</small>
+                                            <small th:text="|Phase ${phase.phaseNum} · Cumul TB|">Phase 1 · Cumul TB</small>
                                             <h6 th:text="${planete.label}">Planète / Zone 1</h6>
                                         </div>
                                         <span th:if="${planete.bonus}" class="bonus-chip">Bonus</span>
@@ -243,10 +368,6 @@
                                         <i class="bi bi-dash-circle"></i> Aucun combat enregistré pour les joueurs affichés.
                                     </div>
                                 </article>
-                            </div>
-
-                            <div th:if="${r.planetes == null or r.planetes.isEmpty()}" class="tb-inline-empty">
-                                <i class="bi bi-map"></i> Aucune donnée de combat classique détectée pour cette phase.
                             </div>
                         </div>
                     </div>
@@ -434,7 +555,7 @@
             </div>
             <div class="table-responsive tb-table-shell">
                 <table class="tb-table compact">
-                    <thead><tr><th>Date</th><th>Étoiles</th><th>P3</th><th>P4</th><th>P5</th><th>P6</th><th>MS tentées</th></tr></thead>
+                    <thead><tr><th>Date</th><th>Étoiles</th><th>J3</th><th>J4</th><th>J5</th><th>J6</th><th>MS tentées</th></tr></thead>
                     <tbody>
                     <tr th:each="tb : ${tbHistorique}">
                         <td><a th:href="@{/tb(tbId=${tb.id})}" th:text="${tb.endTime != null ? #temporals.format(tb.endTime, 'dd/MM/yyyy') : '-'}">Date</a></td>

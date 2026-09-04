@@ -2,7 +2,7 @@
     "use strict";
 
     function initClickableKeyboard() {
-        document.querySelectorAll(".tb-mission-clickable, .tb-phase-clickable").forEach((element) => {
+        document.querySelectorAll(".tb-mission-clickable, .tb-round-clickable, .tb-planet-phase-clickable").forEach((element) => {
             element.addEventListener("keydown", (event) => {
                 if (event.key !== "Enter" && event.key !== " ") return;
                 event.preventDefault();

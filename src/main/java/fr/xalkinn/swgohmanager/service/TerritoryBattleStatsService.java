@@ -14,8 +14,10 @@ import fr.xalkinn.swgohmanager.dto.TerritoryBattleView.CombatPlayerRow;
 import fr.xalkinn.swgohmanager.dto.TerritoryBattleView.Detail;
 import fr.xalkinn.swgohmanager.dto.TerritoryBattleView.MissionFailureRow;
 import fr.xalkinn.swgohmanager.dto.TerritoryBattleView.MissionRow;
+import fr.xalkinn.swgohmanager.dto.TerritoryBattleView.PhasePlanetRow;
 import fr.xalkinn.swgohmanager.dto.TerritoryBattleView.PlanetRow;
 import fr.xalkinn.swgohmanager.dto.TerritoryBattleView.PlayerRow;
+import fr.xalkinn.swgohmanager.dto.TerritoryBattleView.RoundPlayerRow;
 import fr.xalkinn.swgohmanager.dto.TerritoryBattleView.RoundRow;
 import fr.xalkinn.swgohmanager.dto.TerritoryBattleView.SummaryRow;
 
@@ -70,14 +72,20 @@ public class TerritoryBattleStatsService {
 
         List<RoundRow> rounds = chargerRounds(id);
         for (RoundRow round : rounds) {
-            round.setModalId("tbPhase-" + round.getRoundNum());
-            round.setPlanetes(chargerPlanetesPhase(id, round.getRoundNum()));
+            round.setModalId("tbRound-" + round.getRoundNum());
+            round.setJoueurs(chargerJoueursRound(id, round.getRoundNum()));
         }
+
+        // Les planètes restent disponibles, mais dans une vue séparée et
+        // explicitement cumulative. Un numéro de phase Game Data n'est pas un
+        // numéro de jour : une guilde peut rester plusieurs rounds sur une même zone.
+        List<PhasePlanetRow> phasesPlanetes = chargerPhasesPlanetes(id);
 
         List<MissionRow> missions = chargerMissions(id);
         List<PlayerRow> joueurs = chargerJoueurs(id);
 
         detail.setRounds(rounds);
+        detail.setPhasesPlanetes(phasesPlanetes);
         detail.setMissions(missions);
         detail.setJoueurs(joueurs);
         detail.setTotalParticipantsActifs(nombreParticipantsActifs(id));
@@ -190,7 +198,7 @@ public class TerritoryBattleStatsService {
                 tbId);
 
         Map<Integer, RoundRow> result = new HashMap<>();
-        // L'ordre est ensuite reconstruit de P1 à P6.
+        // L'ordre est ensuite reconstruit de J1/R1 à J6/R6.
         Map<Integer, RoundRow> byRound = new HashMap<>();
         for (RoundRow row : rows) byRound.put(row.getRoundNum(), row);
 
@@ -207,6 +215,77 @@ public class TerritoryBattleStatsService {
         Map<Integer, RoundRow> ordered = new java.util.LinkedHashMap<>();
         for (int round = 1; round <= 6; round++) ordered.put(round, result.get(round));
         return ordered;
+    }
+
+    /**
+     * Activité joueur par joueur d'un round/jour. Contrairement aux données par
+     * planète, cette requête ne s'appuie que sur les mapStatId *_round_X.
+     */
+    private List<RoundPlayerRow> chargerJoueursRound(long tbId, int roundNum) {
+        return jdbc.query("""
+                SELECT
+                    j.player_id,
+                    COALESCE(j.nom, j.player_id) AS player_name,
+                    COALESCE(SUM(CASE WHEN a.stat_type = 'strike_attempt' THEN COALESCE(s.score, 0) ELSE 0 END), 0) AS combats_tentes,
+                    COALESCE(SUM(CASE WHEN a.stat_type = 'strike_encounter' THEN COALESCE(s.score, 0) ELSE 0 END), 0) AS vagues,
+                    COALESCE(SUM(CASE WHEN a.stat_type = 'covert_attempt' THEN COALESCE(s.score, 0) ELSE 0 END), 0) AS ms_tentees,
+                    COALESCE(SUM(CASE WHEN a.stat_type = 'power' THEN COALESCE(s.score, 0) ELSE 0 END), 0) AS puissance_deployee,
+                    COALESCE(SUM(CASE WHEN a.stat_type = 'unit_donated' THEN COALESCE(s.score, 0) ELSE 0 END), 0) AS unites_donnees
+                FROM tb_activite a
+                JOIN tb_score_joueur s
+                  ON s.tb_activite_id = a.id
+                JOIN joueur j
+                  ON j.player_id = s.player_id
+                 AND j.dans_guilde = 1
+                WHERE a.territory_battle_id = ?
+                  AND a.round_num = ?
+                  AND a.stat_type IN ('strike_attempt', 'strike_encounter', 'covert_attempt', 'power', 'unit_donated')
+                GROUP BY j.player_id, j.nom
+                HAVING SUM(CASE WHEN a.stat_type IN ('strike_attempt', 'strike_encounter', 'covert_attempt', 'power', 'unit_donated')
+                                THEN COALESCE(s.score, 0) ELSE 0 END) > 0
+                ORDER BY vagues DESC, combats_tentes DESC, player_name
+                """,
+                (rs, rowNum) -> {
+                    RoundPlayerRow row = new RoundPlayerRow();
+                    row.setPlayerId(rs.getString("player_id"));
+                    row.setPlayerName(rs.getString("player_name"));
+                    row.setCombatsTentes(rs.getLong("combats_tentes"));
+                    row.setVagues(rs.getLong("vagues"));
+                    row.setMsTentees(rs.getLong("ms_tentees"));
+                    row.setPuissanceDeployee(rs.getLong("puissance_deployee"));
+                    row.setUnitesDonnees(rs.getLong("unites_donnees"));
+                    row.setVaguesParCombat(row.getCombatsTentes() > 0
+                            ? row.getVagues() * 1.0 / row.getCombatsTentes()
+                            : 0.0);
+                    return row;
+                },
+                tbId,
+                roundNum);
+    }
+
+    /**
+     * Construit la vue stratégique cumulée par phase/planète. Cette vue est
+     * volontairement séparée des rounds afin de ne plus laisser entendre qu'une
+     * phase Game Data correspond forcément à une journée de TB.
+     */
+    private List<PhasePlanetRow> chargerPhasesPlanetes(long tbId) {
+        List<PhasePlanetRow> result = new ArrayList<>();
+        for (int phase = 1; phase <= 6; phase++) {
+            List<PlanetRow> planetes = chargerPlanetesPhase(tbId, phase);
+            if (planetes.isEmpty()) continue;
+
+            PhasePlanetRow row = new PhasePlanetRow();
+            row.setPhaseNum(phase);
+            row.setModalId("tbPlanetesPhase-" + phase);
+            row.setPlanetes(planetes);
+            row.setCombatsTentes(planetes.stream().mapToLong(PlanetRow::getCombatsTentes).sum());
+            row.setVagues(planetes.stream().mapToLong(PlanetRow::getVagues).sum());
+            row.setVaguesParCombat(row.getCombatsTentes() > 0
+                    ? row.getVagues() * 1.0 / row.getCombatsTentes()
+                    : 0.0);
+            result.add(row);
+        }
+        return result;
     }
 
     /**

@@ -814,3 +814,254 @@ html.dark-mode .tb-phase-modal .btn-close {
     .tb-phase-modal-summary,
     .tb-planet-kpis { grid-template-columns:1fr; }
 }
+
+
+/* V2.16 — rounds/jours fiables + planètes cumulées séparées */
+.tb-round-clickable,
+.tb-planet-phase-clickable {
+    cursor:pointer;
+    transition:background .18s ease, box-shadow .18s ease, transform .18s ease;
+}
+
+.tb-round-clickable:hover,
+.tb-round-clickable:focus-visible {
+    background:rgba(14,165,233,.07) !important;
+    box-shadow:inset 3px 0 0 #0ea5e9;
+    outline:none;
+}
+
+.tb-round-note,
+.tb-planet-cumulative-note {
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    margin:0 0 16px;
+    padding:12px 14px;
+    border:1px solid var(--dash-border);
+    border-radius:12px;
+    background:rgba(14,165,233,.07);
+    color:var(--dash-muted);
+    font-size:.72rem;
+}
+
+.tb-planet-cumulative-note {
+    background:rgba(245,158,11,.08);
+}
+
+.tb-round-note > i,
+.tb-planet-cumulative-note > i {
+    margin-top:1px;
+    color:#0284c7;
+    font-size:1rem;
+}
+
+.tb-planet-cumulative-note > i { color:#d97706; }
+
+.tb-round-note strong,
+.tb-round-note span,
+.tb-planet-cumulative-note strong,
+.tb-planet-cumulative-note span {
+    display:block;
+}
+
+.tb-round-note strong,
+.tb-planet-cumulative-note strong {
+    color:var(--dash-text);
+    font-size:.76rem;
+    margin-bottom:2px;
+}
+
+.tb-round-note code {
+    color:var(--dash-text);
+    background:var(--dash-soft);
+    border:1px solid var(--dash-border);
+    border-radius:5px;
+    padding:1px 4px;
+}
+
+.tb-round-modal .modal-content {
+    background:var(--dash-card);
+    color:var(--dash-text);
+    border:1px solid var(--dash-border);
+    border-radius:18px;
+    box-shadow:0 28px 80px rgba(15,23,42,.28);
+}
+
+.tb-round-modal .modal-header {
+    align-items:flex-start;
+    border-bottom:1px solid var(--dash-border);
+}
+
+.tb-round-modal .modal-title {
+    margin:2px 0 2px;
+    color:var(--dash-text);
+    font-weight:850;
+}
+
+.tb-round-modal .modal-header small { color:var(--dash-muted); }
+
+html.dark-mode .tb-round-modal .btn-close {
+    filter:invert(1) grayscale(100%) brightness(180%);
+}
+
+.tb-round-modal-summary {
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:10px;
+    margin-bottom:16px;
+}
+
+.tb-round-modal-summary > div {
+    padding:13px 14px;
+    border:1px solid var(--dash-border);
+    border-radius:12px;
+    background:var(--dash-soft);
+}
+
+.tb-round-modal-summary span,
+.tb-round-modal-summary strong { display:block; }
+.tb-round-modal-summary span {
+    color:var(--dash-muted);
+    font-size:.68rem;
+    font-weight:750;
+}
+.tb-round-modal-summary strong {
+    margin-top:2px;
+    color:var(--dash-text);
+    font-size:1.15rem;
+}
+
+.tb-round-player-table-shell {
+    max-height:520px;
+    border:1px solid var(--dash-border);
+    border-radius:12px;
+    overflow:auto;
+}
+
+.tb-round-player-table {
+    width:100%;
+    border-collapse:collapse;
+    font-size:.73rem;
+}
+
+.tb-round-player-table th,
+.tb-round-player-table td {
+    padding:9px 10px;
+    border-bottom:1px solid var(--dash-border);
+    color:var(--dash-text);
+    text-align:center;
+    white-space:nowrap;
+}
+
+.tb-round-player-table th:first-child,
+.tb-round-player-table td:first-child { text-align:left; }
+
+.tb-round-player-table thead th {
+    position:sticky;
+    top:0;
+    z-index:1;
+    background:var(--dash-table-head);
+    color:var(--dash-muted);
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    font-size:.59rem;
+}
+
+.tb-round-player-table td:first-child strong,
+.tb-round-player-table td:first-child small { display:block; }
+.tb-round-player-table td:first-child small {
+    color:var(--dash-muted);
+    font-size:.56rem;
+}
+.tb-round-player-table tbody tr:last-child td { border-bottom:0; }
+
+.tb-phase-summary-grid {
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:12px;
+}
+
+.tb-phase-summary-card {
+    min-width:0;
+    padding:14px;
+    border:1px solid var(--dash-border);
+    border-radius:14px;
+    background:linear-gradient(180deg,var(--dash-soft),var(--dash-card));
+}
+
+.tb-phase-summary-card:hover,
+.tb-phase-summary-card:focus-visible {
+    transform:translateY(-1px);
+    border-color:rgba(37,99,235,.38);
+    box-shadow:0 10px 28px rgba(15,23,42,.08);
+    outline:none;
+}
+
+.tb-phase-summary-header {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+}
+
+.tb-phase-summary-header small {
+    color:var(--dash-muted);
+    font-size:.65rem;
+    font-weight:750;
+}
+
+.tb-phase-summary-kpis {
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:7px;
+    margin-top:11px;
+}
+
+.tb-phase-summary-kpis > div {
+    padding:9px;
+    border:1px solid var(--dash-border);
+    border-radius:10px;
+    background:var(--dash-card);
+}
+
+.tb-phase-summary-kpis span,
+.tb-phase-summary-kpis strong { display:block; }
+.tb-phase-summary-kpis span {
+    color:var(--dash-muted);
+    font-size:.59rem;
+    font-weight:700;
+}
+.tb-phase-summary-kpis strong {
+    margin-top:1px;
+    color:var(--dash-text);
+    font-size:.95rem;
+}
+
+.tb-phase-summary-link {
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    gap:5px;
+    margin-top:10px;
+    color:#2563eb;
+    font-size:.66rem;
+    font-weight:800;
+}
+
+@media (max-width: 992px) {
+    .tb-phase-summary-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+
+@media (max-width: 768px) {
+    .tb-round-modal-summary { grid-template-columns:repeat(2,1fr); }
+}
+
+@media (max-width: 600px) {
+    .tb-phase-summary-grid { grid-template-columns:1fr; }
+}
+
+@media (max-width: 520px) {
+    .tb-round-modal-summary { grid-template-columns:1fr; }
+    .tb-round-note,
+    .tb-planet-cumulative-note { padding:10px 11px; }
+}

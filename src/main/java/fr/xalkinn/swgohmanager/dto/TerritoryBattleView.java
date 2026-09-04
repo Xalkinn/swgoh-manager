@@ -76,7 +76,7 @@ public final class TerritoryBattleView {
         private long puissanceDeployee;
         private long unitesDonnees;
         private String modalId;
-        private List<PlanetRow> planetes = new ArrayList<>();
+        private List<RoundPlayerRow> joueurs = new ArrayList<>();
 
         public int getRoundNum() { return roundNum; }
         public void setRoundNum(int roundNum) { this.roundNum = roundNum; }
@@ -94,8 +94,68 @@ public final class TerritoryBattleView {
         public void setUnitesDonnees(long unitesDonnees) { this.unitesDonnees = unitesDonnees; }
         public String getModalId() { return modalId; }
         public void setModalId(String modalId) { this.modalId = modalId; }
+        public List<RoundPlayerRow> getJoueurs() { return joueurs; }
+        public void setJoueurs(List<RoundPlayerRow> joueurs) { this.joueurs = joueurs; }
+        public int getNombreJoueurs() { return joueurs != null ? joueurs.size() : 0; }
+    }
+
+    /**
+     * Activité d'un joueur pendant un round/jour précis. Ces valeurs proviennent
+     * exclusivement des compteurs *_round_X de Comlink.
+     */
+    public static class RoundPlayerRow {
+        private String playerId;
+        private String playerName;
+        private long combatsTentes;
+        private long vagues;
+        private double vaguesParCombat;
+        private long msTentees;
+        private long puissanceDeployee;
+        private long unitesDonnees;
+
+        public String getPlayerId() { return playerId; }
+        public void setPlayerId(String playerId) { this.playerId = playerId; }
+        public String getPlayerName() { return playerName; }
+        public void setPlayerName(String playerName) { this.playerName = playerName; }
+        public long getCombatsTentes() { return combatsTentes; }
+        public void setCombatsTentes(long combatsTentes) { this.combatsTentes = combatsTentes; }
+        public long getVagues() { return vagues; }
+        public void setVagues(long vagues) { this.vagues = vagues; }
+        public double getVaguesParCombat() { return vaguesParCombat; }
+        public void setVaguesParCombat(double vaguesParCombat) { this.vaguesParCombat = vaguesParCombat; }
+        public long getMsTentees() { return msTentees; }
+        public void setMsTentees(long msTentees) { this.msTentees = msTentees; }
+        public long getPuissanceDeployee() { return puissanceDeployee; }
+        public void setPuissanceDeployee(long puissanceDeployee) { this.puissanceDeployee = puissanceDeployee; }
+        public long getUnitesDonnees() { return unitesDonnees; }
+        public void setUnitesDonnees(long unitesDonnees) { this.unitesDonnees = unitesDonnees; }
+    }
+
+    /**
+     * Groupe de planètes d'un palier/phase Game Data. Cette vue est un cumul sur
+     * l'ensemble de la TB : elle ne représente volontairement pas une journée.
+     */
+    public static class PhasePlanetRow {
+        private int phaseNum;
+        private long combatsTentes;
+        private long vagues;
+        private double vaguesParCombat;
+        private String modalId;
+        private List<PlanetRow> planetes = new ArrayList<>();
+
+        public int getPhaseNum() { return phaseNum; }
+        public void setPhaseNum(int phaseNum) { this.phaseNum = phaseNum; }
+        public long getCombatsTentes() { return combatsTentes; }
+        public void setCombatsTentes(long combatsTentes) { this.combatsTentes = combatsTentes; }
+        public long getVagues() { return vagues; }
+        public void setVagues(long vagues) { this.vagues = vagues; }
+        public double getVaguesParCombat() { return vaguesParCombat; }
+        public void setVaguesParCombat(double vaguesParCombat) { this.vaguesParCombat = vaguesParCombat; }
+        public String getModalId() { return modalId; }
+        public void setModalId(String modalId) { this.modalId = modalId; }
         public List<PlanetRow> getPlanetes() { return planetes; }
         public void setPlanetes(List<PlanetRow> planetes) { this.planetes = planetes; }
+        public int getNombrePlanetes() { return planetes != null ? planetes.size() : 0; }
     }
 
     /**
@@ -245,6 +305,7 @@ public final class TerritoryBattleView {
     public static class Detail {
         private SummaryRow tb;
         private List<RoundRow> rounds = new ArrayList<>();
+        private List<PhasePlanetRow> phasesPlanetes = new ArrayList<>();
         private List<MissionRow> missions = new ArrayList<>();
         private List<PlayerRow> joueurs = new ArrayList<>();
         private int totalParticipantsActifs;
@@ -260,6 +321,8 @@ public final class TerritoryBattleView {
         public void setTb(SummaryRow tb) { this.tb = tb; }
         public List<RoundRow> getRounds() { return rounds; }
         public void setRounds(List<RoundRow> rounds) { this.rounds = rounds; }
+        public List<PhasePlanetRow> getPhasesPlanetes() { return phasesPlanetes; }
+        public void setPhasesPlanetes(List<PhasePlanetRow> phasesPlanetes) { this.phasesPlanetes = phasesPlanetes; }
         public List<MissionRow> getMissions() { return missions; }
         public void setMissions(List<MissionRow> missions) { this.missions = missions; }
         public List<PlayerRow> getJoueurs() { return joueurs; }
