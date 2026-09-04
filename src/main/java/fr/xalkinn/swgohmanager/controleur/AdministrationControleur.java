@@ -68,6 +68,8 @@ public class AdministrationControleur {
         compteurs.put("Omicrons", compter("omicron"));
         compteurs.put("Extractions", compter("extraction"));
         compteurs.put("Définitions personnages", compter("personnage_definition"));
+        compteurs.put("Batailles de territoire", compter("territory_battle"));
+        compteurs.put("Guerres de territoire", compter("territory_war"));
 
         return compteurs;
     }

@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body class="dashboard-page tw-page">
+
+<div th:replace="~{fragments/menu :: menu}"></div>
+
+<main class="container-fluid tw-container">
+
+    <section class="tw-page-header">
+        <div>
+            <span class="dashboard-kicker">GUERRES DE TERRITOIRES • HISTORIQUE & PRÉPARATION</span>
+            <h1><i class="bi bi-shield-shaded"></i> Guerres de territoires</h1>
+            <p>Historique des matchs terminés, tendances de guilde et préparation du roster pour les prochaines TW.</p>
+        </div>
+        <div class="tw-header-actions">
+            <form action="/tw/importer" method="post">
+                <button class="tw-import-btn" type="submit">
+                    <i class="bi bi-cloud-arrow-down-fill"></i>
+                    Importer les dernières TW
+                </button>
+            </form>
+            <button id="themeToggle" class="theme-toggle" type="button" aria-label="Activer le mode sombre" title="Changer de thème">
+                <i class="bi bi-moon-stars-fill"></i><span>Mode sombre</span>
+            </button>
+        </div>
+    </section>
+
+    <div th:if="${twMessage}" class="alert alert-success tw-alert">
+        <i class="bi bi-check-circle-fill"></i><span th:text="${twMessage}">Import terminé</span>
+    </div>
+    <div th:if="${twErreur}" class="alert alert-danger tw-alert">
+        <i class="bi bi-exclamation-triangle-fill"></i><span th:text="${twErreur}">Erreur</span>
+    </div>
+
+    <section class="tw-info-note dash-card">
+        <i class="bi bi-info-circle-fill"></i>
+        <div>
+            <strong>Vue post-événement fiable</strong>
+            <span>
+                Cette page utilise <code>recentTerritoryWarResult</code> de Comlink. Elle ne nécessite aucun suivi en temps réel :
+                une synchronisation après la TW suffit pour historiser le résultat. Les statistiques individuelles d'attaques/bannières ne sont pas inventées car elles ne sont pas présentes dans ce résultat final.
+            </span>
+        </div>
+    </section>
+
+    <!-- HISTORIQUE VIDE -->
+    <section th:if="${twPage.historique.isEmpty()}" class="dash-card tw-empty-state">
+        <i class="bi bi-shield-x"></i>
+        <h2>Aucune Guerre de territoires historisée</h2>
+        <p>Utilise « Importer les dernières TW » ou relance une synchronisation de guilde.</p>
+    </section>
+
+    <div th:if="${!twPage.historique.isEmpty()}">
+        <!-- KPIs HISTORIQUES -->
+        <section class="tw-kpi-grid">
+            <article class="tw-kpi green">
+                <span><i class="bi bi-trophy-fill"></i></span>
+                <div><small>Victoires</small><strong th:text="${twPage.summary.victoires}">0</strong></div>
+            </article>
+            <article class="tw-kpi red">
+                <span><i class="bi bi-x-octagon-fill"></i></span>
+                <div><small>Défaites</small><strong th:text="${twPage.summary.defaites}">0</strong></div>
+            </article>
+            <article class="tw-kpi purple">
+                <span><i class="bi bi-percent"></i></span>
+                <div><small>Winrate</small><strong th:text="${#numbers.formatDecimal(twPage.summary.winRate, 1, 1)} + '%'">0%</strong></div>
+            </article>
+            <article class="tw-kpi blue">
+                <span><i class="bi bi-graph-up-arrow"></i></span>
+                <div><small>Score moyen</small><strong th:text="${#numbers.formatInteger(twPage.summary.scoreMoyen, 1, 'POINT')}">0</strong></div>
+            </article>
+            <article class="tw-kpi orange">
+                <span><i class="bi bi-arrows-expand"></i></span>
+                <div>
+                    <small>Écart moyen</small>
+                    <strong th:text="${(twPage.summary.ecartMoyen >= 0 ? '+' : '') + #numbers.formatInteger(twPage.summary.ecartMoyen, 1, 'POINT')}">0</strong>
+                </div>
+            </article>
+            <article class="tw-kpi" th:classappend="${twPage.summary.serieType == 'WIN'} ? ' green' : (${twPage.summary.serieType == 'LOSS'} ? ' red' : '')">
+                <span><i class="bi bi-lightning-charge-fill"></i></span>
+                <div><small>Série actuelle</small><strong class="tw-streak-text" th:text="${twPage.summary.serieLabel}">-</strong></div>
+            </article>
+        </section>
+
+        <!-- MATCHS MARQUANTS -->
+        <section class="tw-highlight-grid">
+            <article class="dash-card tw-highlight" th:if="${twPage.summary.matchLePlusSerre != null}">
+                <span class="tw-highlight-icon amber"><i class="bi bi-bullseye"></i></span>
+                <div>
+                    <small>Match le plus serré</small>
+                    <strong th:text="${twPage.summary.matchLePlusSerre.opponentGuildName}">Adversaire</strong>
+                    <span th:text="|${twPage.summary.matchLePlusSerre.score} – ${twPage.summary.matchLePlusSerre.opponentScore} · écart ${twPage.summary.matchLePlusSerre.ecart >= 0 ? '+' : ''}${twPage.summary.matchLePlusSerre.ecart}|">0-0</span>
+                </div>
+            </article>
+            <article class="dash-card tw-highlight" th:if="${twPage.summary.plusGrosseVictoire != null}">
+                <span class="tw-highlight-icon green"><i class="bi bi-trophy"></i></span>
+                <div>
+                    <small>Plus grosse victoire</small>
+                    <strong th:text="${twPage.summary.plusGrosseVictoire.opponentGuildName}">Adversaire</strong>
+                    <span th:text="|+${twPage.summary.plusGrosseVictoire.ecart} points|">+0</span>
+                </div>
+            </article>
+            <article class="dash-card tw-highlight" th:if="${twPage.summary.plusGrosseDefaite != null}">
+                <span class="tw-highlight-icon red"><i class="bi bi-shield-exclamation"></i></span>
+                <div>
+                    <small>Plus grosse défaite</small>
+                    <strong th:text="${twPage.summary.plusGrosseDefaite.opponentGuildName}">Adversaire</strong>
+                    <span th:text="|${twPage.summary.plusGrosseDefaite.ecart} points|">0</span>
+                </div>
+            </article>
+            <article class="dash-card tw-highlight" th:if="${twPage.summary.adversairePlusPuissant != null}">
+                <span class="tw-highlight-icon blue"><i class="bi bi-stars"></i></span>
+                <div>
+                    <small>Adversaire au plus gros PG</small>
+                    <strong th:text="${twPage.summary.adversairePlusPuissant.opponentGuildName}">Adversaire</strong>
+                    <span th:text="${#numbers.formatInteger(twPage.summary.adversairePlusPuissant.opponentGuildGp, 1, 'POINT')} + ' PG'">0 PG</span>
+                </div>
+            </article>
+        </section>
+
+        <!-- COURBE -->
+        <section class="dash-card tw-chart-card">
+            <div class="tw-section-heading">
+                <div>
+                    <span class="tw-kicker">Évolution</span>
+                    <h2>Scores des dernières TW</h2>
+                </div>
+                <div class="tw-chart-legend">
+                    <span><i class="legend-dot ours"></i> Notre score</span>
+                    <span><i class="legend-dot opponent"></i> Adversaire</span>
+                </div>
+            </div>
+            <div class="tw-chart-shell">
+                <canvas id="twScoreChart" height="280" aria-label="Évolution des scores TW"></canvas>
+            </div>
+        </section>
+
+        <!-- HISTORIQUE COMPLET -->
+        <section class="dash-card tw-section-card">
+            <div class="tw-section-heading">
+                <div>
+                    <span class="tw-kicker">Historique</span>
+                    <h2 th:text="|${twPage.summary.total} Guerres de territoires enregistrées|">Historique</h2>
+                </div>
+                <span class="tw-date-chip"><i class="bi bi-hand-index-thumb"></i> Cliquer sur un match</span>
+            </div>
+
+            <div class="table-responsive tw-table-shell">
+                <table class="tw-table" id="twHistoryTable">
+                    <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Adversaire</th>
+                        <th>Résultat</th>
+                        <th>Nous</th>
+                        <th>Eux</th>
+                        <th>Écart</th>
+                        <th>PG adverse</th>
+                        <th>Puissance enregistrée</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="tw : ${twPage.historique}"
+                        class="tw-match-row"
+                        tabindex="0"
+                        role="button"
+                        data-bs-toggle="modal"
+                        data-bs-target="#twMatchModal"
+                        th:attr="data-date=${tw.endTime != null ? #temporals.format(tw.endTime, 'dd/MM/yyyy HH:mm') : '-'},
+                                 data-opponent=${tw.opponentGuildName},
+                                 data-result=${tw.resultatLabel},
+                                 data-result-code=${tw.resultat},
+                                 data-score=${tw.score},
+                                 data-opponent-score=${tw.opponentScore},
+                                 data-margin=${tw.ecart},
+                                 data-power=${tw.power},
+                                 data-opponent-gp=${tw.opponentGuildGp},
+                                 data-tw-id=${tw.territoryWarId},
+                                 data-duration=${#numbers.formatDecimal(tw.dureeHeures, 1, 1)},
+                                 data-chart-date=${tw.endTime != null ? #temporals.format(tw.endTime, 'dd/MM') : '-'}">
+                        <td th:text="${tw.endTime != null ? #temporals.format(tw.endTime, 'dd/MM/yyyy') : '-'}">-</td>
+                        <td>
+                            <div class="tw-opponent-cell">
+                                <strong th:text="${tw.opponentGuildName}">Adversaire</strong>
+                                <div class="tw-badges">
+                                    <span th:if="${tw.plusSerree}" class="tw-mini-badge amber">Serrée</span>
+                                    <span th:if="${tw.plusGrosseVictoire}" class="tw-mini-badge green">Record +</span>
+                                    <span th:if="${tw.plusGrosseDefaite}" class="tw-mini-badge red">Record -</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="tw-result-pill"
+                                  th:classappend="${tw.resultat == 'WIN'} ? ' win' : (${tw.resultat == 'LOSS'} ? ' loss' : ' draw')"
+                                  th:text="${tw.resultatLabel}">Résultat</span>
+                        </td>
+                        <td><strong th:text="${tw.score}">0</strong></td>
+                        <td th:text="${tw.opponentScore}">0</td>
+                        <td>
+                            <strong th:class="${tw.ecart > 0 ? 'tw-positive' : (tw.ecart < 0 ? 'tw-negative' : '')}"
+                                    th:text="${(tw.ecart > 0 ? '+' : '') + tw.ecart}">0</strong>
+                        </td>
+                        <td th:text="${tw.opponentGuildGp > 0 ? #numbers.formatInteger(tw.opponentGuildGp, 1, 'POINT') : '-'}">-</td>
+                        <td th:text="${tw.power > 0 ? #numbers.formatInteger(tw.power, 1, 'POINT') : '-'}">-</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <!-- PRÉPARATION TW -->
+    <section class="dash-card tw-prep-card">
+        <div class="tw-section-heading tw-prep-heading">
+            <div>
+                <span class="tw-kicker">Préparation de la guilde</span>
+                <h2>Plan Omicron TW & profondeur de roster</h2>
+                <p>Uniquement les joueurs actuellement marqués <code>dans_guilde = 1</code>.</p>
+            </div>
+            <a href="/omicrons" class="tw-secondary-link"><i class="bi bi-lightning-charge-fill"></i> Gérer le plan Omicron</a>
+        </div>
+
+        <div class="tw-prep-kpis">
+            <article class="tw-omicron-kpi tw-clickable-kpi" role="button" tabindex="0"
+                     data-bs-toggle="modal" data-bs-target="#twOmicronMissingModal"
+                     data-priority="ALL" data-priority-label="Plan TW global"
+                     th:attr="data-plan-total=${twPage.preparation.planTotal}">
+                <small>Plan TW global <i class="bi bi-box-arrow-up-right"></i></small>
+                <strong th:text="|${twPage.preparation.planAtteint}/${twPage.preparation.planTotal}|">0/0</strong>
+                <span th:text="${#numbers.formatDecimal(twPage.preparation.planPourcentage, 1, 1)} + '% · voir les manquants'">0%</span>
+            </article>
+            <article class="p1 tw-omicron-kpi tw-clickable-kpi" role="button" tabindex="0"
+                     data-bs-toggle="modal" data-bs-target="#twOmicronMissingModal"
+                     data-priority="1" data-priority-label="P1 · Obligatoire"
+                     th:attr="data-plan-total=${twPage.preparation.p1Total}">
+                <small>P1 complètes <i class="bi bi-box-arrow-up-right"></i></small>
+                <strong th:text="${twPage.preparation.p1Total > 0 ? twPage.preparation.p1Complets + '/' + twPage.preparation.totalJoueurs : '-'}">-</strong>
+                <span th:text="${twPage.preparation.p1Total > 0 ? twPage.preparation.joueursAvecP1Manquante + ' joueur(s) à corriger · voir' : 'Aucune P1 TW'}">-</span>
+            </article>
+            <article class="p2 tw-omicron-kpi tw-clickable-kpi" role="button" tabindex="0"
+                     data-bs-toggle="modal" data-bs-target="#twOmicronMissingModal"
+                     data-priority="2" data-priority-label="P2 · Très prioritaire"
+                     th:attr="data-plan-total=${twPage.preparation.p2Total}">
+                <small>P2 complètes <i class="bi bi-box-arrow-up-right"></i></small>
+                <strong th:text="${twPage.preparation.p2Total > 0 ? twPage.preparation.p2Complets + '/' + twPage.preparation.totalJoueurs : '-'}">-</strong>
+                <span th:text="${twPage.preparation.p2Total > 0 ? twPage.preparation.joueursAvecP2Manquante + ' joueur(s) à corriger · voir' : 'Aucune P2 TW'}">-</span>
+            </article>
+            <article>
+                <small>Joueurs actifs</small>
+                <strong th:text="${twPage.preparation.totalJoueurs}">0</strong>
+                <span>dans la table joueur</span>
+            </article>
+        </div>
+
+        <div class="tw-prep-toolbar">
+            <div class="tw-search-box">
+                <i class="bi bi-search"></i>
+                <input id="twPrepSearch" type="search" placeholder="Rechercher un joueur…" autocomplete="off">
+            </div>
+            <span class="tw-prep-hint"><i class="bi bi-sort-down"></i> Les P1/P2 manquantes remontent en premier</span>
+        </div>
+
+        <div class="table-responsive tw-table-shell">
+            <table class="tw-table tw-prep-table" id="twPrepTable">
+                <thead>
+                <tr>
+                    <th>Joueur</th>
+                    <th>P1 TW</th>
+                    <th>P2 TW</th>
+                    <th>P3 TW</th>
+                    <th>P4 TW</th>
+                    <th>R8+</th>
+                    <th>R9+</th>
+                    <th>R10</th>
+                    <th>Mods 25+</th>
+                    <th>ModQ</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="j : ${twPage.joueurs}">
+                    <td>
+                        <a th:href="@{/dashboard/joueur/{id}(id=${j.joueurId})}" class="tw-player-link">
+                            <span class="tw-player-avatar" th:text="${#strings.toUpperCase(#strings.substring(j.nom,0,1))}">J</span>
+                            <span><strong th:text="${j.nom}">Joueur</strong><small th:text="${#numbers.formatInteger(j.pgPerso, 1, 'POINT')} + ' PG perso'">0 PG</small></span>
+                        </a>
+                    </td>
+                    <td><span class="tw-progress-pill" th:classappend="${j.p1Manquants > 0} ? ' missing-critical' : ' complete'" th:text="|${j.p1Atteint}/${j.p1Total}|">0/0</span></td>
+                    <td><span class="tw-progress-pill" th:classappend="${j.p2Manquants > 0} ? ' missing-high' : ' complete'" th:text="|${j.p2Atteint}/${j.p2Total}|">0/0</span></td>
+                    <td><span class="tw-progress-pill" th:classappend="${j.p3Manquants > 0} ? ' missing' : ' complete'" th:text="|${j.p3Atteint}/${j.p3Total}|">0/0</span></td>
+                    <td><span class="tw-progress-pill" th:classappend="${j.p4Manquants > 0} ? ' missing' : ' complete'" th:text="|${j.p4Atteint}/${j.p4Total}|">0/0</span></td>
+                    <td th:text="${j.r8Plus}">0</td>
+                    <td><strong th:text="${j.r9Plus}">0</strong></td>
+                    <td th:text="${j.r10}">0</td>
+                    <td th:text="${j.mods25Plus}">0</td>
+                    <td th:text="${#numbers.formatDecimal(j.modQ, 1, 2)}">0.00</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- PROCHAINE ÉTAPE -->
+    <section class="dash-card tw-next-card">
+        <span class="tw-next-icon"><i class="bi bi-binoculars-fill"></i></span>
+        <div>
+            <span class="tw-kicker">Prochaine évolution</span>
+            <h2>Analyse d'adversaire pendant la phase de préparation</h2>
+            <p>
+                Le résultat final ne contient pas les attaques individuelles. La prochaine étape sera d'exploiter
+                <code>territoryWarStatus</code> lorsqu'une TW est active afin de comparer les rosters des deux guildes,
+                sans avoir besoin de surveiller la guerre en continu.
+            </p>
+        </div>
+    </section>
+</main>
+
+<!-- DONNÉES DES OMICRONS TW MANQUANTS (source pour la popin) -->
+<div class="d-none" id="twOmicronMissingData" aria-hidden="true">
+    <div class="tw-missing-source"
+         th:each="m : ${twPage.omicronsManquants}"
+         th:attr="data-priority=${m.priorite},
+                  data-joueur-id=${m.joueurId},
+                  data-player-id=${m.playerId},
+                  data-player=${m.joueurNom},
+                  data-personnage=${m.personnageNom},
+                  data-capacite=${m.capaciteLabel}"></div>
+</div>
+
+<!-- MODAL OMICRONS TW MANQUANTS -->
+<div class="modal fade tw-match-modal tw-omicron-missing-modal" id="twOmicronMissingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <span class="tw-kicker">Plan Omicron Guerre de territoires</span>
+                    <h5 class="modal-title" id="twOmicronMissingTitle">Omicrons manquants</h5>
+                    <small id="twOmicronMissingSubtitle">Joueurs actuellement dans la guilde</small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <div class="tw-missing-summary">
+                    <article>
+                        <small>Joueurs concernés</small>
+                        <strong id="twOmicronMissingPlayers">0</strong>
+                    </article>
+                    <article>
+                        <small>Omicrons manquants</small>
+                        <strong id="twOmicronMissingCount">0</strong>
+                    </article>
+                </div>
+                <div id="twOmicronMissingList" class="tw-missing-player-list"></div>
+                <div id="twOmicronMissingEmpty" class="tw-missing-empty d-none">
+                    <i class="bi bi-check-circle-fill"></i>
+                    <strong>Tout est complet 🎉</strong>
+                    <span>Aucun Omicron TW manquant pour cette sélection.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL MATCH -->
+<div class="modal fade tw-match-modal" id="twMatchModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <span class="tw-kicker">Détail du résultat final</span>
+                    <h5 class="modal-title" id="twModalOpponent">Adversaire</h5>
+                    <small id="twModalDate">-</small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <div class="tw-modal-result">
+                    <span id="twModalResult" class="tw-result-pill">Résultat</span>
+                    <div class="tw-modal-score">
+                        <strong id="twModalOurScore">0</strong>
+                        <span>–</span>
+                        <strong id="twModalOpponentScore">0</strong>
+                    </div>
+                    <small id="twModalMargin">Écart 0</small>
+                </div>
+                <div class="tw-modal-grid">
+                    <article><small>PG adverse</small><strong id="twModalOpponentGp">-</strong></article>
+                    <article><small>Puissance enregistrée</small><strong id="twModalPower">-</strong></article>
+                    <article><small>Durée enregistrée</small><strong id="twModalDuration">-</strong></article>
+                    <article><small>Type technique</small><strong id="twModalType">-</strong></article>
+                </div>
+                <div class="tw-modal-warning">
+                    <i class="bi bi-info-circle"></i>
+                    <span>« Puissance enregistrée » est affichée telle que fournie par Comlink ; sa sémantique exacte n'est pas extrapolée.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

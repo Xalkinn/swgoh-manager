@@ -10,14 +10,17 @@ public class SynchronisationGuildeService {
     private final SynchronisationGuildeStatusService statusService;
     private final GuildeService guildeService;
     private final TerritoryBattleService territoryBattleService;
+    private final TerritoryWarService territoryWarService;
 
     public SynchronisationGuildeService(
             SynchronisationGuildeStatusService statusService,
             GuildeService guildeService,
-            TerritoryBattleService territoryBattleService) {
+            TerritoryBattleService territoryBattleService,
+            TerritoryWarService territoryWarService) {
         this.statusService = statusService;
         this.guildeService = guildeService;
         this.territoryBattleService = territoryBattleService;
+        this.territoryWarService = territoryWarService;
     }
 
     public void lancerBatch() {
@@ -54,6 +57,17 @@ public class SynchronisationGuildeService {
         } catch (Exception e) {
             // Une erreur TB ne doit pas invalider la synchronisation des joueurs.
             System.err.println("⚠ Historisation TB non effectuée : " + e.getMessage());
+        }
+
+        // Même principe pour les résultats finaux de Guerre de territoires.
+        // recentTerritoryWarResult est un historique de guilde : aucun suivi en
+        // temps réel n'est requis pour conserver les matchs terminés.
+        try {
+            String resultatTw = territoryWarService.synchroniserDepuisComlink();
+            System.out.println("🛡 " + resultatTw);
+        } catch (Exception e) {
+            // Une erreur TW ne doit pas invalider la synchronisation des joueurs.
+            System.err.println("⚠ Historisation TW non effectuée : " + e.getMessage());
         }
 
         guildeService.marquerSynchronisation();
