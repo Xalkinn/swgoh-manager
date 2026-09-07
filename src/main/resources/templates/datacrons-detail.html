@@ -1,0 +1,120 @@
+<div class="datacron-modal-detail">
+    <div class="datacron-modal-summary">
+        <div>
+            <span class="app-kicker">Détail du joueur</span>
+            <h3 th:text="${datacronPage.joueurSelectionneNom}">Joueur</h3>
+            <p>
+                <strong th:text="${datacronPage.datacrons.size()}">0</strong> Datacron(s) ·
+                <strong th:text="${datacronPage.sets.size()}">0</strong> set(s).
+                Clique sur un set pour l'ouvrir.
+            </p>
+        </div>
+    </div>
+
+    <div th:if="${#lists.isEmpty(datacronPage.datacrons)}" class="app-empty datacron-modal-empty">
+        <i class="bi bi-gem"></i>
+        <h3>Aucun Datacron</h3>
+        <p>Le joueur n'a actuellement aucun DTC enregistré. Lance le Batch DTC pour actualiser.</p>
+    </div>
+
+    <div th:unless="${#lists.isEmpty(datacronPage.datacrons)}" class="datacron-detail-layout datacron-modal-layout">
+        <div class="datacron-detail-main">
+            <div th:unless="${#lists.isEmpty(datacronPage.sets)}" class="datacron-set-accordion">
+                <section th:each="set : ${datacronPage.sets}" class="datacron-set-group">
+                    <button type="button"
+                            class="datacron-set-toggle"
+                            aria-expanded="false"
+                            th:attr="aria-controls=|datacron-modal-set-${set.setId}|,data-set-id=${set.setId}">
+                        <span class="datacron-set-toggle-main">
+                            <span class="datacron-set-number" th:text="|Set ${set.setId}|">Set 33</span>
+                            <span class="datacron-set-summary">
+                                <b th:text="${set.total}">0</b> DTC
+                                <span>·</span>
+                                <b th:text="${set.t9Plus}">0</b> T9+
+                                <span th:if="${set.focused > 0}">·</span>
+                                <b th:if="${set.focused > 0}" class="datacron-focused-count" th:text="|${set.focused} Focused|">0 Focused</b>
+                            </span>
+                        </span>
+                        <i class="bi bi-chevron-down datacron-set-chevron" aria-hidden="true"></i>
+                    </button>
+
+                    <div class="datacron-set-panel"
+                         th:id="|datacron-modal-set-${set.setId}|"
+                         hidden>
+                        <div class="datacron-card-grid">
+                            <article th:each="d : ${set.datacrons}" class="datacron-item" th:classappend="${d.focused} ? ' focused' : ''">
+                                <div class="datacron-item-head">
+                                    <div>
+                                        <span class="datacron-set" th:text="|Set ${d.setId}|">Set</span>
+                                        <h3 th:text="|Niveau ${d.niveau}|">Niveau</h3>
+                                    </div>
+                                    <div class="datacron-badges">
+                                        <span th:if="${d.focused}" class="datacron-badge focused"><i class="bi bi-bullseye"></i> Focused</span>
+                                        <span th:if="${d.locked}" class="datacron-badge locked"><i class="bi bi-lock-fill"></i> Verrouillé</span>
+                                        <span class="datacron-badge">Rerolls <strong th:text="${d.rerollCount}">0</strong></span>
+                                    </div>
+                                </div>
+
+                                <div class="datacron-affix-list">
+                                    <div th:each="a : ${d.affixes}" class="datacron-affix" th:classappend="${a.mecanique} ? ' mechanic' : ' stat'">
+                                        <span class="datacron-affix-level" th:text="|T${a.position}|">T1</span>
+                                        <div class="datacron-affix-copy">
+                                            <strong th:if="${a.mecanique}" th:text="${a.titre}">Mécanique Datacron</strong>
+                                            <strong th:unless="${a.mecanique}" th:text="${a.statNom}">Statistique</strong>
+
+                                            <span th:unless="${a.mecanique}" class="datacron-stat-value" th:text="${a.statValeurAffichee}">30 %</span>
+
+                                            <small th:if="${a.mecanique and a.description != null}" class="datacron-ability-description" th:text="${a.description}">Description</small>
+                                            <span th:if="${a.mecanique and a.cibleAffichee != null and !#strings.contains(a.titre, a.cibleAffichee) and (a.description == null or !#strings.contains(a.description, a.cibleAffichee))}" class="datacron-target-label">
+                                                <i class="bi bi-crosshair"></i>
+                                                <span th:text="${a.cibleAffichee}">Cible</span>
+                                            </span>
+                                            <span th:if="${!a.mecanique and a.tagsAffiches != null}" class="datacron-target-label" th:text="${a.tagsAffiches}">Catégorie</span>
+
+                                            <details class="datacron-tech-details">
+                                                <summary>Détails techniques</summary>
+                                                <div class="datacron-tech-grid">
+                                                    <span th:if="${a.abilityId != null}"><b>Ability</b><code th:text="${a.abilityId}">ability</code></span>
+                                                    <span th:if="${a.targetRule != null}"><b>Target</b><code th:text="${a.targetRule}">target</code></span>
+                                                    <span th:if="${a.statType != null}"><b>Stat ID</b><code th:text="${a.statType}">0</code></span>
+                                                    <span th:if="${a.statValue != null}"><b>Valeur brute</b><code th:text="${a.statValue}">0</code></span>
+                                                </div>
+                                            </details>
+                                        </div>
+                                        <div class="datacron-affix-relic" th:if="${a.requiredRelicTier > 0}">
+                                            <small>Relique</small><strong th:text="${a.requiredRelicTier}">0</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <details class="datacron-card-tech">
+                                    <summary>Informations du DTC</summary>
+                                    <div class="datacron-tech-grid">
+                                        <span><b>ID</b><code th:text="${d.datacronId}">id</code></span>
+                                        <span th:if="${d.templateId != null}"><b>Template</b><code th:text="${d.templateId}">template</code></span>
+                                    </div>
+                                </details>
+                            </article>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <aside class="datacron-stats-card datacron-modal-stats">
+            <div class="datacron-modal-stats-head">
+                <i class="bi bi-graph-up"></i>
+                <div><h4>Stats cumulées</h4><p>Bonus sur tous les DTC du joueur.</p></div>
+            </div>
+            <div th:if="${#lists.isEmpty(datacronPage.stats)}" class="app-empty compact-empty">
+                <span>Aucune statistique détectée.</span>
+            </div>
+            <div th:unless="${#lists.isEmpty(datacronPage.stats)}" class="datacron-stat-list">
+                <div th:each="s : ${datacronPage.stats}" class="datacron-stat-row">
+                    <div><strong th:text="${s.nom}">Stat</strong><small th:text="|${s.occurrences} affixe(s)|">0</small></div>
+                    <strong class="datacron-stat-total" th:text="${s.valeurAffichee}">0 %</strong>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>

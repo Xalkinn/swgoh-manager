@@ -20,10 +20,10 @@ import tools.jackson.databind.json.JsonMapper;
 import fr.xalkinn.swgohmanager.config.SwgohProperties;
 
 /**
- * Client Game Data minimal pour le catalogue Omicron.
+ * Client Game Data en streaming pour les catalogues Omicron et Datacron.
  *
  * On ne charge jamais le JSON complet en mémoire : les segments /data sont
- * lus en streaming et seules les collections utiles (skill / units) sont
+ * lus en streaming et seules les collections utiles (skill / units / Datacrons) sont
  * désérialisées.
  */
 @Component
@@ -66,6 +66,26 @@ public class SwgohGameDataClient {
 
     public List<GameUnit> getUnits(String version) throws Exception {
         return streamUnits(version);
+    }
+
+    /**
+     * Lit le segment 4 Game Data et n'en conserve que les définitions DTC.
+     */
+    public DatacronGameData getDatacrons(String version) throws Exception {
+        try (InputStream in = ouvrirSegment(version, 4)) {
+            return extraireDatacrons(in);
+        }
+    }
+
+    /**
+     * Les descriptions des mécaniques DTC sont des AbilityDefinitions.
+     * Dans les segments Comlink, ces définitions sont exposées dans le segment 2
+     * (et non le segment 1 qui contient notamment les SkillDefinitions).
+     */
+    public List<GameAbility> getDatacronAbilities(String version) throws Exception {
+        try (InputStream in = ouvrirSegment(version, 2)) {
+            return extraireDatacronAbilities(in);
+        }
     }
 
     /**
@@ -288,6 +308,220 @@ public class SwgohGameDataClient {
         return ref;
     }
 
+    private DatacronGameData extraireDatacrons(InputStream in) throws IOException {
+        List<GameDatacronTemplate> templates = new ArrayList<>();
+        List<GameDatacronAffixTemplateSet> affixSets = new ArrayList<>();
+
+        try (JsonParser parser = jsonMapper.createParser(in)) {
+            verifierDebutObjet(parser);
+
+            while (parser.nextToken() != JsonToken.END_OBJECT) {
+                String champ = parser.currentName();
+                JsonToken valeur = parser.nextToken();
+
+                if ("datacronTemplate".equals(champ) && valeur == JsonToken.START_ARRAY) {
+                    while (parser.nextToken() != JsonToken.END_ARRAY) {
+                        if (parser.currentToken() == JsonToken.START_OBJECT) {
+                            templates.add(lireDatacronTemplate(parser));
+                        } else {
+                            parser.skipChildren();
+                        }
+                    }
+                } else if ("datacronAffixTemplateSet".equals(champ) && valeur == JsonToken.START_ARRAY) {
+                    while (parser.nextToken() != JsonToken.END_ARRAY) {
+                        if (parser.currentToken() == JsonToken.START_OBJECT) {
+                            affixSets.add(lireDatacronAffixTemplateSet(parser));
+                        } else {
+                            parser.skipChildren();
+                        }
+                    }
+                } else {
+                    parser.skipChildren();
+                }
+            }
+        }
+
+        return new DatacronGameData(templates, affixSets);
+    }
+
+    private GameDatacronTemplate lireDatacronTemplate(JsonParser parser) throws IOException {
+        GameDatacronTemplate template = new GameDatacronTemplate();
+        List<GameDatacronTier> tiers = new ArrayList<>();
+
+        while (parser.nextToken() != JsonToken.END_OBJECT) {
+            String champ = parser.currentName();
+            JsonToken valeur = parser.nextToken();
+            if (champ == null) {
+                parser.skipChildren();
+                continue;
+            }
+
+            switch (champ) {
+                case "id" -> template.setId(lireTexte(parser, valeur));
+                case "setId" -> template.setSetId(lireEntier(parser, valeur));
+                case "referenceTemplateId" -> template.setReferenceTemplateId(lireTexte(parser, valeur));
+                case "tier" -> {
+                    if (valeur == JsonToken.START_ARRAY) {
+                        while (parser.nextToken() != JsonToken.END_ARRAY) {
+                            if (parser.currentToken() == JsonToken.START_OBJECT) {
+                                tiers.add(lireDatacronTier(parser));
+                            } else {
+                                parser.skipChildren();
+                            }
+                        }
+                    } else {
+                        parser.skipChildren();
+                    }
+                }
+                default -> parser.skipChildren();
+            }
+        }
+
+        template.setTier(tiers);
+        return template;
+    }
+
+    private GameDatacronTier lireDatacronTier(JsonParser parser) throws IOException {
+        GameDatacronTier tier = new GameDatacronTier();
+        while (parser.nextToken() != JsonToken.END_OBJECT) {
+            String champ = parser.currentName();
+            JsonToken valeur = parser.nextToken();
+            if (champ == null) {
+                parser.skipChildren();
+                continue;
+            }
+            switch (champ) {
+                case "affixTemplateSetId" -> tier.setAffixTemplateSetId(lireTexte(parser, valeur));
+                case "initialAffixTemplateSetId" -> tier.setInitialAffixTemplateSetId(lireTexte(parser, valeur));
+                case "requiredUnitTier" -> tier.setRequiredUnitTier(lireEntier(parser, valeur));
+                case "requiredRelicTier" -> tier.setRequiredRelicTier(lireEntier(parser, valeur));
+                default -> parser.skipChildren();
+            }
+        }
+        return tier;
+    }
+
+    private GameDatacronAffixTemplateSet lireDatacronAffixTemplateSet(JsonParser parser) throws IOException {
+        GameDatacronAffixTemplateSet set = new GameDatacronAffixTemplateSet();
+        List<GameDatacronAffix> affixes = new ArrayList<>();
+
+        while (parser.nextToken() != JsonToken.END_OBJECT) {
+            String champ = parser.currentName();
+            JsonToken valeur = parser.nextToken();
+            if (champ == null) {
+                parser.skipChildren();
+                continue;
+            }
+            switch (champ) {
+                case "id" -> set.setId(lireTexte(parser, valeur));
+                case "affix" -> {
+                    if (valeur == JsonToken.START_ARRAY) {
+                        while (parser.nextToken() != JsonToken.END_ARRAY) {
+                            if (parser.currentToken() == JsonToken.START_OBJECT) {
+                                affixes.add(lireDatacronAffix(parser));
+                            } else {
+                                parser.skipChildren();
+                            }
+                        }
+                    } else {
+                        parser.skipChildren();
+                    }
+                }
+                default -> parser.skipChildren();
+            }
+        }
+
+        set.setAffix(affixes);
+        return set;
+    }
+
+    private GameDatacronAffix lireDatacronAffix(JsonParser parser) throws IOException {
+        GameDatacronAffix affix = new GameDatacronAffix();
+        List<String> tags = new ArrayList<>();
+
+        while (parser.nextToken() != JsonToken.END_OBJECT) {
+            String champ = parser.currentName();
+            JsonToken valeur = parser.nextToken();
+            if (champ == null) {
+                parser.skipChildren();
+                continue;
+            }
+            switch (champ) {
+                case "tag" -> {
+                    if (valeur == JsonToken.START_ARRAY) {
+                        while (parser.nextToken() != JsonToken.END_ARRAY) {
+                            if (parser.currentToken().isScalarValue()) {
+                                String tag = parser.getValueAsString();
+                                if (tag != null && !tag.isBlank()) tags.add(tag);
+                            } else {
+                                parser.skipChildren();
+                            }
+                        }
+                    } else {
+                        parser.skipChildren();
+                    }
+                }
+                case "targetRule" -> affix.setTargetRule(lireTexte(parser, valeur));
+                case "abilityId" -> affix.setAbilityId(lireTexte(parser, valeur));
+                case "statType" -> affix.setStatType(lireEntier(parser, valeur));
+                case "statValue" -> affix.setStatValue(lireTexte(parser, valeur));
+                case "requiredUnitTier" -> affix.setRequiredUnitTier(lireEntier(parser, valeur));
+                case "requiredRelicTier" -> affix.setRequiredRelicTier(lireEntier(parser, valeur));
+                case "scopeIcon" -> affix.setScopeIcon(lireTexte(parser, valeur));
+                default -> parser.skipChildren();
+            }
+        }
+
+        affix.setTag(tags);
+        return affix;
+    }
+
+    private List<GameAbility> extraireDatacronAbilities(InputStream in) throws IOException {
+        List<GameAbility> resultat = new ArrayList<>();
+
+        try (JsonParser parser = jsonMapper.createParser(in)) {
+            verifierDebutObjet(parser);
+            while (parser.nextToken() != JsonToken.END_OBJECT) {
+                String champ = parser.currentName();
+                JsonToken valeur = parser.nextToken();
+                if ("ability".equals(champ) && valeur == JsonToken.START_ARRAY) {
+                    while (parser.nextToken() != JsonToken.END_ARRAY) {
+                        if (parser.currentToken() == JsonToken.START_OBJECT) {
+                            GameAbility ability = lireAbility(parser);
+                            if (ability.getId() != null && ability.getId().startsWith("datacron_")) {
+                                resultat.add(ability);
+                            }
+                        } else {
+                            parser.skipChildren();
+                        }
+                    }
+                } else {
+                    parser.skipChildren();
+                }
+            }
+        }
+        return resultat;
+    }
+
+    private GameAbility lireAbility(JsonParser parser) throws IOException {
+        GameAbility ability = new GameAbility();
+        while (parser.nextToken() != JsonToken.END_OBJECT) {
+            String champ = parser.currentName();
+            JsonToken valeur = parser.nextToken();
+            if (champ == null) {
+                parser.skipChildren();
+                continue;
+            }
+            switch (champ) {
+                case "id" -> ability.setId(lireTexte(parser, valeur));
+                case "nameKey" -> ability.setNameKey(lireTexte(parser, valeur));
+                case "descKey" -> ability.setDescKey(lireTexte(parser, valeur));
+                default -> parser.skipChildren();
+            }
+        }
+        return ability;
+    }
+
     private void verifierDebutObjet(JsonParser parser) throws IOException {
         if (parser.nextToken() != JsonToken.START_OBJECT) {
             throw new IOException("Réponse /data inattendue : objet JSON attendu.");
@@ -411,6 +645,99 @@ public class SwgohGameDataClient {
         public void setSkillReferenceList(List<SkillReference> skillReferenceList) {
             this.skillReferenceList = skillReferenceList;
         }
+    }
+
+    public static class DatacronGameData {
+        private final List<GameDatacronTemplate> templates;
+        private final List<GameDatacronAffixTemplateSet> affixTemplateSets;
+
+        public DatacronGameData(
+                List<GameDatacronTemplate> templates,
+                List<GameDatacronAffixTemplateSet> affixTemplateSets) {
+            this.templates = templates == null ? List.of() : templates;
+            this.affixTemplateSets = affixTemplateSets == null ? List.of() : affixTemplateSets;
+        }
+
+        public List<GameDatacronTemplate> getTemplates() { return templates; }
+        public List<GameDatacronAffixTemplateSet> getAffixTemplateSets() { return affixTemplateSets; }
+    }
+
+    public static class GameDatacronTemplate {
+        private String id;
+        private Integer setId;
+        private String referenceTemplateId;
+        private List<GameDatacronTier> tier = List.of();
+        public String getId() { return id; }
+        public void setId(String id) { this.id = id; }
+        public Integer getSetId() { return setId; }
+        public void setSetId(Integer setId) { this.setId = setId; }
+        public String getReferenceTemplateId() { return referenceTemplateId; }
+        public void setReferenceTemplateId(String referenceTemplateId) { this.referenceTemplateId = referenceTemplateId; }
+        public List<GameDatacronTier> getTier() { return tier == null ? List.of() : tier; }
+        public void setTier(List<GameDatacronTier> tier) { this.tier = tier; }
+    }
+
+    public static class GameDatacronTier {
+        private String affixTemplateSetId;
+        private String initialAffixTemplateSetId;
+        private Integer requiredUnitTier;
+        private Integer requiredRelicTier;
+        public String getAffixTemplateSetId() { return affixTemplateSetId; }
+        public void setAffixTemplateSetId(String affixTemplateSetId) { this.affixTemplateSetId = affixTemplateSetId; }
+        public String getInitialAffixTemplateSetId() { return initialAffixTemplateSetId; }
+        public void setInitialAffixTemplateSetId(String initialAffixTemplateSetId) { this.initialAffixTemplateSetId = initialAffixTemplateSetId; }
+        public Integer getRequiredUnitTier() { return requiredUnitTier; }
+        public void setRequiredUnitTier(Integer requiredUnitTier) { this.requiredUnitTier = requiredUnitTier; }
+        public Integer getRequiredRelicTier() { return requiredRelicTier; }
+        public void setRequiredRelicTier(Integer requiredRelicTier) { this.requiredRelicTier = requiredRelicTier; }
+    }
+
+    public static class GameDatacronAffixTemplateSet {
+        private String id;
+        private List<GameDatacronAffix> affix = List.of();
+        public String getId() { return id; }
+        public void setId(String id) { this.id = id; }
+        public List<GameDatacronAffix> getAffix() { return affix == null ? List.of() : affix; }
+        public void setAffix(List<GameDatacronAffix> affix) { this.affix = affix; }
+    }
+
+    public static class GameDatacronAffix {
+        private List<String> tag = List.of();
+        private String targetRule;
+        private String abilityId;
+        private Integer statType;
+        private String statValue;
+        private Integer requiredUnitTier;
+        private Integer requiredRelicTier;
+        private String scopeIcon;
+        public List<String> getTag() { return tag == null ? List.of() : tag; }
+        public void setTag(List<String> tag) { this.tag = tag; }
+        public String getTargetRule() { return targetRule; }
+        public void setTargetRule(String targetRule) { this.targetRule = targetRule; }
+        public String getAbilityId() { return abilityId; }
+        public void setAbilityId(String abilityId) { this.abilityId = abilityId; }
+        public Integer getStatType() { return statType; }
+        public void setStatType(Integer statType) { this.statType = statType; }
+        public String getStatValue() { return statValue; }
+        public void setStatValue(String statValue) { this.statValue = statValue; }
+        public Integer getRequiredUnitTier() { return requiredUnitTier; }
+        public void setRequiredUnitTier(Integer requiredUnitTier) { this.requiredUnitTier = requiredUnitTier; }
+        public Integer getRequiredRelicTier() { return requiredRelicTier; }
+        public void setRequiredRelicTier(Integer requiredRelicTier) { this.requiredRelicTier = requiredRelicTier; }
+        public String getScopeIcon() { return scopeIcon; }
+        public void setScopeIcon(String scopeIcon) { this.scopeIcon = scopeIcon; }
+    }
+
+    public static class GameAbility {
+        private String id;
+        private String nameKey;
+        private String descKey;
+        public String getId() { return id; }
+        public void setId(String id) { this.id = id; }
+        public String getNameKey() { return nameKey; }
+        public void setNameKey(String nameKey) { this.nameKey = nameKey; }
+        public String getDescKey() { return descKey; }
+        public void setDescKey(String descKey) { this.descKey = descKey; }
     }
 
     public static class SkillReference {

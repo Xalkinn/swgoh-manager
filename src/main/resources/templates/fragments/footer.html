@@ -113,6 +113,37 @@
 
 		setInterval(chargerStatutRoster,2000);
 		chargerStatutRoster();
+
+        function chargerStatutDatacron() {
+            fetch('/api/datacron/status')
+            .then(response => response.json())
+            .then(data => {
+                const etat = document.getElementById("datacronEtat");
+                const etape = document.getElementById("datacronEtape");
+                const progress = document.getElementById("datacronProgress");
+                const percent = document.getElementById("datacronPercent");
+                if (!etat) return;
+                if (data.enCours) {
+                    etat.innerHTML = "En cours";
+                    etat.className = "badge bg-warning";
+                } else if (data.fin != null) {
+                    etat.innerHTML = "Terminé";
+                    etat.className = "badge bg-success";
+                } else {
+                    etat.innerHTML = "Repos";
+                    etat.className = "badge bg-secondary";
+                }
+                if (etape) etape.innerHTML = data.etapeActuelle ?? "-";
+                if (progress) {
+                    progress.style.width = data.pourcentage + "%";
+                    progress.innerHTML = data.pourcentage + "%";
+                }
+                if (percent) percent.innerHTML = data.pourcentage + "%";
+            })
+            .catch(() => {});
+        }
+        setInterval(chargerStatutDatacron, 2000);
+        chargerStatutDatacron();
 		
 		const personnageSelect = document.getElementById("personnageSelect");
 		if (personnageSelect) {
@@ -167,4 +198,5 @@
 	<script th:src="@{/js/tb.js}"></script>
 	<script th:src="@{/js/tw.js}"></script>
 	<script th:src="@{/js/omicrons.js}"></script>
+	<script th:src="@{/js/datacrons.js}"></script>
 </footer>

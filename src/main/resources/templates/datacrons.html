@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body class="app-page datacron-page">
+
+<div th:replace="~{fragments/menu :: menu}"></div>
+
+<main class="app-container">
+    <header class="app-page-header">
+        <div class="app-page-heading">
+            <span class="app-kicker">État courant de la guilde</span>
+            <h1><i class="bi bi-gem me-2"></i>Datacrons</h1>
+            <p>Les données sont mises à jour uniquement par le Batch DTC dédié. Le Batch Roster n'est pas utilisé.</p>
+        </div>
+        <div class="app-header-actions">
+            <a href="/actions/batch-datacron" class="app-primary-btn">
+                <i class="bi bi-arrow-repeat"></i>Lancer le Batch DTC
+            </a>
+            <form method="post" action="/datacrons/catalogue/actualiser" class="datacron-catalogue-form">
+                <button type="submit" class="app-secondary-btn">
+                    <i class="bi bi-database-down"></i>Actualiser le catalogue
+                </button>
+            </form>
+            <button id="themeToggle" class="app-theme-toggle" type="button">
+                <i class="bi bi-moon-stars-fill"></i><span>Mode sombre</span>
+            </button>
+        </div>
+    </header>
+
+    <section class="datacron-kpi-grid">
+        <article class="app-card datacron-kpi">
+            <span class="datacron-kpi-icon"><i class="bi bi-gem"></i></span>
+            <div><small>Total guilde</small><strong th:text="${datacronPage.total}">0</strong></div>
+        </article>
+        <article class="app-card datacron-kpi">
+            <span class="datacron-kpi-icon"><i class="bi bi-stars"></i></span>
+            <div><small>T9+</small><strong th:text="${datacronPage.totalT9Plus}">0</strong></div>
+        </article>
+        <article class="app-card datacron-kpi">
+            <span class="datacron-kpi-icon"><i class="bi bi-bullseye"></i></span>
+            <div><small>Focused</small><strong th:text="${datacronPage.totalFocused}">0</strong></div>
+        </article>
+        <article class="app-card datacron-kpi">
+            <span class="datacron-kpi-icon"><i class="bi bi-people-fill"></i></span>
+            <div><small>Joueurs avec DTC</small><strong th:text="${datacronPage.joueursAvecDatacrons}">0</strong></div>
+        </article>
+    </section>
+
+    <section class="app-card datacron-catalogue-state">
+        <div>
+            <span class="datacron-catalogue-label"><i class="bi bi-database-check"></i> Catalogue Game Data</span>
+            <strong th:text="${catalogueDtc.gameVersion != null ? catalogueDtc.gameVersion : 'Non chargé'}">Non chargé</strong>
+            <small th:text="${catalogueDtc.dateMaj != null ? 'Dernière MAJ : ' + catalogueDtc.dateMaj : 'Clique sur Actualiser le catalogue pour charger les traductions françaises.'}">-</small>
+        </div>
+        <div class="datacron-catalogue-counts">
+            <span><b th:text="${catalogueDtc.templates}">0</b> templates</span>
+            <span><b th:text="${catalogueDtc.affixSets}">0</b> jeux d'affixes</span>
+            <span><b th:text="${catalogueDtc.abilities}">0</b> mécaniques</span>
+        </div>
+        <span th:if="${catalogueMessage == 'ok'}" class="datacron-catalogue-message success"><i class="bi bi-check-circle-fill"></i> Catalogue actualisé</span>
+        <span th:if="${catalogueMessage == 'erreur'}" class="datacron-catalogue-message error"><i class="bi bi-exclamation-triangle-fill"></i> Échec de l'actualisation</span>
+        <span th:if="${catalogueDtc.gameVersion != null and catalogueDtc.abilities == 0 and catalogueMessage != 'erreur'}" class="datacron-catalogue-message error"><i class="bi bi-translate"></i> Traductions absentes : actualise le catalogue</span>
+    </section>
+
+    <section class="app-card datacron-roster-card">
+        <div class="app-card-header datacron-section-header">
+            <div class="app-card-title">
+                <span class="app-card-icon blue"><i class="bi bi-bar-chart-steps"></i></span>
+                <div>
+                    <h2>Profondeur DTC</h2>
+                    <p>Nombre de Datacrons atteignant chaque palier pour les membres actuels.</p>
+                </div>
+            </div>
+            <div class="datacron-search">
+                <i class="bi bi-search"></i>
+                <input id="datacronPlayerSearch" type="search" placeholder="Rechercher un joueur…" autocomplete="off">
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="datacron-player-table" id="datacronPlayerTable">
+                <thead>
+                <tr>
+                    <th>Joueur</th><th>Total</th><th>T3+</th><th>T6+</th><th>T9+</th><th>T12+</th><th>T15+</th><th>Focused</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="j : ${datacronPage.joueurs}"
+                    th:classappend="${datacronPage.joueurSelectionneId != null and datacronPage.joueurSelectionneId == j.id} ? ' selected' : ''"
+                    th:attr="data-player-name=${j.nom}">
+                    <td><a class="datacron-player-link"
+                           th:href="@{/datacrons(joueurId=${j.id})}"
+                           th:attr="data-player-id=${j.id},data-player-name=${j.nom},data-detail-url=@{/datacrons/joueur/{id}(id=${j.id})}"
+                           th:text="${j.nom}">Joueur</a></td>
+                    <td th:text="${j.total}">0</td>
+                    <td th:text="${j.t3}">0</td>
+                    <td th:text="${j.t6}">0</td>
+                    <td><strong th:text="${j.t9}">0</strong></td>
+                    <td th:text="${j.t12}">0</td>
+                    <td th:text="${j.t15}">0</td>
+                    <td th:text="${j.focused}">0</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="app-card datacron-help-card">
+        <i class="bi bi-cursor-fill"></i>
+        <div><strong>Sélectionne un joueur</strong><span>Clique sur son nom : ses Datacrons s'ouvrent dans une fenêtre sans quitter le tableau.</span></div>
+    </section>
+
+    <div class="modal fade datacron-player-modal" id="datacronPlayerModal" tabindex="-1" aria-labelledby="datacronPlayerModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <span class="app-kicker">Datacrons du joueur</span>
+                        <h2 class="modal-title" id="datacronPlayerModalTitle">Datacrons</h2>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body" id="datacronPlayerModalBody">
+                    <div class="datacron-modal-loading">
+                        <div class="spinner-border" role="status" aria-hidden="true"></div>
+                        <span>Chargement des Datacrons…</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

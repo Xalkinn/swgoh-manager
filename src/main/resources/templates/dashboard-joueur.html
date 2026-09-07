@@ -101,6 +101,16 @@
                 <small>personnages reliqués</small>
             </div>
         </article>
+
+        <a class="dash-card player-kpi-card player-kpi-link"
+           th:href="@{/datacrons(joueurId=${dashboard.id})}">
+            <div class="heading-icon teal"><i class="bi bi-gem"></i></div>
+            <div class="player-kpi-content">
+                <span>Datacrons</span>
+                <strong th:text="${dashboard.datacronTotal}">0</strong>
+                <small><b th:text="${dashboard.datacronT9Plus}">0</b> T9+ · <b th:text="${dashboard.datacronFocused}">0</b> Focused</small>
+            </div>
+        </a>
     </section>
 
     <!-- OMICRONS + MODS -->

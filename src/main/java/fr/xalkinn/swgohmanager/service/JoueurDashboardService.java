@@ -24,12 +24,15 @@ public class JoueurDashboardService {
 
     private final JdbcTemplate jdbc;
     private final PersonnageDefinitionService personnageDefinitionService;
+    private final DatacronService datacronService;
 
     public JoueurDashboardService(
             JdbcTemplate jdbc,
-            PersonnageDefinitionService personnageDefinitionService) {
+            PersonnageDefinitionService personnageDefinitionService,
+            DatacronService datacronService) {
         this.jdbc = jdbc;
         this.personnageDefinitionService = personnageDefinitionService;
+        this.datacronService = datacronService;
     }
 
     public JoueurDashboard getDashboard(Integer joueurId) {
@@ -50,6 +53,11 @@ public class JoueurDashboardService {
         d.setAllyCode((String) j.get("ally_code"));
         d.setNom((String) j.get("nom"));
         d.setPgPerso(j.get("pg_perso") == null ? 0L : ((Number) j.get("pg_perso")).longValue());
+
+        DatacronService.DatacronStats datacronStats = datacronService.getStatsJoueur(joueurId);
+        d.setDatacronTotal(datacronStats.total());
+        d.setDatacronT9Plus(datacronStats.t9Plus());
+        d.setDatacronFocused(datacronStats.focused());
 
         String playerId = d.getPlayerId();
         String allyCode = d.getAllyCode();

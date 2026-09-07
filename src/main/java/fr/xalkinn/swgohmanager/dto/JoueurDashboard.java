@@ -14,6 +14,9 @@ public class JoueurDashboard {
     private int personnages7Etoiles;
     private int personnagesG13;
     private int personnagesRelique;
+    private int datacronTotal;
+    private int datacronT9Plus;
+    private int datacronFocused;
     private String derniereCapture;
 
     private List<OmicronInfo> omicrons = new ArrayList<>();
@@ -44,6 +47,12 @@ public class JoueurDashboard {
     public void setPersonnagesG13(int personnagesG13) { this.personnagesG13 = personnagesG13; }
     public int getPersonnagesRelique() { return personnagesRelique; }
     public void setPersonnagesRelique(int personnagesRelique) { this.personnagesRelique = personnagesRelique; }
+    public int getDatacronTotal() { return datacronTotal; }
+    public void setDatacronTotal(int datacronTotal) { this.datacronTotal = datacronTotal; }
+    public int getDatacronT9Plus() { return datacronT9Plus; }
+    public void setDatacronT9Plus(int datacronT9Plus) { this.datacronT9Plus = datacronT9Plus; }
+    public int getDatacronFocused() { return datacronFocused; }
+    public void setDatacronFocused(int datacronFocused) { this.datacronFocused = datacronFocused; }
     public String getDerniereCapture() { return derniereCapture; }
     public void setDerniereCapture(String derniereCapture) { this.derniereCapture = derniereCapture; }
     public List<OmicronInfo> getOmicrons() { return omicrons; }

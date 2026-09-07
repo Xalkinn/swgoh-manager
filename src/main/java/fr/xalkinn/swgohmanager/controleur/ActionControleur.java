@@ -4,6 +4,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import fr.xalkinn.swgohmanager.service.BatchDatacronService;
 import fr.xalkinn.swgohmanager.service.BatchOmicronService;
 import fr.xalkinn.swgohmanager.service.BatchRosterService;
 import fr.xalkinn.swgohmanager.service.BatchStatusService;
@@ -15,14 +16,16 @@ public class ActionControleur {
 	
 	private final BatchOmicronService batchOmicronService;
 	private final BatchRosterService batchRosterService;
+	private final BatchDatacronService batchDatacronService;
 	private final SynchronisationGuildeService synchronisationGuildeService;
 
 
     public ActionControleur(BatchOmicronService batchOmicronService, BatchRosterService batchRosterService,
-    		SynchronisationGuildeService synchronisationGuildeService) {
+            BatchDatacronService batchDatacronService, SynchronisationGuildeService synchronisationGuildeService) {
 
         this.batchOmicronService = batchOmicronService;
 		this.batchRosterService = batchRosterService;
+		this.batchDatacronService = batchDatacronService;
 		this.synchronisationGuildeService = synchronisationGuildeService;
 
     }
@@ -42,6 +45,13 @@ public class ActionControleur {
     public String lancerBatchRoster() {
     	System.out.println("🚀 Lancement mise à jour roster");
         batchRosterService.lancerBatch();
+        return "redirect:/";
+    }
+
+    @GetMapping("/batch-datacron")
+    public String lancerBatchDatacron() {
+        System.out.println("🚀 Lancement Batch DTC");
+        batchDatacronService.lancerBatch();
         return "redirect:/";
     }
     

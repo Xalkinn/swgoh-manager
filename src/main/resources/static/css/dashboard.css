@@ -12,6 +12,8 @@
         --blue-soft: #e6f1ff;
         --green: #20a779;
         --green-soft: #e4f7f0;
+        --teal: #159ca5;
+        --teal-soft: #e2f7f8;
 
         --dash-header: #172033;
         --dash-table-head: #f6f7fa;
@@ -108,7 +110,7 @@
     }
 
     .batch-grid {
-        grid-template-columns:repeat(3, 1fr);
+        grid-template-columns:repeat(4, 1fr);
         margin-top:18px;
     }
 
@@ -155,6 +157,7 @@
     .heading-icon.purple { background:var(--purple-soft); color:var(--purple); }
     .heading-icon.blue { background:var(--blue-soft); color:var(--blue); }
     .heading-icon.green { background:var(--green-soft); color:var(--green); }
+    .heading-icon.teal { background:var(--teal-soft); color:var(--teal); }
 
     .equipment-summary {
         display:flex;
@@ -357,6 +360,7 @@
     .orange-btn { background:var(--orange); }
     .blue-btn { background:var(--blue); }
     .green-btn { background:var(--green); }
+    .teal-btn { background:var(--teal); }
     .dark-btn { background:#343b4c; }
 
     .batch-card {
@@ -408,6 +412,10 @@
 
     .modern-progress.blue-progress > div {
         background:linear-gradient(90deg,var(--blue),#72aff1);
+    }
+
+    .modern-progress.teal-progress > div {
+        background:linear-gradient(90deg,var(--teal),#4fd1c5);
     }
 
     .batch-step {

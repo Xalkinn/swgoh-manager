@@ -258,6 +258,11 @@
                 <span>Mise à jour Rosters</span>
             </a>
 
+            <a href="/actions/batch-datacron" class="dash-btn teal-btn">
+                <i class="bi bi-gem"></i>
+                <span>Batch DTC</span>
+            </a>
+
             <a href="/actions/synchronisation-guilde" class="dash-btn blue-btn">
                 <i class="bi bi-people-fill"></i>
                 <span>Mise à jour Joueurs</span>
@@ -335,6 +340,26 @@
             <div class="batch-step">
                 <span>Étape actuelle</span>
                 <strong id="guildeEtape">-</strong>
+            </div>
+        </article>
+
+        <article class="dash-card batch-card">
+            <div class="batch-top">
+                <div class="heading-icon teal"><i class="bi bi-gem"></i></div>
+                <div>
+                    <h2>Batch DTC</h2>
+                    <span>Mise à jour des Datacrons</span>
+                </div>
+                <span id="datacronEtat" class="state-badge">Inconnu</span>
+            </div>
+
+            <div class="batch-percent" id="datacronPercent">0%</div>
+            <div class="modern-progress teal-progress">
+                <div id="datacronProgress" style="width:0%">0%</div>
+            </div>
+            <div class="batch-step">
+                <span>Étape actuelle</span>
+                <strong id="datacronEtape">-</strong>
             </div>
         </article>
     </section>
