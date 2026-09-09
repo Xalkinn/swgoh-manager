@@ -3,6 +3,7 @@ package fr.xalkinn.swgohmanager.service;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -424,12 +425,66 @@ public class TerritoryBattleStatsService {
                 },
                 tbId);
 
+        MissionRow combatJkckZeffo = chargerCombatPrioritaireZeffo(tbId);
+        if (combatJkckZeffo != null) {
+            missions.add(combatJkckZeffo);
+        }
+
+        missions.sort(Comparator
+                .comparingInt(MissionRow::getPhase)
+                .thenComparingInt(MissionRow::getConflict)
+                .thenComparing(MissionRow::isBonus)
+                .thenComparingInt(MissionRow::getCovertNum));
+
         for (MissionRow mission : missions) {
+            if (!mission.isSuiviExact()) {
+                continue;
+            }
             mission.setEchecs(chargerEchecsMission(tbId, mission));
             mission.setNonTentes(chargerNonTentesMission(tbId, mission));
         }
 
         return missions;
+    }
+
+    /**
+     * Ajoute le combat prioritaire Jedi Knight Cal Kestis de Zeffo dans la
+     * section des missions spéciales dès que la zone bonus Zeffo est présente
+     * dans les résultats de la TB.
+     *
+     * Le résultat final Comlink ne publie que les agrégats de zone
+     * strike_attempt / strike_encounter pour les combats classiques. Il ne
+     * fournit pas d'identifiant de mission permettant d'isoler le combat JKCK
+     * des autres combats de Zeffo. On l'affiche donc sans inventer de
+     * tentatives/réussites individuelles.
+     */
+    private MissionRow chargerCombatPrioritaireZeffo(long tbId) {
+        Integer present = jdbc.queryForObject("""
+                SELECT COUNT(*)
+                FROM tb_activite a
+                JOIN tb_score_joueur s ON s.tb_activite_id = a.id
+                WHERE a.territory_battle_id = ?
+                  AND a.phase = 3
+                  AND a.conflict_num = 1
+                  AND a.bonus = 1
+                  AND a.stat_type IN ('strike_attempt', 'strike_encounter', 'summary', 'power')
+                """, Integer.class, tbId);
+
+        if (present == null || present == 0) {
+            return null;
+        }
+
+        MissionRow row = new MissionRow();
+        row.setPhase(3);
+        row.setConflict(1);
+        row.setBonus(true);
+        row.setCovertNum(0);
+        row.setLabel("Jedi Knight Cal Kestis — CM Zeffo (1 023 750 pts)");
+        row.setSuiviExact(false);
+        row.setCombatPrioritaire(true);
+        row.setNote("Combat prioritaire affiché avec les MS. Le résultat final Comlink agrège les combats de Zeffo et ne permet pas d'isoler automatiquement cette mission par joueur.");
+        row.setModalId("tbMission-zeffo-jkck");
+        return row;
     }
 
     /**
@@ -649,7 +704,7 @@ public class TerritoryBattleStatsService {
         String key = phase + "-" + conflict + "-" + bonus + "-" + covert;
         return switch (key) {
             case "1-3-false-1" -> nomMissionPersonnage("QIRA", "Qi'ra");
-            case "2-1-false-1" -> nomMissionPersonnage("JEDIKNIGHTCAL", "Cal Kestis (chevalier Jedi)");
+            case "2-1-false-1" -> nomMissionPersonnage("CEREJUNDA", "Cere Junda") + " + Cal Kestis";
             case "3-1-false-1" -> nomMissionPersonnage("SAWGERRERA", "Saw Gerrera");
             case "3-3-false-1" -> nomMissionPersonnage("THIRDSISTER", "Troisième Sœur (Reva)");
             case "3-3-false-2" -> nomMissionPersonnage("MANDALORBOKATAN", "Bo-Katan (Mandalore)");

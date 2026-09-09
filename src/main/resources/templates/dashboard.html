@@ -42,43 +42,86 @@
     <!-- BANDEAU 1 -->
     <section class="dashboard-grid top-grid">
 
-        <!-- ÉQUIPEMENTS -->
+        <!-- ÉQUIPEMENTS & RELIQUES -->
         <article class="dash-card equipment-card">
-            <div class="card-heading">
+            <div class="card-heading equipment-dashboard-heading">
                 <div class="heading-icon orange"><i class="bi bi-shield-shaded"></i></div>
                 <div>
-                    <h2>Équipements</h2>
-                    <span>Personnages de la guilde</span>
+                    <h2>Équipements & Reliques</h2>
+                    <span>Profondeur du roster de la guilde</span>
                 </div>
+                <button type="button"
+                        class="equipment-detail-link"
+                        data-bs-toggle="modal"
+                        data-bs-target="#dashboardEquipmentModal"
+                        data-equipment-metric="r9Plus"
+                        title="Voir le détail par joueur et par personnage">
+                    Détail <i class="bi bi-arrow-right"></i>
+                </button>
             </div>
 
-            <div class="equipment-summary">
-                <div>
-                    <strong th:text="${stats.nombrePersonnages}">0</strong>
-                    <span>personnages</span>
-                </div>
-                <div class="mini-stat">
-                    <strong th:text="${stats.nombreJoueurs}">0</strong>
-                    <span>joueurs</span>
-                </div>
+            <div class="equipment-metric-grid" th:if="${equipment != null}">
+                <button type="button" class="equipment-metric-tile g13"
+                        data-bs-toggle="modal" data-bs-target="#dashboardEquipmentModal"
+                        data-equipment-metric="g13">
+                    <span>G13</span>
+                    <strong th:text="${equipment.g13}">0</strong>
+                    <small>personnages</small>
+                </button>
+                <button type="button" class="equipment-metric-tile r5"
+                        data-bs-toggle="modal" data-bs-target="#dashboardEquipmentModal"
+                        data-equipment-metric="r5Plus">
+                    <span>R5+</span>
+                    <strong th:text="${equipment.r5Plus}">0</strong>
+                    <small>reliques 5 et +</small>
+                </button>
+                <button type="button" class="equipment-metric-tile r7"
+                        data-bs-toggle="modal" data-bs-target="#dashboardEquipmentModal"
+                        data-equipment-metric="r7Plus">
+                    <span>R7+</span>
+                    <strong th:text="${equipment.r7Plus}">0</strong>
+                    <small>reliques 7 et +</small>
+                </button>
+                <button type="button" class="equipment-metric-tile r9"
+                        data-bs-toggle="modal" data-bs-target="#dashboardEquipmentModal"
+                        data-equipment-metric="r9Plus">
+                    <span>R9+</span>
+                    <strong th:text="${equipment.r9Plus}">0</strong>
+                    <small>hautes reliques</small>
+                </button>
             </div>
 
-            <!-- Ces listes utilisent les données si elles existent dans le modèle.
-                 Si elles ne sont pas encore présentes côté Java, les blocs peuvent
-                 rester cachés grâce à th:if. -->
-            <div class="tier-list" th:if="${equipmentStats != null}">
-                <div class="tier-row" th:each="e : ${equipmentStats}">
-                    <span class="tier-label" th:text="${e.label}">G13 R5</span>
-                    <div class="tier-bar">
-                        <span th:style="'width:' + ${e.percent} + '%'"></span>
+            <div class="equipment-distribution" th:if="${equipment != null and equipment.g13 > 0}">
+                <div class="equipment-section-title">
+                    <span>Répartition des personnages G13</span>
+                    <small><strong th:text="${equipment.r10}">0</strong> R10</small>
+                </div>
+                <div class="equipment-relic-row" th:each="bucket : ${equipment.distribution}">
+                    <span class="equipment-relic-label" th:text="${bucket.label}">R7–R8</span>
+                    <div class="equipment-relic-bar" aria-hidden="true">
+                        <span th:classappend="${bucket.code}"
+                              th:style="${'width:' + bucket.percent + '%'}" ></span>
                     </div>
-                    <strong th:text="${e.count}">0</strong>
+                    <strong th:text="${bucket.count}">0</strong>
+                    <small th:text="${bucket.percent} + '%'">0%</small>
                 </div>
             </div>
 
-            <div class="empty-feature" th:unless="${equipmentStats != null}">
-                <i class="bi bi-bar-chart-line"></i>
-                <span>Répartition Gear / Reliques à venir</span>
+            <div class="equipment-progress" th:if="${equipment != null and equipment.progressionDisponible}">
+                <div class="equipment-progress-title">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span>Depuis le dernier Batch Roster</span>
+                </div>
+                <div class="equipment-progress-grid">
+                    <div><span>G13</span><strong th:text="${'+' + equipment.nouveauxG13}">+0</strong></div>
+                    <div><span>R7+</span><strong th:text="${'+' + equipment.nouveauxR7Plus}">+0</strong></div>
+                    <div><span>R9+</span><strong th:text="${'+' + equipment.nouveauxR9Plus}">+0</strong></div>
+                </div>
+            </div>
+
+            <div class="empty-feature" th:if="${equipment == null or equipment.g13 == 0}">
+                <i class="bi bi-shield-exclamation"></i>
+                <span>Aucune extraction Roster exploitable pour le moment</span>
             </div>
         </article>
 
@@ -419,6 +462,130 @@
     </section>
 
 </main>
+
+<!-- DÉTAIL ÉQUIPEMENTS & RELIQUES -->
+<div class="modal fade dashboard-equipment-modal"
+     id="dashboardEquipmentModal"
+     tabindex="-1"
+     aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <span class="dashboard-equipment-modal-kicker">Profondeur du roster</span>
+                    <h5 class="modal-title">Équipements & Reliques</h5>
+                    <p>
+                        Dernière extraction Roster terminée
+                        <span th:if="${equipment != null and equipment.extractionActuelle != null}">
+                            · #<strong th:text="${equipment.extractionActuelle}">0</strong>
+                        </span>
+                        · tri <strong id="equipmentModalMetricLabel">R9+</strong>
+                    </p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+
+            <div class="modal-body" th:if="${equipment != null}">
+                <div class="equipment-modal-toolbar">
+                    <div class="equipment-modal-metrics" role="group" aria-label="Choisir le seuil de tri">
+                        <button type="button" class="equipment-filter-btn" data-equipment-sort="g13">G13</button>
+                        <button type="button" class="equipment-filter-btn" data-equipment-sort="r5Plus">R5+</button>
+                        <button type="button" class="equipment-filter-btn" data-equipment-sort="r7Plus">R7+</button>
+                        <button type="button" class="equipment-filter-btn active" data-equipment-sort="r9Plus">R9+</button>
+                        <button type="button" class="equipment-filter-btn" data-equipment-sort="r10">R10</button>
+                    </div>
+                    <label class="equipment-search">
+                        <i class="bi bi-search"></i>
+                        <input id="equipmentSearch" type="search" placeholder="Rechercher un joueur ou un personnage…" autocomplete="off">
+                    </label>
+                </div>
+
+                <ul class="nav nav-tabs equipment-tabs" id="equipmentTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="equipmentPlayersTabButton" data-bs-toggle="tab"
+                                data-bs-target="#equipmentPlayersTab" type="button" role="tab">
+                            <i class="bi bi-people-fill"></i> Par joueur
+                            <span th:text="${#lists.size(equipment.joueurs)}">0</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="equipmentCharactersTabButton" data-bs-toggle="tab"
+                                data-bs-target="#equipmentCharactersTab" type="button" role="tab">
+                            <i class="bi bi-person-badge-fill"></i> Par personnage
+                            <span th:text="${#lists.size(equipment.personnages)}">0</span>
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content equipment-tab-content">
+                    <div class="tab-pane fade show active" id="equipmentPlayersTab" role="tabpanel">
+                        <div class="equipment-table-wrap">
+                            <table class="equipment-detail-table" id="equipmentPlayersTable">
+                                <thead>
+                                <tr>
+                                    <th>Joueur</th>
+                                    <th data-equipment-column="g13">G13</th>
+                                    <th data-equipment-column="r5Plus">R5+</th>
+                                    <th data-equipment-column="r7Plus">R7+</th>
+                                    <th data-equipment-column="r9Plus">R9+</th>
+                                    <th data-equipment-column="r10">R10</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="j : ${equipment.joueurs}"
+                                    th:attr="data-name=${j.nom},data-g13=${j.g13},data-r5-plus=${j.r5Plus},data-r7-plus=${j.r7Plus},data-r9-plus=${j.r9Plus},data-r10=${j.r10}">
+                                    <td>
+                                        <a class="equipment-player-link" th:href="@{/dashboard/joueur/{id}(id=${j.joueurId})}">
+                                            <strong th:text="${j.nom}">Joueur</strong>
+                                            <small>Voir le dashboard joueur <i class="bi bi-box-arrow-up-right"></i></small>
+                                        </a>
+                                    </td>
+                                    <td data-equipment-column="g13" th:text="${j.g13}">0</td>
+                                    <td data-equipment-column="r5Plus" th:text="${j.r5Plus}">0</td>
+                                    <td data-equipment-column="r7Plus" th:text="${j.r7Plus}">0</td>
+                                    <td data-equipment-column="r9Plus" th:text="${j.r9Plus}">0</td>
+                                    <td data-equipment-column="r10" th:text="${j.r10}">0</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="tab-pane fade" id="equipmentCharactersTab" role="tabpanel">
+                        <div class="equipment-table-wrap">
+                            <table class="equipment-detail-table" id="equipmentCharactersTable">
+                                <thead>
+                                <tr>
+                                    <th>Personnage</th>
+                                    <th data-equipment-column="g13">G13</th>
+                                    <th data-equipment-column="r5Plus">R5+</th>
+                                    <th data-equipment-column="r7Plus">R7+</th>
+                                    <th data-equipment-column="r9Plus">R9+</th>
+                                    <th data-equipment-column="r10">R10</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="p : ${equipment.personnages}"
+                                    th:attr="data-name=${p.nom},data-g13=${p.g13},data-r5-plus=${p.r5Plus},data-r7-plus=${p.r7Plus},data-r9-plus=${p.r9Plus},data-r10=${p.r10}">
+                                    <td>
+                                        <strong th:text="${p.nom}">Personnage</strong>
+                                        <small class="equipment-base-id" th:text="${p.baseId}">BASE_ID</small>
+                                    </td>
+                                    <td data-equipment-column="g13" th:text="${p.g13}">0</td>
+                                    <td data-equipment-column="r5Plus" th:text="${p.r5Plus}">0</td>
+                                    <td data-equipment-column="r7Plus" th:text="${p.r7Plus}">0</td>
+                                    <td data-equipment-column="r9Plus" th:text="${p.r9Plus}">0</td>
+                                    <td data-equipment-column="r10" th:text="${p.r10}">0</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- DÉTAIL DES OMICRONS PAR MODE -->
 <div th:each="mode : ${omicronModeDetails}"

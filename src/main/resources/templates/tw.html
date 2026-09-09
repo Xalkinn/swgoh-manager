@@ -14,6 +14,14 @@
             <p>Historique des matchs terminés, tendances de guilde et préparation du roster pour les prochaines TW.</p>
         </div>
         <div class="tw-header-actions">
+            <!-- Parti TW Live peut etre plus tard
+			<form action="/tw/live/diagnostic" method="post">
+                <button class="tw-live-btn" type="submit" title="Capture la réponse /guild actuelle sans modifier le roster">
+                    <i class="bi bi-broadcast-pin"></i>
+                    Diagnostic TW Live
+                </button>
+            </form>
+			-->
             <form action="/tw/importer" method="post">
                 <button class="tw-import-btn" type="submit">
                     <i class="bi bi-cloud-arrow-down-fill"></i>
@@ -32,6 +40,12 @@
     <div th:if="${twErreur}" class="alert alert-danger tw-alert">
         <i class="bi bi-exclamation-triangle-fill"></i><span th:text="${twErreur}">Erreur</span>
     </div>
+    <div th:if="${twDiagnosticMessage}" class="alert alert-info tw-alert">
+        <i class="bi bi-broadcast-pin"></i><span th:text="${twDiagnosticMessage}">Diagnostic terminé</span>
+    </div>
+    <div th:if="${twDiagnosticErreur}" class="alert alert-danger tw-alert">
+        <i class="bi bi-exclamation-triangle-fill"></i><span th:text="${twDiagnosticErreur}">Erreur diagnostic</span>
+    </div>
 
     <section class="tw-info-note dash-card">
         <i class="bi bi-info-circle-fill"></i>
@@ -44,6 +58,110 @@
         </div>
     </section>
 
+    <!-- DIAGNOSTIC TW LIVE : snapshot brut du /guild, volontairement séparé de l'historique final
+    <section th:if="${twLiveDiagnostic != null}" class="dash-card tw-live-card">
+        <div class="tw-section-heading tw-live-heading">
+            <div>
+                <span class="tw-kicker">TW LIVE · DIAGNOSTIC</span>
+                <h2><i class="bi bi-activity"></i> Ce que Comlink renvoie réellement maintenant</h2>
+                <p>
+                    Snapshot du
+                    <strong th:text="${twLiveDiagnostic.capturedAt != null ? #temporals.format(twLiveDiagnostic.capturedAt, 'dd/MM/yyyy à HH:mm:ss') : '-'}">-</strong>
+                    via <code th:text="${twLiveDiagnostic.source}">COMLINK /guild</code>.
+                </p>
+            </div>
+            <span class="tw-live-status"
+                  th:classappend="${twLiveDiagnostic.statusItemCount > 0} ? ' live' : (${twLiveDiagnostic.statusKeyFound} ? ' empty' : ' missing')">
+                <i th:class="${twLiveDiagnostic.statusItemCount > 0} ? 'bi bi-broadcast-pin' : (${twLiveDiagnostic.statusKeyFound} ? 'bi bi-dash-circle' : 'bi bi-question-circle')"></i>
+                <span th:if="${twLiveDiagnostic.statusItemCount > 0}" th:text="|${twLiveDiagnostic.statusItemCount} donnée(s) TW Live|">TW Live détectée</span>
+                <span th:if="${twLiveDiagnostic.statusItemCount == 0 && twLiveDiagnostic.statusKeyFound}">territoryWarStatus vide</span>
+                <span th:if="${!twLiveDiagnostic.statusKeyFound}">territoryWarStatus absent</span>
+            </span>
+        </div>
+
+        <div class="tw-live-kpis">
+            <article>
+                <small>Clé territoryWarStatus</small>
+                <strong th:text="${twLiveDiagnostic.statusKeyFound ? 'Présente' : 'Absente'}">Absente</strong>
+                <span th:text="|${twLiveDiagnostic.statusItemCount} élément(s)|">0 élément</span>
+            </article>
+            <article>
+                <small>Résultats TW récents</small>
+                <strong th:text="${twLiveDiagnostic.recentResultCount}">0</strong>
+                <span>recentTerritoryWarResult</span>
+            </article>
+            <article>
+                <small>Membres visibles</small>
+                <strong th:text="${twLiveDiagnostic.memberCount}">0</strong>
+                <span>contrôle de cohérence /guild</span>
+            </article>
+            <article>
+                <small>Taille du JSON brut</small>
+                <strong th:text="${twLiveDiagnostic.rawSizeLabel}">0 Ko</strong>
+                <span>snapshot conservé en BDD</span>
+            </article>
+        </div>
+
+        <div th:if="${twLiveDiagnostic.statusItemCount > 0}" class="tw-live-verdict success">
+            <i class="bi bi-check-circle-fill"></i>
+            <div>
+                <strong>Données live détectées.</strong>
+                <span>On pourra maintenant inspecter cette structure pour construire les zones, les combats et les fails.</span>
+            </div>
+        </div>
+        <div th:if="${twLiveDiagnostic.statusItemCount == 0 && twLiveDiagnostic.statusKeyFound}" class="tw-live-verdict warning">
+            <i class="bi bi-exclamation-circle-fill"></i>
+            <div>
+                <strong>La structure existe, mais elle est vide dans cette réponse.</strong>
+                <span>Le JSON brut permet de vérifier si une autre structure contient malgré tout des informations exploitables.</span>
+            </div>
+        </div>
+        <div th:if="${!twLiveDiagnostic.statusKeyFound}" class="tw-live-verdict neutral">
+            <i class="bi bi-info-circle-fill"></i>
+            <div>
+                <strong>Pas de territoryWarStatus dans le /guild reçu.</strong>
+                <span>Le snapshot reste utile : les chemins candidats ci-dessous nous diront s'il existe une autre donnée liée à la TW avant d'envisager une source authentifiée.</span>
+            </div>
+        </div>
+
+        <div class="tw-live-details-grid">
+            <details class="tw-live-details">
+                <summary>
+                    <span><i class="bi bi-diagram-3-fill"></i> Chemins candidats TW / combat</span>
+                    <strong th:text="${twLiveDiagnostic.candidatePaths.size()}">0</strong>
+                </summary>
+                <div class="tw-live-details-body">
+                    <div th:if="${twLiveDiagnostic.candidatePaths.isEmpty()}" class="tw-live-empty">Aucun chemin candidat détecté.</div>
+                    <code th:each="path : ${twLiveDiagnostic.candidatePaths}" th:text="${path}">$.guild.territoryWarStatus</code>
+                </div>
+            </details>
+
+            <details class="tw-live-details">
+                <summary>
+                    <span><i class="bi bi-braces"></i> Clés principales renvoyées</span>
+                    <strong th:text="${twLiveDiagnostic.topLevelKeys.size()}">0</strong>
+                </summary>
+                <div class="tw-live-details-body tw-live-key-list">
+                    <span th:each="key : ${twLiveDiagnostic.topLevelKeys}" th:text="${key}">member</span>
+                </div>
+            </details>
+        </div>
+
+        <details class="tw-live-details tw-live-json-details">
+            <summary>
+                <span><i class="bi bi-filetype-json"></i> Voir le JSON brut capturé</span>
+                <a class="tw-live-open-json"
+                   th:href="@{/tw/live/diagnostic/{id}/json(id=${twLiveDiagnostic.id})}"
+                   target="_blank" rel="noopener" onclick="event.stopPropagation();">
+                    Ouvrir seul <i class="bi bi-box-arrow-up-right"></i>
+                </a>
+            </summary>
+            <div class="tw-live-json-shell">
+                <pre th:text="${twLiveDiagnostic.rawJson}">{}</pre>
+            </div>
+        </details>
+    </section>
+	-->
     <!-- HISTORIQUE VIDE -->
     <section th:if="${twPage.historique.isEmpty()}" class="dash-card tw-empty-state">
         <i class="bi bi-shield-x"></i>
@@ -305,11 +423,11 @@
         <span class="tw-next-icon"><i class="bi bi-binoculars-fill"></i></span>
         <div>
             <span class="tw-kicker">Prochaine évolution</span>
-            <h2>Analyse d'adversaire pendant la phase de préparation</h2>
+            <h2>Passer du résultat final au suivi détaillé des combats</h2>
             <p>
-                Le résultat final ne contient pas les attaques individuelles. La prochaine étape sera d'exploiter
-                <code>territoryWarStatus</code> lorsqu'une TW est active afin de comparer les rosters des deux guildes,
-                sans avoir besoin de surveiller la guerre en continu.
+                Le résultat final ne contient pas les attaques individuelles. Le bouton <strong>Diagnostic TW Live</strong>
+                capture maintenant la réponse réellement reçue pendant la guerre. Si une structure live exploitable est présente,
+                elle servira de base à la future carte interactive ; sinon il faudra brancher une source authentifiée dédiée aux logs TW.
             </p>
         </div>
     </section>

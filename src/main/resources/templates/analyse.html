@@ -484,6 +484,7 @@
                                     <div th:if="${tb.missionsSpeciales != null and !tb.missionsSpeciales.isEmpty()}" class="analyse-tb-ms-list">
                                         <article
                                             th:each="mission : ${tb.missionsSpeciales}"
+                                            th:if="${mission.suiviExact}"
                                             class="analyse-tb-ms-item"
                                             th:classappend="${mission.reussie ? ' is-success' : ' is-failure'}">
                                             <span class="analyse-tb-ms-status-icon">
@@ -505,6 +506,33 @@
                                                     <span>·</span>
                                                     <span th:text="|'Mission ' + ${mission.covertNum}|">Mission 1</span>
                                                 </small>
+                                            </div>
+                                        </article>
+
+                                        <article
+                                            th:each="mission : ${tb.missionsSpeciales}"
+                                            th:if="${!mission.suiviExact}"
+                                            class="analyse-tb-ms-item analyse-tb-ms-priority">
+                                            <span class="analyse-tb-ms-status-icon">
+                                                <i class="bi bi-lightning-charge-fill"></i>
+                                            </span>
+                                            <div class="analyse-tb-ms-copy">
+                                                <div class="analyse-tb-ms-title-row">
+                                                    <strong th:text="${mission.label}">Jedi Knight Cal Kestis — CM Zeffo</strong>
+                                                    <div class="analyse-tb-ms-badges">
+                                                        <span class="attempted">CM prioritaire</span>
+                                                        <span class="analyse-tb-ms-neutral-badge">Non isolable</span>
+                                                    </div>
+                                                </div>
+                                                <small>
+                                                    <span>P3</span>
+                                                    <span>·</span>
+                                                    <span>Zeffo</span>
+                                                    <span>· Bonus</span>
+                                                    <span>·</span>
+                                                    <span>1 023 750 pts</span>
+                                                </small>
+                                                <p class="analyse-tb-ms-priority-note" th:text="${mission.note}">Le résultat individuel n'est pas isolable via Comlink.</p>
                                             </div>
                                         </article>
                                     </div>

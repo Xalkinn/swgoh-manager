@@ -450,6 +450,7 @@ public class AnalyseJoueurService {
         Map<Integer, TbPhasePerformance> phases = new LinkedHashMap<>();
         Map<String, TbMissionPerformance> missionsSpeciales = new LinkedHashMap<>();
         boolean participe = false;
+        boolean zoneZeffoPresente = false;
         long puissanceZones = 0L;
         long donsZones = 0L;
 
@@ -457,13 +458,29 @@ public class AnalyseJoueurService {
             JSONObject finalStat = finalStats.optJSONObject(i);
             if (finalStat == null) continue;
 
-            JSONObject playerStat = trouverPlayerStat(finalStat.optJSONArray("playerStat"), playerId);
+            ParsedMapStat parsed = MapStatIdParser.parse(finalStat.optString("mapStatId", ""));
+            String type = parsed.statType();
+
+            JSONArray zonePlayerStats = finalStat.optJSONArray("playerStat");
+            if (parsed.phase() != null
+                    && parsed.phase() == 3
+                    && parsed.conflict() != null
+                    && parsed.conflict() == 1
+                    && parsed.bonus()
+                    && ("strike_attempt".equals(type)
+                        || "strike_encounter".equals(type)
+                        || "summary".equals(type)
+                        || "power".equals(type))
+                    && zonePlayerStats != null
+                    && zonePlayerStats.length() > 0) {
+                zoneZeffoPresente = true;
+            }
+
+            JSONObject playerStat = trouverPlayerStat(zonePlayerStats, playerId);
             if (playerStat == null) continue;
             participe = true;
 
             long score = parseLong(playerStat.optString("score", "0"));
-            ParsedMapStat parsed = MapStatIdParser.parse(finalStat.optString("mapStatId", ""));
-            String type = parsed.statType();
 
             if (parsed.phase() != null
                     && parsed.conflict() != null
@@ -520,6 +537,19 @@ public class AnalyseJoueurService {
 
         if (!participe) return null;
 
+        if (zoneZeffoPresente) {
+            TbMissionPerformance combatJkckZeffo = new TbMissionPerformance();
+            combatJkckZeffo.setPhase(3);
+            combatJkckZeffo.setConflict(1);
+            combatJkckZeffo.setBonus(true);
+            combatJkckZeffo.setCovertNum(0);
+            combatJkckZeffo.setLabel("Jedi Knight Cal Kestis — CM Zeffo (1 023 750 pts)");
+            combatJkckZeffo.setSuiviExact(false);
+            combatJkckZeffo.setCombatPrioritaire(true);
+            combatJkckZeffo.setNote("Le résultat final Comlink agrège les combats de Zeffo : la tentative et la réussite de cette mission ne peuvent pas être isolées automatiquement par joueur.");
+            missionsSpeciales.put("zeffo-jkck-prioritaire", combatJkckZeffo);
+        }
+
         List<TbMissionPerformance> missionList = new ArrayList<>(missionsSpeciales.values());
         missionList.sort(Comparator
                 .comparingInt(TbMissionPerformance::getPhase)
@@ -530,6 +560,9 @@ public class AnalyseJoueurService {
         long totalMsTentees = 0L;
         long totalMsReussies = 0L;
         for (TbMissionPerformance mission : missionList) {
+            if (!mission.isSuiviExact()) {
+                continue;
+            }
             TbPhasePerformance phase = phases.computeIfAbsent(mission.getPhase(), phaseNum -> {
                 TbPhasePerformance p = new TbPhasePerformance();
                 p.setPhase(phaseNum);
@@ -596,7 +629,7 @@ public class AnalyseJoueurService {
         String key = phase + "-" + conflict + "-" + bonus + "-" + covert;
         return switch (key) {
             case "1-3-false-1" -> nomMissionPersonnage(nomsFrancais, "QIRA", "Qi'ra");
-            case "2-1-false-1" -> nomMissionPersonnage(nomsFrancais, "JEDIKNIGHTCAL", "Cal Kestis (chevalier Jedi)");
+            case "2-1-false-1" -> nomMissionPersonnage(nomsFrancais, "CEREJUNDA", "Cere Junda") + " + Cal Kestis";
             case "3-1-false-1" -> nomMissionPersonnage(nomsFrancais, "SAWGERRERA", "Saw Gerrera");
             case "3-3-false-1" -> nomMissionPersonnage(nomsFrancais, "THIRDSISTER", "Troisième Sœur (Reva)");
             case "3-3-false-2" -> nomMissionPersonnage(nomsFrancais, "MANDALORBOKATAN", "Bo-Katan (Mandalore)");

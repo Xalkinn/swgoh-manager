@@ -1383,3 +1383,28 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Combat prioritaire Zeffo affiché avec les missions spéciales */
+.analyse-tb-ms-item.analyse-tb-ms-priority {
+    align-items:flex-start;
+    border-left:4px solid var(--blue);
+    border-style:dashed;
+}
+
+.analyse-tb-ms-priority .analyse-tb-ms-status-icon {
+    color:var(--blue);
+    background:var(--blue-soft);
+}
+
+.analyse-tb-ms-neutral-badge {
+    color:var(--dash-muted);
+    background:var(--dash-card);
+    border:1px solid var(--dash-border);
+}
+
+.analyse-tb-ms-priority-note {
+    margin:7px 0 0;
+    color:var(--dash-muted);
+    font-size:.62rem;
+    line-height:1.45;
+}

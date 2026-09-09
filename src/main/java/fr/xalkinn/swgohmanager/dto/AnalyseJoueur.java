@@ -295,6 +295,9 @@ public class AnalyseJoueur {
         private String label;
         private boolean tentee;
         private boolean reussie;
+        private boolean suiviExact = true;
+        private boolean combatPrioritaire;
+        private String note;
 
         public int getPhase() { return phase; }
         public void setPhase(int phase) { this.phase = phase; }
@@ -310,12 +313,19 @@ public class AnalyseJoueur {
         public void setTentee(boolean tentee) { this.tentee = tentee; }
         public boolean isReussie() { return reussie; }
         public void setReussie(boolean reussie) { this.reussie = reussie; }
+        public boolean isSuiviExact() { return suiviExact; }
+        public void setSuiviExact(boolean suiviExact) { this.suiviExact = suiviExact; }
+        public boolean isCombatPrioritaire() { return combatPrioritaire; }
+        public void setCombatPrioritaire(boolean combatPrioritaire) { this.combatPrioritaire = combatPrioritaire; }
+        public String getNote() { return note; }
+        public void setNote(String note) { this.note = note; }
 
         public boolean isEchec() {
             return tentee && !reussie;
         }
 
         public String getStatut() {
+            if (!suiviExact) return "Non isolable";
             if (reussie) return "Réussie";
             if (tentee) return "Échec";
             return "Non tentée";

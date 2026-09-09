@@ -221,6 +221,9 @@ public final class TerritoryBattleView {
         private long reussies;
         private double tauxReussite;
         private String modalId;
+        private boolean suiviExact = true;
+        private boolean combatPrioritaire;
+        private String note;
         private List<MissionFailureRow> echecs = new ArrayList<>();
         private List<MissionFailureRow> nonTentes = new ArrayList<>();
 
@@ -242,6 +245,12 @@ public final class TerritoryBattleView {
         public void setTauxReussite(double tauxReussite) { this.tauxReussite = tauxReussite; }
         public String getModalId() { return modalId; }
         public void setModalId(String modalId) { this.modalId = modalId; }
+        public boolean isSuiviExact() { return suiviExact; }
+        public void setSuiviExact(boolean suiviExact) { this.suiviExact = suiviExact; }
+        public boolean isCombatPrioritaire() { return combatPrioritaire; }
+        public void setCombatPrioritaire(boolean combatPrioritaire) { this.combatPrioritaire = combatPrioritaire; }
+        public String getNote() { return note; }
+        public void setNote(String note) { this.note = note; }
         public List<MissionFailureRow> getEchecs() { return echecs; }
         public void setEchecs(List<MissionFailureRow> echecs) { this.echecs = echecs; }
         public List<MissionFailureRow> getNonTentes() { return nonTentes; }

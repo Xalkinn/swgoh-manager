@@ -1065,3 +1065,54 @@ html.dark-mode .tb-round-modal .btn-close {
     .tb-round-note,
     .tb-planet-cumulative-note { padding:10px 11px; }
 }
+
+/* Combat prioritaire Zeffo affiché avec les missions spéciales */
+.tb-mission-priority-card {
+    border-style:dashed;
+    position:relative;
+}
+
+.tb-priority-chip {
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    padding:4px 8px;
+    border-radius:999px;
+    background:rgba(37,99,235,.10);
+    color:#2563eb;
+    font-size:.68rem;
+    font-weight:800;
+}
+
+.tb-priority-mission-info {
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    margin-top:14px;
+    padding:11px 12px;
+    border:1px solid var(--dash-border);
+    border-radius:10px;
+    background:var(--dash-card);
+    color:var(--dash-muted);
+}
+
+.tb-priority-mission-info > i {
+    color:#2563eb;
+    margin-top:2px;
+}
+
+.tb-priority-mission-info strong,
+.tb-priority-mission-info span {
+    display:block;
+}
+
+.tb-priority-mission-info strong {
+    color:var(--dash-text);
+    font-size:.76rem;
+    margin-bottom:3px;
+}
+
+.tb-priority-mission-info span {
+    font-size:.68rem;
+    line-height:1.45;
+}

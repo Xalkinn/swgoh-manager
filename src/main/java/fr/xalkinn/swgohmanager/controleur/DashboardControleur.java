@@ -76,6 +76,7 @@ public class DashboardControleur {
         model.addAttribute("derniersUps", personnageRepository.trouverDerniersUpsGuilde());
         model.addAttribute("dernieresExtractions",extractionRepository.trouverDernieresExtractions());
         model.addAttribute("tbHistorique", territoryBattleStatsService.getHistoriqueDashboard(5));
+        model.addAttribute("equipment", dashboardService.getEquipmentDashboard());
         model.addAttribute("omicronModeStats", dashboardService.getOmicronsParMode());
         model.addAttribute("omicronModeDetails", dashboardService.getOmicronDetailsParMode());
         //model.addAttribute("derniersUps", null);

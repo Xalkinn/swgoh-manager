@@ -387,6 +387,7 @@
 
             <div th:if="${!tbDetail.missions.isEmpty()}" class="tb-mission-grid">
                 <article th:each="ms : ${tbDetail.missions}"
+                         th:if="${ms.suiviExact}"
                          class="tb-mission-card tb-mission-clickable"
                          role="button"
                          tabindex="0"
@@ -414,10 +415,33 @@
                     <div class="tb-rate-bar"><span th:style="|width:${ms.tauxReussite}%|"></span></div>
                     <div class="tb-mission-open-hint"><i class="bi bi-box-arrow-up-right"></i> Cliquer pour voir les échecs et les missions non tentées</div>
                 </article>
+
+                <article th:each="ms : ${tbDetail.missions}"
+                         th:if="${!ms.suiviExact}"
+                         class="tb-mission-card tb-mission-priority-card">
+                    <div class="tb-mission-top">
+                        <div>
+                            <small th:text="|Phase ${ms.phase} · Zeffo|">Phase 3 · Zeffo</small>
+                            <strong th:text="${ms.label}">Jedi Knight Cal Kestis — CM Zeffo</strong>
+                        </div>
+                        <div class="tb-mission-badges">
+                            <span th:if="${ms.bonus}" class="bonus-chip">Bonus</span>
+                            <span class="tb-priority-chip"><i class="bi bi-lightning-charge-fill"></i> CM prioritaire</span>
+                        </div>
+                    </div>
+                    <div class="tb-priority-mission-info">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <div>
+                            <strong>À suivre comme une MS</strong>
+                            <span th:text="${ms.note}">Le résultat individuel n'est pas isolable.</span>
+                        </div>
+                    </div>
+                </article>
             </div>
 
             <!-- Popins missions spéciales : joueurs ayant tenté sans réussir -->
             <div th:each="ms : ${tbDetail.missions}"
+                 th:if="${ms.suiviExact}"
                  class="modal fade tb-mission-modal"
                  th:id="${ms.modalId}"
                  tabindex="-1"
