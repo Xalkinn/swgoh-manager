@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/head :: head}"></head>
+<body class="app-page consigne-page">
+<link rel="stylesheet" th:href="@{/css/consignes.css}">
+<div th:replace="~{fragments/menu :: menu}"></div>
+<main class="app-container">
+<header class="app-page-header"><div class="app-page-heading"><span class="app-kicker">Pilotage de guilde</span><h1><i class="bi bi-list-check me-2"></i>Suivi des consignes</h1><p>Repère les améliorations en dehors des personnages prioritaires.</p></div><button id="themeToggle" class="app-theme-toggle" type="button"><i class="bi bi-moon-stars-fill"></i><span>Mode sombre</span></button></header>
+<div class="alert alert-success" th:if="${message}" th:text="${message}"></div>
+<div class="alert alert-danger" th:if="${erreur}" th:text="${erreur}"></div>
+<section class="app-card mb-4"><div class="app-card-body">
+<h2>Période et listes autorisées</h2>
+<form id="consigneAnalyseForm" method="get" th:action="@{/consignes}">
+<input type="hidden" name="rechercher" value="true">
+<div class="row g-3 mb-3"><div class="col-md-4"><label class="form-label" for="debut">Début des consignes</label><input id="debut" name="debut" type="date" class="form-control" th:value="${debut}" required></div><div class="col-md-4"><label class="form-label" for="fin">Fin du suivi (incluse)</label><input id="fin" name="fin" type="date" class="form-control" th:value="${fin}" required></div></div>
+<div class="d-flex flex-wrap gap-3 mb-3"><label th:each="liste : ${listes}" class="form-check"><input type="checkbox" class="form-check-input" name="listes" th:value="${liste.id}" th:checked="${#lists.contains(selection,liste.id)}"><span class="form-check-label" th:text="${liste.nom}"></span></label></div>
+<p th:if="${#lists.isEmpty(listes)}">Crée tes listes ci-dessous, puis sélectionne celles à autoriser.</p>
+<div class="d-flex gap-2 flex-wrap"><button class="app-primary-btn" type="submit"><i class="bi bi-search"></i>Analyser les upgrades</button><button class="btn btn-outline-success btn-sm omicron-export-btn" type="button" data-bs-toggle="modal" data-bs-target="#consigneExportModal"><i class="bi bi-box-arrow-down"></i>Exporter</button></div>
+</form>
+<p class="mt-3 mb-0">Un personnage est autorisé s’il appartient à au moins une liste sélectionnée. Sans liste sélectionnée, tous les personnages sont hors consignes. Les résultats sont recalculés avec le contenu actuel des listes.</p>
+</div></section>
+<div class="alert alert-info">Suivi des niveaux, étoiles, paliers d’équipement et reliques entre extractions terminées. Chaque ligne représente un personnage amélioré entre deux captures ; plusieurs améliorations sur la même ligne comptent pour une évolution. Les pièces d’équipement, compétences, zêtas et omicrons ne sont pas suivis ici.<br>Une évolution dont l’intervalle commence avant le début des consignes est <strong>à vérifier</strong>. La première capture d’un joueur sert de référence et ne constitue pas une amélioration.</div>
+<section class="app-card mb-4"><div class="app-card-body"><h2>Résumé par joueur</h2>
+<label class="form-label" for="filtreJoueur">Rechercher un joueur</label><input id="filtreJoueur" class="form-control mb-3" type="search" placeholder="Nom du joueur">
+<label class="form-check mb-3"><input id="ecartsSeulement" class="form-check-input" type="checkbox"><span class="form-check-label">Afficher uniquement les joueurs avec des écarts ou des évolutions à vérifier</span></label>
+<div class="table-responsive"><table class="table align-middle"><thead><tr><th>Joueur</th><th>Autorisées</th><th>Hors consignes</th><th>À vérifier</th><th>Couverture</th></tr></thead><tbody>
+<tr th:each="joueur : ${joueurs}" class="consigne-joueur" th:attr="data-nom=${joueur.nom},data-ecarts=${joueur.ecarts + joueur.incertains}">
+<td><button class="btn btn-link" type="button" data-bs-toggle="modal" th:attr="data-bs-target='#joueur-'+${joueur.id}" th:text="${joueur.nom}"></button></td><td th:text="${joueur.autorises}"></td><td><span class="badge bg-danger" th:text="${joueur.ecarts}"></span></td><td><span class="badge bg-warning text-dark" th:text="${joueur.incertains}"></span></td>
+<td><span th:if="${joueur.reference == null}">Historique insuffisant</span><span th:if="${joueur.reference != null}">Comparaison disponible</span><small class="d-block" th:if="${joueur.derniereCapture != null}" th:text="'Dernière capture : '+${#temporals.format(joueur.derniereCapture,'dd/MM/yyyy HH:mm')}"></small></td>
+</tr></tbody></table></div></div></section>
+<section class="app-card consigne-lists-card"><div class="app-card-header"><div class="app-card-title"><span class="app-card-icon purple"><i class="bi bi-collection-fill"></i></span><div><h2>Mes listes de personnages</h2><p>Organise les priorités Raid, Nouvelle GL et les exceptions.</p></div></div></div><div class="app-card-body">
+<div class="consigne-list-grid"><article class="consigne-list consigne-new"><div class="consigne-list-heading"><span class="app-badge purple"><i class="bi bi-plus-circle"></i>Nouvelle liste</span></div>
+<form class="consigne-editor" method="post" th:action="@{/consignes/liste}"><label class="form-label">Nom de la liste<input class="form-control" name="nom" maxlength="120" required placeholder="Ex. Raid"></label>
+<div class="consigne-picker">
+<label class="form-label">Rechercher un personnage<input type="search" class="form-control consigne-search" placeholder="Nom du personnage…"></label>
+<div class="consigne-add-row"><label class="form-label">Personnage<select class="form-select consigne-select"><option value="">Choisir un personnage</option><option th:each="p : ${catalogue}" th:value="${p.base_id}" th:text="${p.nom}"></option></select></label><button class="app-success-btn consigne-add" type="button"><i class="bi bi-plus-lg"></i>Ajouter</button></div>
+<div class="consigne-picked" aria-live="polite"></div><p class="consigne-empty">Aucun personnage ajouté.</p><p class="consigne-feedback" role="status"></p>
+</div>
+<div class="consigne-save"><button class="app-primary-btn" type="submit"><i class="bi bi-check2-circle"></i>Créer la liste</button></div></form></article>
+<article th:each="liste : ${listes}" class="consigne-list"><div class="consigne-list-heading"><h3 th:text="${liste.nom}"></h3><span class="app-badge blue" th:text="${#lists.size(liste.personnages)}+' personnage(s)'"></span></div>
+<form class="consigne-editor" method="post" th:action="@{/consignes/liste}"><input type="hidden" name="id" th:value="${liste.id}"><label class="form-label">Nom de la liste<input class="form-control" name="nom" maxlength="120" required th:value="${liste.nom}"></label>
+<div class="consigne-initial" hidden><input th:each="base : ${liste.personnages}" type="hidden" name="personnages" th:value="${base}"></div>
+<div class="consigne-picker">
+<label class="form-label">Rechercher un personnage<input type="search" class="form-control consigne-search" placeholder="Nom du personnage…"></label>
+<div class="consigne-add-row"><label class="form-label">Personnage<select class="form-select consigne-select"><option value="">Choisir un personnage</option><option th:each="p : ${catalogue}" th:value="${p.base_id}" th:text="${p.nom}"></option></select></label><button class="app-success-btn consigne-add" type="button"><i class="bi bi-plus-lg"></i>Ajouter</button></div>
+<div class="consigne-picked" aria-live="polite"></div><p class="consigne-empty">Aucun personnage ajouté.</p><p class="consigne-feedback" role="status"></p>
+</div>
+<div class="consigne-save"><span class="consigne-dirty" hidden>Modifications à enregistrer</span><button class="app-primary-btn" type="submit"><i class="bi bi-check2-circle"></i>Enregistrer</button></div></form>
+<form class="consigne-delete-list" method="post" th:action="@{/consignes/liste/supprimer}" onsubmit="return confirm('Supprimer cette liste de personnages ?')"><input type="hidden" name="id" th:value="${liste.id}"><button type="submit" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash3"></i>Supprimer la liste</button></form>
+</article></div><p class="consigne-help"><i class="bi bi-info-circle"></i>Ajoute ou retire les personnages avec les boutons, puis clique sur Enregistrer pour appliquer tes changements.</p>
+</div></section>
+</main>
+<div th:each="joueur : ${joueurs}" class="modal fade" th:id="'joueur-'+${joueur.id}" tabindex="-1" th:attr="aria-label='Évolutions de '+${joueur.nom}"><div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h2 class="modal-title fs-5" th:text="${joueur.nom}"></h2><button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Fermer"></button></div><div class="modal-body">
+<p th:if="${joueur.reference != null}" th:text="'Référence : '+${#temporals.format(joueur.reference,'dd/MM/yyyy HH:mm')}"></p>
+<p th:if="${joueur.reference == null}">Historique insuffisant pour établir une comparaison sur la période.</p>
+<p th:if="${joueur.reference != null and #lists.isEmpty(joueur.details)}">Aucune amélioration détectée dans l’historique disponible.</p>
+<label class="form-check mb-3"><input type="checkbox" class="form-check-input masquer-autorises"><span class="form-check-label">Masquer les évolutions autorisées</span></label>
+<form method="post" th:action="@{/consignes/decision}" class="consigne-review-form">
+<input type="hidden" name="debut" th:value="${debut}"><input type="hidden" name="fin" th:value="${fin}"><input type="hidden" name="joueur" th:value="${joueur.id}"><input th:each="id : ${selection}" type="hidden" name="listes" th:value="${id}">
+<div class="consigne-review-actions"><span class="small">Coche les lignes à traiter :</span><button type="submit" name="decision" value="APPROUVER" class="btn btn-success btn-sm">Approuver</button><button type="submit" name="decision" value="REFUSER" class="btn btn-danger btn-sm">Désapprouver</button><button type="submit" name="decision" value="REINITIALISER" class="btn btn-outline-secondary btn-sm">Remettre à vérifier</button></div>
+<div class="table-responsive"><table class="table"><thead><tr><th>Sélection</th><th>Personnage</th><th>Progression</th><th>Intervalle de détection</th><th>Statut</th></tr></thead><tbody><tr th:each="detail : ${joueur.details}" th:attr="data-autorise=${detail.statut == 'Autorisé'}"><td><input th:if="${detail.verifiable}" type="checkbox" class="form-check-input" name="evolutions" th:value="${detail.evolution}" th:attr="aria-label='Sélectionner '+${detail.nom}"></td><td th:text="${detail.nom}"></td><td th:text="${detail.progression}"></td><td th:text="${#temporals.format(detail.depuis,'dd/MM HH:mm')}+' → '+${#temporals.format(detail.capture,'dd/MM HH:mm')}"></td><td><span class="badge" th:classappend="${detail.statut == 'Autorisé' ? 'bg-success' : (detail.statut == 'À vérifier' ? 'bg-warning text-dark' : 'bg-danger')}" th:text="${detail.statut}"></span><small class="d-block" th:if="${detail.decision != null}" th:text="${detail.decision == 'APPROUVER' ? 'Approuvé manuellement' : 'Désapprouvé manuellement'}"></small></td></tr></tbody></table></div></form>
+</div></div></div></div>
+<div class="modal fade omicron-export-modal" id="consigneExportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title"><i class="bi bi-file-earmark-arrow-down me-2"></i>Exporter le suivi des consignes</h5>
+                    <p class="omicron-export-modal-subtitle">Choisis le format le plus pratique pour les officiers de la guilde.</p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body"><p class="consigne-export-context text-muted small" id="consigneExportContext"></p>
+                <div class="omicron-export-choice-grid">
+                    <a class="omicron-export-choice consigne-export-choice" data-format="excel" th:href="@{/consignes/export(format='excel')}">
+                        <span class="omicron-export-choice-icon excel"><i class="bi bi-file-earmark-excel-fill"></i></span>
+                        <span>
+                            <strong>Excel</strong>
+                            <small>.xlsx · Onglets Hors consignes et À vérifier</small>
+                        </span>
+                        <i class="bi bi-download"></i>
+                    </a>
+                    <a class="omicron-export-choice consigne-export-choice" data-format="libreoffice" th:href="@{/consignes/export(format='libreoffice')}">
+                        <span class="omicron-export-choice-icon libreoffice"><i class="bi bi-file-earmark-spreadsheet-fill"></i></span>
+                        <span>
+                            <strong>LibreOffice</strong>
+                            <small>.ods · Onglets Hors consignes et À vérifier</small>
+                        </span>
+                        <i class="bi bi-download"></i>
+                    </a>
+                    <a class="omicron-export-choice consigne-export-choice" data-format="csv" th:href="@{/consignes/export(format='csv')}">
+                        <span class="omicron-export-choice-icon csv"><i class="bi bi-filetype-csv"></i></span>
+                        <span>
+                            <strong>CSV</strong>
+                            <small>.csv · Un tableau, avec le statut de chaque évolution</small>
+                        </span>
+                        <i class="bi bi-download"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script>
+const filtre=document.getElementById('filtreJoueur'),ecarts=document.getElementById('ecartsSeulement');
+function filtrer(){document.querySelectorAll('.consigne-joueur').forEach(r=>r.hidden=!r.dataset.nom.toLocaleLowerCase().includes(filtre.value.toLocaleLowerCase())||(ecarts.checked&&Number(r.dataset.ecarts)===0));}
+filtre.addEventListener('input',filtrer);ecarts.addEventListener('change',filtrer);
+document.querySelectorAll('.masquer-autorises').forEach(c=>c.addEventListener('change',()=>c.closest('.modal-body').querySelectorAll('tr[data-autorise]').forEach(r=>r.hidden=c.checked&&r.dataset.autorise==='true')));
+
+</script>
+<script th:src="@{/js/consignes.js}"></script>
+</body></html>

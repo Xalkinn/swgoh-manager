@@ -2,6 +2,9 @@ package fr.xalkinn.swgohmanager.controleur;
 
 import java.util.List;
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +15,7 @@ import fr.xalkinn.swgohmanager.modele.Extraction;
 import fr.xalkinn.swgohmanager.repository.ExtractionRepository;
 import fr.xalkinn.swgohmanager.repository.JoueurRepository;
 import fr.xalkinn.swgohmanager.repository.PersonnageRepository;
+import fr.xalkinn.swgohmanager.service.EvolutionRosterExportService;
 
 
 @Controller
@@ -19,11 +23,17 @@ public class JoueurControleur {
     private final JoueurRepository joueurRepository;
     private final PersonnageRepository personnageRepository;
     private final ExtractionRepository extractionRepository;
+    private final EvolutionRosterExportService evolutionRosterExportService;
     
-    public JoueurControleur(JoueurRepository joueurRepository, PersonnageRepository personnageRepository, ExtractionRepository extractionRepository) {
+    public JoueurControleur(
+            JoueurRepository joueurRepository,
+            PersonnageRepository personnageRepository,
+            ExtractionRepository extractionRepository,
+            EvolutionRosterExportService evolutionRosterExportService) {
         this.joueurRepository = joueurRepository;
-		this.personnageRepository = personnageRepository;
-		this.extractionRepository = extractionRepository;
+        this.personnageRepository = personnageRepository;
+        this.extractionRepository = extractionRepository;
+        this.evolutionRosterExportService = evolutionRosterExportService;
     }
     
     @GetMapping("/joueurs")
@@ -85,4 +95,21 @@ public class JoueurControleur {
 	     }
      return "joueurs";
      }
+    @GetMapping("/joueurs/export")
+    public ResponseEntity<byte[]> exporterComparaison(
+            @RequestParam(name = "format", defaultValue = "excel") String format,
+            @RequestParam(required = false) Integer joueurId,
+            @RequestParam Integer ancienneExtraction,
+            @RequestParam Integer nouvelleExtraction) throws Exception {
+
+        EvolutionRosterExportService.ExportResult export = evolutionRosterExportService.genererExport(
+                format, joueurId, ancienneExtraction, nouvelleExtraction);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"" + export.filename() + "\"")
+                .contentType(MediaType.parseMediaType(export.contentType()))
+                .body(export.content());
+    }
+
 }

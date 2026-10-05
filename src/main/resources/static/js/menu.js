@@ -1,7 +1,7 @@
 /* =========================================================
    MENU PRINCIPAL
    - état actif selon l'URL
-   - ouverture automatique de la section Outils si nécessaire
+   - activation automatique du menu parent d'un sous-menu actif
    ========================================================= */
 (function () {
     "use strict";
@@ -12,10 +12,19 @@
         return clean || "/";
     }
 
+    function markParentGroupActive(link) {
+        const dropdown = link.closest(".dropdown[data-menu-group]");
+        if (!dropdown) return;
+
+        const trigger = dropdown.querySelector(":scope > .swgoh-nav-link");
+        if (trigger) {
+            trigger.classList.add("active");
+        }
+    }
+
     function initMenu() {
         const currentPath = normalizePath(window.location.pathname);
         const links = document.querySelectorAll("[data-menu-path]");
-        let activeInTools = false;
 
         links.forEach((link) => {
             const targetPath = normalizePath(link.dataset.menuPath);
@@ -31,15 +40,10 @@
                 link.setAttribute("aria-current", "page");
 
                 if (link.classList.contains("swgoh-dropdown-item")) {
-                    activeInTools = true;
+                    markParentGroupActive(link);
                 }
             }
         });
-
-        if (activeInTools) {
-            const trigger = document.querySelector(".swgoh-tools-trigger");
-            if (trigger) trigger.classList.add("active");
-        }
     }
 
     if (document.readyState === "loading") {

@@ -363,3 +363,75 @@ html.dark-mode .swgoh-dropdown-item.active {
     color: #ffffff !important;
     background: rgba(118, 87, 232, .24);
 }
+
+/* =========================================================
+   SOUS-MENUS DE NAVIGATION
+   - Événements guilde
+   - Inventaire joueur
+   Sur desktop : ouverture au survol / clavier
+   Sur mobile : comportement Bootstrap au clic
+   ========================================================= */
+
+.swgoh-group-trigger::after {
+    margin-left: 2px;
+    opacity: .55;
+    transition: transform .18s ease, opacity .18s ease;
+}
+
+.swgoh-group-trigger.active {
+    color: var(--dash-text) !important;
+    background: var(--purple-soft);
+}
+
+
+.swgoh-dropdown-group {
+    min-width: 310px;
+}
+
+@media (min-width: 1200px) {
+    /* Pas de trou entre le bouton et le menu : le curseur peut descendre
+       naturellement du parent vers les entrées sans fermer le sous-menu. */
+    .swgoh-hover-dropdown > .swgoh-dropdown {
+        top: calc(100% + 2px);
+        margin-top: 0 !important;
+    }
+
+    .swgoh-hover-dropdown:hover > .dropdown-menu,
+    .swgoh-hover-dropdown:focus-within > .dropdown-menu {
+        display: block;
+    }
+
+    .swgoh-hover-dropdown:hover > .swgoh-group-trigger,
+    .swgoh-hover-dropdown:focus-within > .swgoh-group-trigger {
+        color: var(--dash-text) !important;
+        background: var(--dash-soft);
+        transform: translateY(-1px);
+    }
+
+    .swgoh-hover-dropdown:hover > .swgoh-group-trigger::after,
+    .swgoh-hover-dropdown:focus-within > .swgoh-group-trigger::after {
+        opacity: .8;
+        transform: rotate(180deg);
+    }
+}
+
+@media (max-width: 1199.98px) {
+
+    .swgoh-dropdown-group {
+        min-width: 0;
+    }
+}
+
+html.dark-mode .swgoh-group-trigger.active {
+    color: #ffffff !important;
+    background: rgba(118, 87, 232, .24) !important;
+}
+
+
+@media (min-width: 1200px) {
+    html.dark-mode .swgoh-hover-dropdown:hover > .swgoh-group-trigger,
+    html.dark-mode .swgoh-hover-dropdown:focus-within > .swgoh-group-trigger {
+        color: #ffffff !important;
+        background: rgba(255, 255, 255, .06);
+    }
+}

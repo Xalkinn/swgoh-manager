@@ -110,7 +110,16 @@
                     <p>Les changements détectés entre les extractions sélectionnées.</p>
                 </div>
             </div>
-            <span class="app-badge neutral" th:text="${#lists.size(evolutions)} + ' évolution(s)'">0 évolution</span>
+            <div class="evolution-header-actions">
+                <span class="app-badge neutral" th:text="${#lists.size(evolutions)} + ' évolution(s)'">0 évolution</span>
+                <button class="btn btn-outline-success btn-sm evolution-export-btn"
+                        th:if="${onglet == 'avance' and ancienneExtraction != null and nouvelleExtraction != null}"
+                        type="button"
+                        data-bs-toggle="modal"
+                        data-bs-target="#evolutionExportModal">
+                    <i class="bi bi-box-arrow-down"></i> Exporter
+                </button>
+            </div>
         </div>
         <div class="app-table-wrap" th:if="${!#lists.isEmpty(evolutions)}">
             <table id="tableEvolutionJoueur" class="app-table">
@@ -150,6 +159,58 @@
         </div>
     </section>
 </main>
+
+<div class="modal fade evolution-export-modal"
+     id="evolutionExportModal"
+     tabindex="-1"
+     aria-hidden="true"
+     th:if="${evolutions != null and onglet == 'avance' and ancienneExtraction != null and nouvelleExtraction != null}">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title"><i class="bi bi-file-earmark-arrow-down me-2"></i>Exporter la progression du roster</h5>
+                    <p class="evolution-export-modal-subtitle">
+                        La comparaison sélectionnée sera exportée avec une synthèse claire de la progression.
+                    </p>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+            </div>
+            <div class="modal-body">
+                <div class="evolution-export-choice-grid">
+                    <a class="evolution-export-choice"
+                       th:href="@{/joueurs/export(format='excel',joueurId=${joueurId},ancienneExtraction=${ancienneExtraction},nouvelleExtraction=${nouvelleExtraction})}">
+                        <span class="evolution-export-choice-icon excel"><i class="bi bi-file-earmark-excel-fill"></i></span>
+                        <span>
+                            <strong>Excel</strong>
+                            <small>.xlsx · synthèse visuelle + détail complet + onglet par joueur</small>
+                        </span>
+                        <i class="bi bi-download"></i>
+                    </a>
+                    <a class="evolution-export-choice"
+                       th:href="@{/joueurs/export(format='libreoffice',joueurId=${joueurId},ancienneExtraction=${ancienneExtraction},nouvelleExtraction=${nouvelleExtraction})}">
+                        <span class="evolution-export-choice-icon libreoffice"><i class="bi bi-file-earmark-spreadsheet-fill"></i></span>
+                        <span>
+                            <strong>LibreOffice</strong>
+                            <small>.ods · même présentation de la progression pour LibreOffice</small>
+                        </span>
+                        <i class="bi bi-download"></i>
+                    </a>
+                    <a class="evolution-export-choice"
+                       th:href="@{/joueurs/export(format='csv',joueurId=${joueurId},ancienneExtraction=${ancienneExtraction},nouvelleExtraction=${nouvelleExtraction})}">
+                        <span class="evolution-export-choice-icon csv"><i class="bi bi-filetype-csv"></i></span>
+                        <span>
+                            <strong>CSV</strong>
+                            <small>.csv · compatible partout avec résumé et détail des évolutions</small>
+                        </span>
+                        <i class="bi bi-download"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div th:replace="~{fragments/footer :: footer}"></div>
 </body>
 </html>

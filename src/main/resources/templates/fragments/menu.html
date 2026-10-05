@@ -28,39 +28,90 @@
                     <span>Suivi joueur</span>
                 </a>
 
-                <a class="nav-link swgoh-nav-link" href="/tb" data-menu-path="/tb">
-                    <span class="swgoh-nav-icon green"><i class="bi bi-globe-americas"></i></span>
-                    <span>Batailles de territoire</span>
+                <a class="nav-link swgoh-nav-link" href="/consignes" data-menu-path="/consignes">
+                    <span class="swgoh-nav-icon orange"><i class="bi bi-list-check"></i></span>
+                    <span>Suivi consignes</span>
                 </a>
 
-                <a class="nav-link swgoh-nav-link" href="/tw" data-menu-path="/tw">
-                    <span class="swgoh-nav-icon orange"><i class="bi bi-shield-shaded"></i></span>
-                    <span>Guerres de territoire</span>
-                </a>
+                <!-- ÉVÉNEMENTS GUILDE -->
+                <div class="nav-item dropdown swgoh-hover-dropdown" data-menu-group="guild-events">
+                    <button class="nav-link swgoh-nav-link swgoh-group-trigger dropdown-toggle" type="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="swgoh-nav-icon green"><i class="bi bi-trophy-fill"></i></span>
+                        <span>Événements guilde</span>
+                    </button>
+                    <ul class="dropdown-menu swgoh-dropdown swgoh-dropdown-group">
+                        <li>
+                            <a class="dropdown-item swgoh-dropdown-item" href="/tb" data-menu-path="/tb">
+                                <span class="dropdown-icon green"><i class="bi bi-globe-americas"></i></span>
+                                <span>
+                                    <strong>Batailles de territoire</strong>
+                                    <small>ROTE, missions et statistiques</small>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item swgoh-dropdown-item" href="/tw" data-menu-path="/tw">
+                                <span class="dropdown-icon orange"><i class="bi bi-shield-shaded"></i></span>
+                                <span>
+                                    <strong>Guerres de territoire</strong>
+                                    <small>Suivi et historique TW</small>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
 
-                <a class="nav-link swgoh-nav-link" href="/omicrons" data-menu-path="/omicrons">
-                    <span class="swgoh-nav-icon purple"><i class="bi bi-lightning-charge-fill"></i></span>
-                    <span>Omicrons</span>
-                </a>
-
-                <a class="nav-link swgoh-nav-link" href="/datacrons" data-menu-path="/datacrons">
-                    <span class="swgoh-nav-icon blue"><i class="bi bi-gem"></i></span>
-                    <span>Datacrons</span>
-                </a>
-
-                <a class="nav-link swgoh-nav-link" href="/objectifs" data-menu-path="/objectifs">
-                    <span class="swgoh-nav-icon orange"><i class="bi bi-bullseye"></i></span>
-                    <span>Objectifs</span>
-                </a>
-
-                <a class="nav-link swgoh-nav-link" href="/modq" data-menu-path="/modq">
-                    <span class="swgoh-nav-icon green"><i class="bi bi-bar-chart-fill"></i></span>
-                    <span>Mods / ModQ</span>
-                </a>
+                <!-- INVENTAIRE JOUEUR -->
+                <div class="nav-item dropdown swgoh-hover-dropdown" data-menu-group="player-inventory">
+                    <button class="nav-link swgoh-nav-link swgoh-group-trigger dropdown-toggle" type="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="swgoh-nav-icon purple"><i class="bi bi-collection-fill"></i></span>
+                        <span>Inventaire joueur</span>
+                    </button>
+                    <ul class="dropdown-menu swgoh-dropdown swgoh-dropdown-group">
+                        <li>
+                            <a class="dropdown-item swgoh-dropdown-item" href="/omicrons" data-menu-path="/omicrons">
+                                <span class="dropdown-icon purple"><i class="bi bi-lightning-charge-fill"></i></span>
+                                <span>
+                                    <strong>Omicrons</strong>
+                                    <small>Plan et répartition des omicrons</small>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item swgoh-dropdown-item" href="/datacrons" data-menu-path="/datacrons">
+                                <span class="dropdown-icon blue"><i class="bi bi-gem"></i></span>
+                                <span>
+                                    <strong>Datacrons</strong>
+                                    <small>Plan DTC et inventaire par Set</small>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item swgoh-dropdown-item" href="/objectifs" data-menu-path="/objectifs">
+                                <span class="dropdown-icon orange"><i class="bi bi-bullseye"></i></span>
+                                <span>
+                                    <strong>Objectifs</strong>
+                                    <small>Objectifs de progression</small>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item swgoh-dropdown-item" href="/modq" data-menu-path="/modq">
+                                <span class="dropdown-icon green"><i class="bi bi-bar-chart-fill"></i></span>
+                                <span>
+                                    <strong>Mods / ModQ</strong>
+                                    <small>Qualité et suivi des mods</small>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
 
             <div class="navbar-nav swgoh-nav-tools ms-xl-auto">
-                <div class="nav-item dropdown">
+                <div class="nav-item dropdown" data-menu-group="tools">
                     <button class="nav-link swgoh-nav-link swgoh-tools-trigger dropdown-toggle" type="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
                         <span class="swgoh-nav-icon neutral"><i class="bi bi-grid-fill"></i></span>

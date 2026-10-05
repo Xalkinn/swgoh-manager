@@ -8,37 +8,35 @@
 <main class="app-container">
     <header class="app-page-header">
         <div class="app-page-heading">
-            <span class="app-kicker">État courant de la guilde</span>
+            <span class="app-kicker">Plan de guilde & état courant</span>
             <h1><i class="bi bi-gem me-2"></i>Datacrons</h1>
-            <p>Les données sont mises à jour uniquement par le Batch DTC dédié. Le Batch Roster n'est pas utilisé.</p>
+            <p>Construis manuellement les DTC recherchés Set → T3 → T6 → T9, puis suis leur couverture dans la guilde.</p>
         </div>
         <div class="app-header-actions">
             <a href="/actions/batch-datacron" class="app-primary-btn">
                 <i class="bi bi-arrow-repeat"></i>Lancer le Batch DTC
             </a>
-            <form method="post" action="/datacrons/catalogue/actualiser" class="datacron-catalogue-form">
-                <button type="submit" class="app-secondary-btn">
-                    <i class="bi bi-database-down"></i>Actualiser le catalogue
-                </button>
-            </form>
             <button id="themeToggle" class="app-theme-toggle" type="button">
                 <i class="bi bi-moon-stars-fill"></i><span>Mode sombre</span>
             </button>
         </div>
     </header>
 
+    <div class="alert alert-success datacron-flash" th:if="${datacronMessage != null}" th:text="${datacronMessage}"></div>
+    <div class="alert alert-danger datacron-flash" th:if="${datacronErreur != null}" th:text="${datacronErreur}"></div>
+
     <section class="datacron-kpi-grid">
         <article class="app-card datacron-kpi">
             <span class="datacron-kpi-icon"><i class="bi bi-gem"></i></span>
-            <div><small>Total guilde</small><strong th:text="${datacronPage.total}">0</strong></div>
+            <div><small>Total DTC guilde</small><strong th:text="${datacronPage.total}">0</strong></div>
         </article>
         <article class="app-card datacron-kpi">
             <span class="datacron-kpi-icon"><i class="bi bi-stars"></i></span>
-            <div><small>T9+</small><strong th:text="${datacronPage.totalT9Plus}">0</strong></div>
+            <div><small>DTC T9+</small><strong th:text="${datacronPage.totalT9Plus}">0</strong></div>
         </article>
         <article class="app-card datacron-kpi">
-            <span class="datacron-kpi-icon"><i class="bi bi-bullseye"></i></span>
-            <div><small>Focused</small><strong th:text="${datacronPage.totalFocused}">0</strong></div>
+            <span class="datacron-kpi-icon"><i class="bi bi-list-check"></i></span>
+            <div><small>DTC dans le plan</small><strong th:text="${datacronPlanCount}">0</strong></div>
         </article>
         <article class="app-card datacron-kpi">
             <span class="datacron-kpi-icon"><i class="bi bi-people-fill"></i></span>
@@ -46,68 +44,338 @@
         </article>
     </section>
 
-    <section class="app-card datacron-catalogue-state">
-        <div>
-            <span class="datacron-catalogue-label"><i class="bi bi-database-check"></i> Catalogue Game Data</span>
-            <strong th:text="${catalogueDtc.gameVersion != null ? catalogueDtc.gameVersion : 'Non chargé'}">Non chargé</strong>
-            <small th:text="${catalogueDtc.dateMaj != null ? 'Dernière MAJ : ' + catalogueDtc.dateMaj : 'Clique sur Actualiser le catalogue pour charger les traductions françaises.'}">-</small>
+    <section class="app-card datacron-plan-config-card">
+        <div class="app-card-header datacron-plan-heading">
+            <div class="app-card-title">
+                <span class="app-card-icon purple"><i class="bi bi-sliders2"></i></span>
+                <div>
+                    <h2>Configurer le plan DTC</h2>
+                    <p>Comme pour les Omicrons : tu choisis toi-même la combinaison exacte à suivre.</p>
+                </div>
+            </div>
+            <div class="datacron-plan-actions">
+                <form method="post" action="/datacrons/catalogue/actualiser">
+                    <button type="submit" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-database-down"></i> Actualiser le catalogue
+                    </button>
+                </form>
+                <span class="app-badge neutral" th:if="${catalogueDtc.gameVersion != null}" th:text="|'Game Data ' + ${catalogueDtc.gameVersion}|">Game Data</span>
+            </div>
         </div>
-        <div class="datacron-catalogue-counts">
-            <span><b th:text="${catalogueDtc.templates}">0</b> templates</span>
-            <span><b th:text="${catalogueDtc.affixSets}">0</b> jeux d'affixes</span>
-            <span><b th:text="${catalogueDtc.abilities}">0</b> mécaniques</span>
+
+        <div class="datacron-catalogue-mini">
+            <span><i class="bi bi-database-check"></i> <strong th:text="${catalogueDtc.templates}">0</strong> templates</span>
+            <span><strong th:text="${catalogueDtc.affixSets}">0</strong> jeux d'affixes</span>
+            <span><strong th:text="${catalogueDtc.abilities}">0</strong> mécaniques</span>
+            <small th:if="${catalogueDtc.dateMaj != null}" th:text="|'MAJ ' + ${catalogueDtc.dateMaj}|">MAJ</small>
         </div>
-        <span th:if="${catalogueMessage == 'ok'}" class="datacron-catalogue-message success"><i class="bi bi-check-circle-fill"></i> Catalogue actualisé</span>
-        <span th:if="${catalogueMessage == 'erreur'}" class="datacron-catalogue-message error"><i class="bi bi-exclamation-triangle-fill"></i> Échec de l'actualisation</span>
-        <span th:if="${catalogueDtc.gameVersion != null and catalogueDtc.abilities == 0 and catalogueMessage != 'erreur'}" class="datacron-catalogue-message error"><i class="bi bi-translate"></i> Traductions absentes : actualise le catalogue</span>
+
+        <div th:if="${#lists.isEmpty(datacronPlanSets) or #lists.isEmpty(datacronPlanOptions)}" class="datacron-plan-empty-catalogue">
+            <i class="bi bi-database-exclamation"></i>
+            <div>
+                <strong>Aucun choix DTC exploitable pour le moment.</strong>
+                <span>Lance le Batch DTC puis « Actualiser le catalogue » pour détecter les Sets et leurs T3 / T6 / T9.</span>
+            </div>
+        </div>
+
+        <div th:unless="${#lists.isEmpty(datacronPlanSets) or #lists.isEmpty(datacronPlanOptions)}" class="datacron-plan-config-surface">
+            <div class="datacron-plan-helper">
+                <div>
+                    <strong><i class="bi bi-magic me-2"></i>Ajouter un DTC au plan</strong>
+                    <p>Chaque choix débloque le suivant pour garder une configuration simple et lisible.</p>
+                </div>
+                <div class="datacron-plan-steps">
+                    <span><b>1</b> Set</span>
+                    <span><b>2</b> T3</span>
+                    <span><b>3</b> T6</span>
+                    <span><b>4</b> T9</span>
+                    <span><b>5</b> Ajouter</span>
+                </div>
+            </div>
+
+            <form action="/datacrons/plan/ajouter" method="post" id="datacronPlanForm" class="datacron-plan-grid datacron-plan-grid-v2">
+                <div class="datacron-plan-field datacron-plan-field-set">
+                    <label for="datacronPlanSet">Set</label>
+                    <select id="datacronPlanSet" name="setId" class="form-select" required>
+                        <option value="">Choisir…</option>
+                        <option th:each="setId : ${datacronPlanSets}" th:value="${setId}" th:text="|'Set ' + ${setId}|">Set</option>
+                    </select>
+                </div>
+
+                <div class="datacron-plan-field">
+                    <label for="datacronPlanT3"><span class="datacron-tier-pill t3">T3</span> Bonus</label>
+                    <select id="datacronPlanT3" name="t3OptionId" class="form-select" disabled required>
+                        <option value="">Choisir d'abord un Set</option>
+                    </select>
+                </div>
+
+                <div class="datacron-plan-field">
+                    <label for="datacronPlanT6"><span class="datacron-tier-pill t6">T6</span> Bonus</label>
+                    <select id="datacronPlanT6" name="t6OptionId" class="form-select" disabled required>
+                        <option value="">Choisir d'abord le T3</option>
+                    </select>
+                </div>
+
+                <div class="datacron-plan-field datacron-plan-field-t9">
+                    <label for="datacronPlanT9"><span class="datacron-tier-pill t9">T9</span> Bonus / personnage</label>
+                    <select id="datacronPlanT9" name="t9OptionId" class="form-select" disabled required>
+                        <option value="">Choisir d'abord le T6</option>
+                    </select>
+                </div>
+
+                <div class="datacron-plan-add-wrap">
+                    <button class="btn btn-primary" type="submit" id="datacronPlanAddButton" disabled>
+                        <i class="bi bi-plus-lg"></i> Ajouter au plan
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div id="datacronPlanCatalogData" hidden>
+            <span th:each="o : ${datacronPlanOptions}"
+                  class="datacron-plan-catalog-item"
+                  th:attr="data-id=${o.optionId},
+                           data-set=${o.setId},
+                           data-tier=${o.tier},
+                           data-label=${o.selectLabel},
+                           data-character-id=${o.personnageBaseId},
+                           data-character=${o.personnageNom},
+                           data-target=${o.cible},
+                           data-ability=${o.abilityId}"></span>
+        </div>
     </section>
 
-    <section class="app-card datacron-roster-card">
+    <section class="app-card datacron-plan-card">
+        <div class="app-card-header">
+            <div class="app-card-title">
+                <span class="app-card-icon purple"><i class="bi bi-list-stars"></i></span>
+                <div>
+                    <h2>Plan DTC de la guilde</h2>
+                    <p>Clique sur un DTC pour voir qui a la combinaison complète et quel tier manque aux autres joueurs.</p>
+                </div>
+            </div>
+            <span class="app-badge purple" th:text="${datacronPlanCount} + ' DTC'">0 DTC</span>
+        </div>
+
+        <div class="app-table-wrap" th:if="${!#lists.isEmpty(datacronPlan)}">
+            <table class="app-table datacron-plan-table datacron-plan-table-v2">
+                <thead>
+                <tr>
+                    <th>Set</th>
+                    <th>T3</th>
+                    <th>T6</th>
+                    <th>T9</th>
+                    <th>Couverture</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="r : ${datacronPlan}">
+                    <td><span class="datacron-set-badge" th:text="|'Set ' + ${r.setId}|">Set</span></td>
+                    <td>
+                        <div class="datacron-plan-affix-cell compact">
+                            <span class="datacron-tier-pill t3">T3</span>
+                            <strong th:text="${r.t3.cible != null and !#strings.isEmpty(r.t3.cible) ? r.t3.cible : r.t3.titre}">T3</strong>
+                            <small th:text="${r.t3.description != null and !#strings.isEmpty(r.t3.description) ? r.t3.description : r.t3.titre}">Description</small>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="datacron-plan-affix-cell compact">
+                            <span class="datacron-tier-pill t6">T6</span>
+                            <strong th:text="${r.t6.cible != null and !#strings.isEmpty(r.t6.cible) ? r.t6.cible : r.t6.titre}">T6</strong>
+                            <small th:text="${r.t6.description != null and !#strings.isEmpty(r.t6.description) ? r.t6.description : r.t6.titre}">Description</small>
+                        </div>
+                    </td>
+                    <td>
+                        <button type="button" class="datacron-plan-combo-link" data-bs-toggle="modal" th:attr="data-bs-target=${'#' + r.modalId}">
+                            <span class="datacron-tier-pill t9">T9</span>
+                            <span class="datacron-plan-combo-copy">
+                                <strong th:text="${r.personnageNom}">T9</strong>
+                                <small th:text="${r.t9.description != null and !#strings.isEmpty(r.t9.description) ? r.t9.description : r.t9.titre}">Description</small>
+                                <em><i class="bi bi-people"></i> Voir le détail joueurs</em>
+                            </span>
+                        </button>
+                    </td>
+                    <td>
+                        <button type="button" class="datacron-plan-coverage-stack" data-bs-toggle="modal" th:attr="data-bs-target=${'#' + r.modalId}">
+                            <span class="datacron-plan-coverage good"><strong th:text="${r.possesseurs}">0</strong>/<span th:text="${r.totalJoueurs}">0</span> complets</span>
+                            <small th:if="${r.manqueUnTier > 0}" th:text="${r.manqueUnTier} + ' à 2/3'">0 à 2/3</small>
+                            <small th:if="${r.manqueUnTier == 0 and r.manquants > 0}" th:text="${r.manquants} + ' à compléter'">0 à compléter</small>
+                            <small class="perfect" th:if="${r.manquants == 0}">Tout le monde est OK</small>
+                        </button>
+                    </td>
+                    <td class="datacron-plan-actions-cell">
+                        <form th:action="@{/datacrons/plan/{id}/supprimer(id=${r.id})}" method="post">
+                            <button class="btn btn-outline-danger btn-sm" type="submit" title="Retirer du plan" onclick="return confirm('Retirer ce DTC du plan de guilde ?');">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="app-empty" th:if="${#lists.isEmpty(datacronPlan)}">
+            <div class="app-empty-icon"><i class="bi bi-gem"></i></div>
+            <h3>Aucun DTC configuré</h3>
+            <p>Choisis un Set, un T3, un T6 et un T9 dans le bandeau situé au-dessus.</p>
+        </div>
+    </section>
+
+    <div th:each="r : ${datacronPlan}" class="modal fade datacron-plan-modal" th:id="${r.modalId}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div>
+                        <span class="app-kicker" th:text="|'Plan DTC · Set ' + ${r.setId}|">Plan DTC</span>
+                        <h5 class="modal-title" th:text="${r.personnageNom}">Datacron</h5>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="datacron-plan-modal-affixes">
+                        <div>
+                            <span class="datacron-tier-pill t3">T3</span>
+                            <strong th:text="${r.t3.cible != null and !#strings.isEmpty(r.t3.cible) ? r.t3.cible : r.t3.titre}">T3</strong>
+                            <small th:text="${r.t3.description != null and !#strings.isEmpty(r.t3.description) ? r.t3.description : r.t3.titre}">Description</small>
+                        </div>
+                        <div>
+                            <span class="datacron-tier-pill t6">T6</span>
+                            <strong th:text="${r.t6.cible != null and !#strings.isEmpty(r.t6.cible) ? r.t6.cible : r.t6.titre}">T6</strong>
+                            <small th:text="${r.t6.description != null and !#strings.isEmpty(r.t6.description) ? r.t6.description : r.t6.titre}">Description</small>
+                        </div>
+                        <div>
+                            <span class="datacron-tier-pill t9">T9</span>
+                            <strong th:text="${r.personnageNom}">T9</strong>
+                            <small th:text="${r.t9.description != null and !#strings.isEmpty(r.t9.description) ? r.t9.description : r.t9.titre}">Description</small>
+                        </div>
+                    </div>
+
+                    <div class="datacron-plan-modal-summary datacron-plan-modal-summary-v2">
+                        <div><span>Joueurs</span><strong th:text="${r.totalJoueurs}">0</strong></div>
+                        <div class="good"><span>Complet 3/3</span><strong th:text="${r.possesseurs}">0</strong></div>
+                        <div class="warning"><span>Manque 1 tier</span><strong th:text="${r.manqueUnTier}">0</strong></div>
+                        <div><span>À compléter</span><strong th:text="${r.manquants}">0</strong></div>
+                    </div>
+
+                    <div class="datacron-plan-modal-block">
+                        <p>Joueurs possédant <strong>un même DTC</strong> avec exactement le T3, le T6 et le T9 du plan.</p>
+                        <div class="datacron-plan-player-list" th:if="${!#lists.isEmpty(r.possesseursDetails)}">
+                            <div th:each="j : ${r.possesseursDetails}" class="datacron-plan-player-row have">
+                                <span class="datacron-plan-player-icon"><i class="bi bi-check-circle-fill"></i></span>
+                                <div>
+                                    <strong th:text="${j.playerName}">Joueur</strong>
+                                    <small th:text="${j.meilleurDatacronId != null ? 'DTC ' + j.meilleurDatacronId : j.playerId}">DTC</small>
+                                </div>
+                                <div class="datacron-tier-statuses">
+                                    <span class="ok">T3 <i class="bi bi-check-lg"></i></span>
+                                    <span class="ok">T6 <i class="bi bi-check-lg"></i></span>
+                                    <span class="ok">T9 <i class="bi bi-check-lg"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div th:if="${#lists.isEmpty(r.possesseursDetails)}" class="datacron-plan-modal-empty">Aucun joueur n'a encore la combinaison complète.</div>
+                    </div>
+
+                    <div class="datacron-plan-modal-block separated">
+                        <p>Pour les autres joueurs, le meilleur DTC du Set est comparé au plan afin de montrer <strong>exactement le ou les tiers manquants</strong>.</p>
+                        <div class="datacron-plan-player-list" th:if="${!#lists.isEmpty(r.manquantsDetails)}">
+                            <div th:each="j : ${r.manquantsDetails}" class="datacron-plan-player-row missing" th:classappend="${j.manqueUnTier} ? ' near' : ''">
+                                <span class="datacron-plan-player-icon"><i th:class="${j.manqueUnTier} ? 'bi bi-exclamation-circle-fill' : 'bi bi-circle-half'"></i></span>
+                                <div>
+                                    <strong th:text="${j.playerName}">Joueur</strong>
+                                    <small th:if="${j.meilleurDatacronId != null}" th:text="|'Meilleur DTC : ' + ${j.meilleurDatacronId} + ' · T' + ${j.meilleurDatacronNiveau}|">DTC</small>
+                                    <small th:if="${j.meilleurDatacronId == null}">Aucun DTC de ce Set</small>
+                                </div>
+                                <div class="datacron-tier-statuses">
+                                    <span th:classappend="${j.t3Ok} ? ' ok' : ' ko'">T3 <i th:class="${j.t3Ok} ? 'bi bi-check-lg' : 'bi bi-x-lg'"></i></span>
+                                    <span th:classappend="${j.t6Ok} ? ' ok' : ' ko'">T6 <i th:class="${j.t6Ok} ? 'bi bi-check-lg' : 'bi bi-x-lg'"></i></span>
+                                    <span th:classappend="${j.t9Ok} ? ' ok' : ' ko'">T9 <i th:class="${j.t9Ok} ? 'bi bi-check-lg' : 'bi bi-x-lg'"></i></span>
+                                    <em th:text="${j.manques}">Manque T6</em>
+                                </div>
+                            </div>
+                        </div>
+                        <div th:if="${#lists.isEmpty(r.manquantsDetails)}" class="datacron-plan-modal-empty perfect"><i class="bi bi-trophy-fill"></i> Tout le monde possède la combinaison.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="app-card datacron-roster-card datacron-set-inventory-card">
         <div class="app-card-header datacron-section-header">
             <div class="app-card-title">
                 <span class="app-card-icon blue"><i class="bi bi-bar-chart-steps"></i></span>
                 <div>
-                    <h2>Profondeur DTC</h2>
-                    <p>Nombre de Datacrons atteignant chaque palier pour les membres actuels.</p>
+                    <h2>Inventaire DTC par Set</h2>
+                    <p>Au lieu d'un total global par joueur, analyse combien de DTC la guilde possède sur un Set précis.</p>
                 </div>
             </div>
+            <form method="get" action="/datacrons" id="datacronInventorySetForm" class="datacron-set-filter">
+                <label for="datacronInventorySet">Set analysé</label>
+                <select id="datacronInventorySet" name="inventorySet" class="form-select" th:disabled="${#lists.isEmpty(datacronInventory.sets)}">
+                    <option th:if="${#lists.isEmpty(datacronInventory.sets)}" value="">Aucun Set</option>
+                    <option th:each="setId : ${datacronInventory.sets}"
+                            th:value="${setId}"
+                            th:selected="${datacronInventory.selectedSetId != null and datacronInventory.selectedSetId == setId}"
+                            th:text="|'Set ' + ${setId}|">Set</option>
+                </select>
+            </form>
+        </div>
+
+        <div th:if="${datacronInventory.selectedSetId != null}" class="datacron-set-stats-grid">
+            <div><small>DTC du Set</small><strong th:text="${datacronInventory.totalDatacrons}">0</strong></div>
+            <div><small>Joueurs avec ce Set</small><strong><span th:text="${datacronInventory.joueursAvecDatacrons}">0</span>/<span th:text="${datacronInventory.totalJoueurs}">0</span></strong></div>
+            <div><small>T3+</small><strong th:text="${datacronInventory.t3Plus}">0</strong></div>
+            <div><small>T6+</small><strong th:text="${datacronInventory.t6Plus}">0</strong></div>
+            <div><small>T9+</small><strong th:text="${datacronInventory.t9Plus}">0</strong></div>
+        </div>
+
+        <div class="datacron-inventory-tools" th:if="${datacronInventory.selectedSetId != null}">
+            <span><i class="bi bi-info-circle"></i> Les compteurs T3/T6/T9 comptent des DTC, pas des joueurs.</span>
             <div class="datacron-search">
                 <i class="bi bi-search"></i>
                 <input id="datacronPlayerSearch" type="search" placeholder="Rechercher un joueur…" autocomplete="off">
             </div>
         </div>
 
-        <div class="table-responsive">
+        <div class="table-responsive" th:if="${datacronInventory.selectedSetId != null}">
             <table class="datacron-player-table" id="datacronPlayerTable">
                 <thead>
                 <tr>
-                    <th>Joueur</th><th>Total</th><th>T3+</th><th>T6+</th><th>T9+</th><th>T12+</th><th>T15+</th><th>Focused</th>
+                    <th>Joueur</th><th>DTC Set</th><th>T3+</th><th>T6+</th><th>T9+</th><th>Focused</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="j : ${datacronPage.joueurs}"
-                    th:classappend="${datacronPage.joueurSelectionneId != null and datacronPage.joueurSelectionneId == j.id} ? ' selected' : ''"
-                    th:attr="data-player-name=${j.nom}">
+                <tr th:each="j : ${datacronInventory.joueurs}" th:attr="data-player-name=${j.nom}" th:classappend="${j.total == 0} ? ' datacron-zero-row' : ''">
                     <td><a class="datacron-player-link"
-                           th:href="@{/datacrons(joueurId=${j.id})}"
+                           th:href="@{/datacrons(inventorySet=${datacronInventory.selectedSetId},joueurId=${j.id})}"
                            th:attr="data-player-id=${j.id},data-player-name=${j.nom},data-detail-url=@{/datacrons/joueur/{id}(id=${j.id})}"
                            th:text="${j.nom}">Joueur</a></td>
-                    <td th:text="${j.total}">0</td>
+                    <td><strong th:text="${j.total}">0</strong></td>
                     <td th:text="${j.t3}">0</td>
                     <td th:text="${j.t6}">0</td>
                     <td><strong th:text="${j.t9}">0</strong></td>
-                    <td th:text="${j.t12}">0</td>
-                    <td th:text="${j.t15}">0</td>
                     <td th:text="${j.focused}">0</td>
                 </tr>
                 </tbody>
             </table>
         </div>
+
+        <div class="app-empty" th:if="${datacronInventory.selectedSetId == null}">
+            <div class="app-empty-icon"><i class="bi bi-gem"></i></div>
+            <h3>Aucun inventaire DTC</h3>
+            <p>Lance le Batch DTC pour récupérer les Datacrons actuels de la guilde.</p>
+        </div>
     </section>
 
     <section class="app-card datacron-help-card">
-        <i class="bi bi-cursor-fill"></i>
-        <div><strong>Sélectionne un joueur</strong><span>Clique sur son nom : ses Datacrons s'ouvrent dans une fenêtre sans quitter le tableau.</span></div>
+        <i class="bi bi-info-circle-fill"></i>
+        <div>
+            <strong>Comment est analysé le plan ?</strong>
+            <span>Pour être « complet », un joueur doit avoir un même DTC du bon Set avec exactement les T3, T6 et T9 choisis. Sinon, SWGOH Manager retient son DTC le plus proche et indique les tiers à remplacer.</span>
+        </div>
     </section>
 
     <div class="modal fade datacron-player-modal" id="datacronPlayerModal" tabindex="-1" aria-labelledby="datacronPlayerModalTitle" aria-hidden="true">

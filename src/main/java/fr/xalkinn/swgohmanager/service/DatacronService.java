@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import fr.xalkinn.swgohmanager.dto.DatacronView;
+import fr.xalkinn.swgohmanager.dto.DatacronInventoryView;
+import fr.xalkinn.swgohmanager.dto.DatacronInventoryView.PlayerRow;
 import fr.xalkinn.swgohmanager.dto.DatacronView.AffixDetail;
 import fr.xalkinn.swgohmanager.dto.DatacronView.DatacronDetail;
 import fr.xalkinn.swgohmanager.dto.DatacronView.DatacronSetGroupe;
@@ -285,6 +287,83 @@ public class DatacronService {
         vue.setDatacrons(details);
         vue.setSets(regrouperParSet(details));
         vue.setStats(chargerStats(joueurId));
+        return vue;
+    }
+
+    /**
+     * Statistiques d'inventaire centrées sur un Set précis.
+     * Les compteurs T3/T6/T9 représentent des Datacrons ayant atteint au moins
+     * le palier concerné, et non un nombre de joueurs.
+     */
+    public DatacronInventoryView construireInventaireParSet(Integer setDemande) {
+        DatacronInventoryView vue = new DatacronInventoryView();
+
+        List<Integer> sets = jdbc.queryForList("""
+                SELECT DISTINCT d.set_id
+                FROM player_datacron_actuel d
+                JOIN joueur j ON j.id = d.joueur_id AND j.dans_guilde = 1
+                WHERE d.set_id > 0
+                ORDER BY d.set_id DESC
+                """, Integer.class);
+        vue.setSets(sets);
+
+        Integer totalJoueurs = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM joueur WHERE dans_guilde = 1", Integer.class);
+        vue.setTotalJoueurs(totalJoueurs == null ? 0 : totalJoueurs);
+
+        if (sets.isEmpty()) return vue;
+
+        int setId = setDemande != null && sets.contains(setDemande)
+                ? setDemande
+                : sets.getFirst();
+        vue.setSelectedSetId(setId);
+
+        List<Map<String, Object>> global = jdbc.queryForList("""
+                SELECT COUNT(d.id) AS total,
+                       COUNT(DISTINCT d.joueur_id) AS joueurs,
+                       COALESCE(SUM(CASE WHEN d.niveau >= 3 THEN 1 ELSE 0 END), 0) AS t3,
+                       COALESCE(SUM(CASE WHEN d.niveau >= 6 THEN 1 ELSE 0 END), 0) AS t6,
+                       COALESCE(SUM(CASE WHEN d.niveau >= 9 THEN 1 ELSE 0 END), 0) AS t9,
+                       COALESCE(SUM(CASE WHEN d.focused = 1 THEN 1 ELSE 0 END), 0) AS focused
+                FROM player_datacron_actuel d
+                JOIN joueur j ON j.id = d.joueur_id AND j.dans_guilde = 1
+                WHERE d.set_id = ?
+                """, setId);
+        if (!global.isEmpty()) {
+            Map<String, Object> row = global.getFirst();
+            vue.setTotalDatacrons(nombre(row.get("total")));
+            vue.setJoueursAvecDatacrons(nombre(row.get("joueurs")));
+            vue.setT3Plus(nombre(row.get("t3")));
+            vue.setT6Plus(nombre(row.get("t6")));
+            vue.setT9Plus(nombre(row.get("t9")));
+            vue.setFocused(nombre(row.get("focused")));
+        }
+
+        List<PlayerRow> joueurs = jdbc.query("""
+                SELECT j.id, COALESCE(j.nom, j.player_id) AS nom,
+                       COUNT(d.id) AS total,
+                       COALESCE(SUM(CASE WHEN d.niveau >= 3 THEN 1 ELSE 0 END), 0) AS t3,
+                       COALESCE(SUM(CASE WHEN d.niveau >= 6 THEN 1 ELSE 0 END), 0) AS t6,
+                       COALESCE(SUM(CASE WHEN d.niveau >= 9 THEN 1 ELSE 0 END), 0) AS t9,
+                       COALESCE(SUM(CASE WHEN d.focused = 1 THEN 1 ELSE 0 END), 0) AS focused
+                FROM joueur j
+                LEFT JOIN player_datacron_actuel d
+                  ON d.joueur_id = j.id AND d.set_id = ?
+                WHERE j.dans_guilde = 1
+                GROUP BY j.id, j.nom, j.player_id
+                ORDER BY total DESC, t9 DESC, nom
+                """, (rs, rowNum) -> {
+                    PlayerRow r = new PlayerRow();
+                    r.setId(rs.getInt("id"));
+                    r.setNom(rs.getString("nom"));
+                    r.setTotal(rs.getInt("total"));
+                    r.setT3(rs.getInt("t3"));
+                    r.setT6(rs.getInt("t6"));
+                    r.setT9(rs.getInt("t9"));
+                    r.setFocused(rs.getInt("focused"));
+                    return r;
+                }, setId);
+        vue.setJoueurs(joueurs);
         return vue;
     }
 

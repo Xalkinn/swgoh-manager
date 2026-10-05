@@ -3,6 +3,119 @@
 
     let detailRequestId = 0;
 
+    function planCatalog() {
+        return Array.from(document.querySelectorAll(".datacron-plan-catalog-item")).map(function (el) {
+            return {
+                id: el.dataset.id,
+                setId: Number(el.dataset.set || 0),
+                tier: Number(el.dataset.tier || 0),
+                label: el.dataset.label || "Mécanique Datacron",
+                characterId: el.dataset.characterId || "",
+                character: el.dataset.character || "",
+                target: el.dataset.target || "",
+                ability: el.dataset.ability || ""
+            };
+        });
+    }
+
+    function resetSelect(select, placeholder, disabled) {
+        if (!select) return;
+        select.innerHTML = "";
+        const option = document.createElement("option");
+        option.value = "";
+        option.textContent = placeholder;
+        select.appendChild(option);
+        select.disabled = disabled !== false;
+    }
+
+    function appendOptions(select, items) {
+        items.forEach(function (item) {
+            const option = document.createElement("option");
+            option.value = item.id;
+            option.textContent = item.label;
+            option.title = item.label;
+            select.appendChild(option);
+        });
+    }
+
+    function initPlanConfigurator() {
+        const set = document.getElementById("datacronPlanSet");
+        const t3 = document.getElementById("datacronPlanT3");
+        const t6 = document.getElementById("datacronPlanT6");
+        const t9 = document.getElementById("datacronPlanT9");
+        const addButton = document.getElementById("datacronPlanAddButton");
+        if (!set || !t3 || !t6 || !t9 || !addButton) return;
+
+        const items = planCatalog();
+
+        function bySetAndTier(setId, tier) {
+            return items
+                .filter(function (x) { return x.setId === setId && x.tier === tier; })
+                .sort(function (a, b) {
+                    const aCharacter = a.character || a.target || "";
+                    const bCharacter = b.character || b.target || "";
+                    if (tier === 9 && aCharacter !== bCharacter) {
+                        return aCharacter.localeCompare(bCharacter, "fr", { sensitivity: "base" });
+                    }
+                    return a.label.localeCompare(b.label, "fr", { sensitivity: "base" });
+                });
+        }
+
+        function updateButton() {
+            addButton.disabled = !(set.value && t3.value && t6.value && t9.value);
+        }
+
+        function loadSet() {
+            const setId = Number(set.value || 0);
+            addButton.disabled = true;
+            resetSelect(t3, setId ? "Choisir le T3" : "Choisir d'abord un Set", !setId);
+            resetSelect(t6, "Choisir d'abord le T3", true);
+            resetSelect(t9, "Choisir d'abord le T6", true);
+            if (!setId) return;
+
+            const options = bySetAndTier(setId, 3);
+            appendOptions(t3, options);
+            if (!options.length) resetSelect(t3, "Aucun T3 détecté pour ce Set", true);
+        }
+
+        function loadT3() {
+            const setId = Number(set.value || 0);
+            addButton.disabled = true;
+            resetSelect(t6, t3.value ? "Choisir le T6" : "Choisir d'abord le T3", !t3.value);
+            resetSelect(t9, "Choisir d'abord le T6", true);
+            if (!setId || !t3.value) return;
+
+            const options = bySetAndTier(setId, 6);
+            appendOptions(t6, options);
+            if (!options.length) resetSelect(t6, "Aucun T6 détecté pour ce Set", true);
+        }
+
+        function loadT6() {
+            const setId = Number(set.value || 0);
+            addButton.disabled = true;
+            resetSelect(t9, t6.value ? "Choisir le T9" : "Choisir d'abord le T6", !t6.value);
+            if (!setId || !t6.value) return;
+
+            const options = bySetAndTier(setId, 9);
+            appendOptions(t9, options);
+            if (!options.length) resetSelect(t9, "Aucun T9 détecté pour ce Set", true);
+        }
+
+        set.addEventListener("change", loadSet);
+        t3.addEventListener("change", loadT3);
+        t6.addEventListener("change", loadT6);
+        t9.addEventListener("change", updateButton);
+    }
+
+    function initInventorySetFilter() {
+        const select = document.getElementById("datacronInventorySet");
+        const form = document.getElementById("datacronInventorySetForm");
+        if (!select || !form || select.disabled) return;
+        select.addEventListener("change", function () {
+            form.submit();
+        });
+    }
+
     function initPlayerSearch() {
         const input = document.getElementById("datacronPlayerSearch");
         const table = document.getElementById("datacronPlayerTable");
@@ -45,7 +158,6 @@
                 if (panel) panel.hidden = false;
             }
 
-            // Tous les sets sont fermés à chaque ouverture de la popin.
             toggles.forEach(closeSet);
 
             toggles.forEach(function (toggle) {
@@ -112,8 +224,6 @@
                 return response.text();
             })
             .then(function (html) {
-                // Si l'utilisateur a cliqué sur un autre joueur entre-temps,
-                // on ignore la réponse précédente.
                 if (requestId !== detailRequestId) return;
                 modalBody.innerHTML = html;
                 initSetAccordion(modalBody);
@@ -134,13 +244,11 @@
             event.preventDefault();
             openPlayerModal(link);
         });
-
-        // Compatibilité avec un ancien lien /datacrons?joueurId=...
-        const selected = table.querySelector("tbody tr.selected .datacron-player-link");
-        if (selected) openPlayerModal(selected);
     }
 
     function init() {
+        initPlanConfigurator();
+        initInventorySetFilter();
         initPlayerSearch();
         initPlayerModal();
         initSetAccordion(document);

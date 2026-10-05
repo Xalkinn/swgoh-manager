@@ -1,0 +1,48 @@
+/* Même palette et composants que les pages métier et Omicrons. */
+.consigne-page .app-card { margin-bottom:24px; }
+.consigne-page .app-card-body > h2 { font-size:1.05rem; font-weight:800; margin-bottom:18px; }
+.consigne-page .form-control,.consigne-page .form-select { background-color:var(--dash-card); color:var(--dash-text); border-color:var(--dash-border); min-height:42px; border-radius:10px; }
+.consigne-page .form-control::placeholder { color:var(--dash-muted); opacity:.8; }
+.consigne-page .form-control:focus,.consigne-page .form-select:focus { border-color:#7c3aed; box-shadow:0 0 0 3px rgba(124,58,237,.12); }
+.consigne-page .form-label { display:block; color:var(--dash-muted); font-size:.76rem; font-weight:800; margin-bottom:8px; }
+.consigne-page .form-label > input { margin-top:7px; }
+.consigne-page .table { --bs-table-bg:transparent; --bs-table-color:var(--dash-text); --bs-table-border-color:var(--dash-border); font-size:.86rem; }
+.consigne-page .table th { color:var(--dash-muted); text-transform:uppercase; font-size:.69rem; letter-spacing:.05em; padding:14px 12px; }
+.consigne-page .table td { padding:14px 12px; }
+.consigne-page .table .btn-link { color:var(--dash-text); font-weight:800; text-decoration:none; text-align:left; padding:0; }
+.consigne-page .table .btn-link:hover { color:#7c3aed; }
+.consigne-page .table small { color:var(--dash-muted); }
+.consigne-page .table .badge { border-radius:999px; padding:7px 11px; }
+.consigne-page .alert { border-radius:14px; font-size:.84rem; line-height:1.7; }
+.consigne-page .modal-content { background:var(--dash-card); color:var(--dash-text); border:1px solid var(--dash-border); border-radius:18px; }
+.consigne-page .modal-header { border-color:var(--dash-border); }
+.consigne-list-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; align-items:start; }
+.consigne-list { background:var(--dash-soft); border:1px solid var(--dash-border); border-radius:16px; padding:20px; min-width:0; }
+.consigne-new { border-style:dashed; }
+.consigne-list-heading { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:18px; }
+.consigne-list-heading h3 { font-size:1rem; font-weight:850; margin:0; overflow-wrap:anywhere; }
+.consigne-editor > .form-label { margin-bottom:16px; }
+.consigne-add-row { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:10px; margin-top:12px; }
+.consigne-add-row .form-label { margin:0; }
+.consigne-add-row select { margin-top:7px; }
+.consigne-add-row button { min-height:42px; }
+.consigne-add-row button:disabled { opacity:.45; cursor:not-allowed; }
+.consigne-picked { display:grid; gap:8px; margin-top:16px; max-height:340px; overflow-y:auto; }
+.consigne-personnage { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:11px; border:1px solid var(--dash-border); background:var(--dash-card); }
+.consigne-personnage > i { color:#7c3aed; }
+.consigne-personnage > span { flex:1; font-size:.83rem; font-weight:650; overflow-wrap:anywhere; }
+.consigne-remove { flex-shrink:0; width:32px; height:32px; border-radius:9px; border:0; color:#dc2626; background:rgba(220,38,38,.08); }
+.consigne-remove:hover { background:rgba(220,38,38,.18); }
+.consigne-remove:focus-visible { outline:2px solid #dc2626; outline-offset:2px; }
+.consigne-empty { margin:16px 0 0; padding:18px; border:1px dashed var(--dash-border); border-radius:12px; color:var(--dash-muted); text-align:center; font-size:.83rem; }
+.consigne-feedback { font-size:.75rem; color:var(--dash-muted); margin:10px 0; }
+.consigne-save { display:flex; justify-content:flex-end; align-items:center; flex-wrap:wrap; gap:12px; margin-top:16px; }
+.consigne-dirty { color:#ca8a04; font-size:.75rem; }
+.consigne-delete-list { margin-top:14px; padding-top:14px; border-top:1px solid var(--dash-border); }
+.consigne-help { margin:20px 0 0; color:var(--dash-muted); font-size:.8rem; }
+@media(max-width:900px) { .consigne-list-grid { grid-template-columns:1fr; } }
+@media(max-width:480px) { .consigne-list { padding:15px; } .consigne-add-row { grid-template-columns:1fr; } .consigne-add-row button { justify-content:center; } }
+
+.consigne-export-format { width:auto; min-width:180px; }
+
+.consigne-review-actions { display:flex; align-items:center; flex-wrap:wrap; gap:10px; margin:16px 0; padding:12px; background:var(--dash-soft); border-radius:12px; }
