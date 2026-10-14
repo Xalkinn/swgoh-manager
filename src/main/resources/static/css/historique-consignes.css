@@ -1,0 +1,12 @@
+.history-campaigns { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:16px; }
+.history-campaign { background:var(--dash-soft); border:1px solid var(--dash-border); padding:18px; border-radius:14px; }
+.history-campaign h3 { font-size:1rem; font-weight:800; }
+.history-campaign p { margin:8px 0; font-size:.83rem; }
+.history-campaign pre { font-size:.7rem; max-height:200px; overflow:auto; color:var(--dash-muted); }
+.history-filters { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin-bottom:14px; }
+.history-create { max-width:700px; }
+.history-table td { min-width:180px; }
+.history-table td:last-child { min-width:320px; }
+.history-table p { margin:8px 0; }
+.historique-page .app-card-header { flex-wrap:wrap; gap:14px; }
+@media(max-width:700px) { .history-filters { grid-template-columns:1fr; } }

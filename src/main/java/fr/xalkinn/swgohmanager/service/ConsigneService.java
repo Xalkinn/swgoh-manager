@@ -64,6 +64,13 @@ public class ConsigneService {
     public void supprimer(long id) { jdbc.update("DELETE FROM consigne_liste WHERE id=?",id); }
 
     public List<Map<String,Object>> suivi(LocalDate debut, LocalDate fin, List<Long> selection) {
+        return calculerSuivi(debut,fin,selection,null);
+    }
+    /** Analyse brute selon les personnages figés d'une campagne, sans décisions de la page courante. */
+    public List<Map<String,Object>> suiviArchive(LocalDate debut,LocalDate fin,Set<String> autorises) {
+        return calculerSuivi(debut,fin,List.of(),autorises);
+    }
+    private List<Map<String,Object>> calculerSuivi(LocalDate debut, LocalDate fin, List<Long> selection,Set<String> figes) {
         Map<Integer,Map<String,Object>> joueurs = new LinkedHashMap<>();
         for (Map<String,Object> j : jdbc.queryForList("SELECT id,nom FROM joueur WHERE dans_guilde=1 ORDER BY nom")) {
             j.put("details",new ArrayList<Map<String,Object>>()); j.put("autorises",0); j.put("ecarts",0); j.put("incertains",0); j.put("captures",0); joueurs.put(((Number)j.get("id")).intValue(),j);
@@ -72,9 +79,10 @@ public class ConsigneService {
         for (Map<String,Object> l : listes()) if(selection.contains(((Number)l.get("id")).longValue())) {
             @SuppressWarnings("unchecked") List<String> bases = (List<String>)l.get("personnages"); autorises.addAll(bases);
         }
+        if(figes!=null) { autorises.clear();autorises.addAll(figes); }
         String context=contexte(debut,selection,autorises);
         Map<String,String> decisions=new HashMap<>();
-        for(var d:jdbc.queryForList("SELECT evolution,decision FROM consigne_decision WHERE contexte=?",context))decisions.put((String)d.get("evolution"),(String)d.get("decision"));
+        if(figes==null) for(var d:jdbc.queryForList("SELECT evolution,decision FROM consigne_decision WHERE contexte=?",context))decisions.put((String)d.get("evolution"),(String)d.get("decision"));
         // Compare les extractions réellement disponibles pour chaque membre, jamais id - 1.
         var snapshots = jdbc.queryForList("""
             SELECT p.joueur_id, p.extraction_id, MIN(p.date_capture) AS debut_capture, MAX(p.date_capture) AS capture
